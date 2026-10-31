@@ -26,7 +26,7 @@ const PRODUCTS = [
   },
   {
     kind: "Experience",
-    name: "Thanh Chương tea island · early boat",
+    name: "Thanh Chương tea island",
     price: "350.000",
     seats: "4 left",
     img: "/images/thanh-chuong.jpg",
