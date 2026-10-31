@@ -9,8 +9,8 @@ export default function GuideCard({ guide, index = 0, excerpt = false }: { guide
   return (
     <Link to={`/guides/${guide.id}`} data-record={`guides:${guide.id}`} data-testid={`guide-card-${index}`}
       className="group flex h-full flex-col">
-      <div className="relative overflow-hidden rounded-[var(--radius-sm)] bg-ink" style={{ aspectRatio: "13 / 8" }}>
-        <Picture src={String(guide.image)} alt={String(guide.title)} width={1560} height={960}
+      <div className="relative overflow-hidden rounded-[var(--radius-sm)] bg-ink" style={{ aspectRatio: "3 / 2" }}>
+        <Picture src={String(guide.image)} alt={String(guide.title)} width={1500} height={1000}
           className="absolute inset-0 h-full w-full object-cover transition-transform duration-[var(--duration-base)] group-hover:scale-[1.03]" />
       </div>
       <p className="label mt-3 text-ink-soft">{String(guide.category)} · <span className="fig">{formatDate(String(guide.date))}</span></p>
