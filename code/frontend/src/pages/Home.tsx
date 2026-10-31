@@ -21,14 +21,14 @@ export default function Home() {
   const supplierCta = useContent("home.suppliers.cta");
   return (
     <>
-      <section className="relative border-b border-line bg-surface">
-        <Rail k="home.rail" />
+      <section className="border-b border-line bg-surface">
         <div className="w-full px-[var(--gutter)] py-4">
           <SearchRow />
         </div>
       </section>
 
       <section className="relative">
+        <Rail k="home.rail" />
         <div className="relative w-full overflow-hidden bg-ink" style={{ aspectRatio: "32 / 9" }}>
           <Picture src="/images/hero-cua-lo.jpg" alt="The beach and the beach road at Cửa Lò"
             width={1280} height={720} loading="eager"
