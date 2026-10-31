@@ -162,12 +162,15 @@
   position: relative; aspect-ratio: 3 / 2; overflow: hidden; background: var(--surface);
   display: block; text-decoration: none; color: inherit;
 }
+/* contain, not cover: the three place photographs are not one shape, and a
+   3:2 crop cut a third off each. The tile's own surface carries the bars. */
 .d2-tile img {
-  position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover;
+  position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain;
+  background: var(--surface);
   filter: brightness(.68) saturate(.9);
   transition: transform .6s cubic-bezier(.22, 1, .36, 1), filter .4s ease;
 }
-.d2-tile:hover img { transform: scale(1.05); filter: brightness(.86) saturate(1); }
+.d2-tile:hover img { transform: scale(1.03); filter: brightness(.86) saturate(1); }
 .d2-tile .t {
   position: absolute; left: 0; right: 0; bottom: 0; padding: 16px 18px 14px;
   background: linear-gradient(to top, rgba(12, 13, 15, .94), rgba(12, 13, 15, 0));
