@@ -91,8 +91,8 @@ export function Directions1() {
 
 const TILES = [
   { place: "Cửa Lò", line: "Beach & seafood", from: "900.000", img: "/images/kind-seafood.jpg", focus: "50% 50%" },
-  { place: "Pù Mát", line: "Forest & river, by boat", from: "650.000", img: "/images/kind-boat.jpg", focus: "55% 45%" },
-  { place: "Thanh Chương", line: "The tea hills at dawn", from: "350.000", img: "/images/kind-village.jpg", focus: "50% 55%" },
+  { place: "Pù Mát", line: "Forest & river", from: "650.000", img: "/images/kind-boat.jpg", focus: "55% 45%" },
+  { place: "Thanh Chương", line: "Tea hills at dawn", from: "350.000", img: "/images/kind-village.jpg", focus: "50% 55%" },
 ];
 
 const DATES = [
