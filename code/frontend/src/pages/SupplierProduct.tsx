@@ -35,7 +35,7 @@ export default function SupplierProduct() {
         {saved && <p className="flex items-center gap-2 rounded-[var(--radius-sm)] border border-line bg-surface px-4 py-3 text-sm text-ink"><Icon name="info" size={16} className="text-accent" />{saved}</p>}
         {status === "approved" && <p className="flex items-center gap-2 text-sm text-ink-soft"><Icon name="alert" size={16} />Changing the price or the itinerary of an approved product sends it back for approval.</p>}
 
-        <form className="grid gap-6 lg:grid-cols-2">
+        <form className="grid gap-6 [grid-template-columns:1fr] lg:[grid-template-columns:1fr_1fr]">
           <label className="flex flex-col gap-1 lg:col-span-2">
             <span className="label text-ink-soft">Title</span>
             <input id="title" defaultValue={item?.name ?? ""} className={FIELD} />
