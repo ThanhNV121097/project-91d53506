@@ -123,9 +123,11 @@ export default function DashboardLayout({ title, nav, actions, children, brand }
 
       {open && typeof document !== "undefined" &&
         createPortal(
-          <div className="fixed inset-0 z-[60] lg:hidden">
-            <button type="button" aria-label="Close" onClick={() => setOpen(false)} className="absolute inset-0 bg-ink/40" />
-            <div className="absolute inset-y-0 left-0 w-64 overflow-y-auto border-r border-line bg-surface">{menu}</div>
+          <div className="fixed inset-0 z-[60] bg-surface lg:hidden">
+            <div className="flex items-center justify-end px-[var(--gutter)] py-3">
+              <MenuToggle open onToggle={() => setOpen(false)} />
+            </div>
+            <div className="h-[calc(100%-4rem)] overflow-y-auto">{menu}</div>
           </div>,
           document.body,
         )}
