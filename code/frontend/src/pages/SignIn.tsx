@@ -9,6 +9,8 @@ export default function SignIn() {
   usePageMeta("pages.signin.title", "pages.signin.description");
   const [email, setEmail] = useState("");
   const [role, setRole] = useState("buyer");
+  const roleLabel = useContent("pages.signin.role");
+  const roles = useList("pages.signin.roles");
   const navigate = useNavigate();
   const field = "w-full rounded-[var(--radius-sm)] border border-field bg-surface px-3 py-2 text-sm text-ink";
   return (
