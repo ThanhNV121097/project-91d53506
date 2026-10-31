@@ -72,3 +72,50 @@ Both ship the same searchable catalogue, calendar pricing, online payment and th
 supplier/admin dashboard; they differ in what the first screen bets the visitor came
 for. Prices and product names on the two pages are **samples** — the owner has supplied
 no product list yet.
+
+## The map that knows the province
+
+- **Suits you if:** you think a buyer's real hesitation is not the price but trust —
+  who this supplier actually is, whether the licence is real, exactly where the place
+  is — and your job is to answer that with a verified badge and a map before they
+  reach for the phone.
+- **Palette (light):** ground `#F3EEE2` (parchment) · surface `#FFFFFF` · ink `#1E2A22`
+  (forest ink) · ink-soft `#5C6B5E` · accent `#B5542B` (terracotta / route-line) ·
+  accent-ink `#FFFFFF` · line `rgba(30,42,34,0.14)`
+- **Faces:** display Fraunces (OFL) — **the one unlock**, a serif with ink-trap
+  character, so the page reads like a verified guidebook entry rather than a brochure;
+  body Inter, used for every list row, badge and distance figure.
+- **Scale at 1440:** h1 50px / 1.08, tracking −0.01em · h2 28px · badge/label 11px
+  uppercase, 0.14em tracking · list price 20px, tabular Inter. The headline stays modest
+  because the screen's real content is the list and the map beside it, not a slogan.
+- **First screen:** a hairline splits the window in two — left 45% a scrollable list of
+  five verified listings, each numbered, with its operator name, a licence badge, a
+  star rating, distance from Cửa Lò, and its price; right 55% a drawn map of the Nghệ An
+  coast and hills with the same five numbers pinned to their real places and a legend
+  by product type (tour · homestay · experience · transport). No photograph fills the
+  screen; the map is the picture.
+- **The one device:** the numbers — pin 3 on the map is row 3 in the list, nothing else
+  ties them, and that sync is the whole argument for a marketplace over a brochure.
+
+## The province's own guide
+
+- **Suits you if:** you think the sell is the story — Uncle Hồ's village, a tea-hill
+  sunrise, a boat up Pù Mát — and a visitor who has read one good paragraph about a
+  place books more readily than one who has only compared a price grid.
+- **Palette (light):** ground `#FBF7EF` (warm paper) · surface `#F1E9D8` · ink `#241C14`
+  · ink-soft `#756658` · accent `#1F3A5F` (printed-ribbon indigo) · accent-ink `#FBF7EF`
+  · line `rgba(36,28,20,0.14)`
+- **Faces:** display DM Serif Display (OFL) — **the one unlock**, a magazine serif with
+  a dramatic italic, for a site whose first screen is a headline and a byline before it
+  is a price; body Inter.
+- **Scale at 1440:** h1 64px / 1.04, tracking −0.01em, serif · h2 34px serif italic
+  subheads · byline/meta 12px uppercase, 0.12em tracking · price 16px tabular, set small
+  and secondary wherever it appears.
+- **First screen:** a masthead row (issue line, today's date, a search glyph) under a
+  hairline, then a two-column editorial spread — left, one large feature photograph
+  with a serif drop headline and a "Read the guide" link running under it; right, three
+  shorter stories stacked, each a small photograph, a category tag, a serif subhead and
+  one line, with a small price pill set quietly at the end of the line, not as the card.
+- **The one device:** the price is never the loudest thing on the screen — it sits as a
+  small pill at the end of a sentence, so the page reads as an issue of a magazine that
+  happens to let you book, not a shop that happens to have articles.
