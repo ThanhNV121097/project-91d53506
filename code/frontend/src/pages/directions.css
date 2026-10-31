@@ -157,7 +157,7 @@
   background: var(--line); border: 1px solid var(--line); width: fit-content;
 }
 .d2-tile {
-  position: relative; aspect-ratio: 1 / 1; overflow: hidden; background: var(--surface);
+  position: relative; aspect-ratio: 3 / 2; overflow: hidden; background: var(--surface);
   display: block; text-decoration: none; color: inherit;
 }
 .d2-tile img {
