@@ -37,10 +37,8 @@ export default function Trip() {
           <p className="label text-ink-soft">{item.kind} · {item.destination} · {item.duration}</p>
           <h1 className="mt-2 max-w-[22ch] text-[length:var(--size-h1)]">{item.name}</h1>
           <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-ink-soft">
-            <Rating value={item.rating} />
-            <span className="fig">{item.rating}</span>
-            <span>(<span className="fig">{item.review_count}</span> <T k="pages.trip.reviews" />)</span>
             <span className="flex items-center gap-1"><Icon name="address" size={14} />{item.place}</span>
+            <span className="flex items-center gap-1"><Icon name="date" size={14} /><T k="pages.trip.nextDate" />{" "}<span className="fig">{formatDate(item.next_date)}</span></span>
           </div>
           <p className="mt-5 max-w-[52ch] text-base leading-relaxed text-ink">{item.summary}</p>
         </div>
