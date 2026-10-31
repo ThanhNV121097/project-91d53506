@@ -90,7 +90,7 @@ export default function Trip() {
           </ul>
 
           <h2 className="mt-12 text-[length:var(--size-h2)]"><T k="pages.trip.policy" /></h2>
-          <p className="mt-3 max-w-[62ch] text-sm text-ink">{item.policy || useContent("pages.trip.policyEmpty")}</p>
+          <p className="mt-3 max-w-[62ch] text-sm text-ink">{item.policy || policyEmpty}</p>
 
           <h2 className="mt-12 text-[length:var(--size-h2)]"><T k="pages.trip.supplier" /></h2>
           <div className="mt-3 rounded-[var(--radius-sm)] border border-line bg-surface p-5">
