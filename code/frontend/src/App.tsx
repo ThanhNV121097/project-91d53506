@@ -1,70 +1,88 @@
-import { useState } from "react";
-import { Link, Route, Routes } from "react-router-dom";
-import { T, useList, useContent } from "./editable";
-import Home from "./pages/Home";
-import Logo from "./components/Logo";
-import MenuToggle from "./components/MenuToggle";
+import { useEffect } from "react";
+import { Route, Routes, useLocation } from "react-router-dom";
+import Header from "./components/Header";
+import Footer from "./components/Footer";
 import ContactDock from "./components/ContactDock";
-import PhotoCredits from "./components/PhotoCredits";
-import { Directions1, Directions2, Directions3, Directions4, Directions5, Directions6 } from "./pages/Directions";
+import { PageViews } from "./site";
+import Home from "./pages/Home";
+import Search from "./pages/Search";
+import Trip from "./pages/Trip";
+import Book from "./pages/Book";
+import Checkout from "./pages/Checkout";
+import Confirmed from "./pages/Confirmed";
+import Account from "./pages/Account";
+import Wishlist from "./pages/Wishlist";
+import Departures from "./pages/Departures";
+import Guides from "./pages/Guides";
+import Guide from "./pages/Guide";
+import Contact from "./pages/Contact";
+import SignIn from "./pages/SignIn";
+import Register from "./pages/Register";
+import SupplierHome from "./pages/SupplierHome";
+import SupplierProducts from "./pages/SupplierProducts";
+import SupplierProduct from "./pages/SupplierProduct";
+import SupplierBookings from "./pages/SupplierBookings";
+import SupplierReviews from "./pages/SupplierReviews";
+import SupplierAccount from "./pages/SupplierAccount";
+import AdminHome from "./pages/AdminHome";
+import AdminQueue from "./pages/AdminQueue";
+import AdminUsers from "./pages/AdminUsers";
+import AdminBookings from "./pages/AdminBookings";
+import AdminFinance from "./pages/AdminFinance";
+import AdminModeration from "./pages/AdminModeration";
+import AdminContent from "./pages/AdminContent";
+import AdminSystem from "./pages/AdminSystem";
 
-/** The direction pages render alone — no header, no footer, no layout. */
+/** The dashboard is an application: its pages carry their own shell. */
+const DASH = [
+  ["/supplier", SupplierHome], ["/supplier/products", SupplierProducts],
+  ["/supplier/products/:id", SupplierProduct], ["/supplier/bookings", SupplierBookings],
+  ["/supplier/reviews", SupplierReviews], ["/supplier/account", SupplierAccount],
+  ["/admin", AdminHome], ["/admin/queue", AdminQueue], ["/admin/users", AdminUsers],
+  ["/admin/bookings", AdminBookings], ["/admin/finance", AdminFinance],
+  ["/admin/moderation", AdminModeration], ["/admin/content", AdminContent],
+  ["/admin/system", AdminSystem],
+] as const;
+
+const SITE = [
+  ["/", Home], ["/search", Search], ["/tours/:id", Trip], ["/book/:id", Book],
+  ["/checkout/:id", Checkout], ["/booking/:code", Confirmed], ["/account", Account],
+  ["/wishlist", Wishlist], ["/departures", Departures], ["/guides", Guides],
+  ["/guides/:slug", Guide], ["/contact", Contact], ["/signin", SignIn], ["/register", Register],
+] as const;
+
+function ToTop() {
+  const { pathname } = useLocation();
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [pathname]);
+  return null;
+}
+
 export default function App() {
   return (
-    <Routes>
-      <Route path="/directions-1" element={<Directions1 />} />
-      <Route path="/directions-2" element={<Directions2 />} />
-      <Route path="/directions-3" element={<Directions3 />} />
-      <Route path="/directions-4" element={<Directions4 />} />
-      <Route path="/directions-5" element={<Directions5 />} />
-      <Route path="/directions-6" element={<Directions6 />} />
-      <Route path="*" element={<Site />} />
-    </Routes>
+    <>
+      <ToTop />
+      <PageViews />
+      <Routes>
+        {DASH.map(([path, Page]) => <Route key={path} path={path} element={<Page />} />)}
+        <Route path="*" element={<Site />} />
+      </Routes>
+    </>
   );
 }
 
-/**
- * The shell the design replaces.
- *
- * This file is a placeholder so the scaffold builds and runs before the
- * design exists. The team rewrites it and adds components under
- * src/components/; what must stay is the rule every component follows: the
- * words come from content.json through <T/>, the colours from theme.css.
- *
- * The site has pages, not only a home page: each is a file in src/pages/ and
- * a <Route> below, sharing the header and footer. The footer keeps
- * <PhotoCredits/>: the stock photos' credits, which their licences ask for.
- */
 function Site() {
-  const links = useList<{ label: string; href: string }>("nav.links");
-  const name = useContent("site.name");
-  const [open, setOpen] = useState(false);
   return (
-    <div className="min-h-screen bg-ground text-ink font-body">
-      <header className="mx-auto max-w-page px-[var(--gutter)] py-6 flex items-center justify-between">
-        <Link to="/" aria-label={name}><Logo /></Link>
-        <nav className="hidden lg:flex items-center gap-6 text-sm">
-          {links.map((l, i) => <T key={i} k={`nav.links.${i}.label`} as="a" href={l.href} />)}
-          <T k="nav.cta.label" as="a" href="#contact" className="rounded bg-accent px-4 py-2 text-accent-ink" />
-        </nav>
-        <div className="flex items-center gap-1 lg:hidden">
-          <MenuToggle open={open} onToggle={() => setOpen((o) => !o)} />
-        </div>
-      </header>
-      {open && (
-        <nav className="fixed inset-0 top-[88px] z-40 flex flex-col gap-6 bg-ground px-[var(--gutter)] py-10 text-2xl lg:hidden">
-          {links.map((l, i) => <T key={i} k={`nav.links.${i}.label`} as="a" href={l.href} />)}
-        </nav>
-      )}
-      <main className="mx-auto max-w-page px-[var(--gutter)] py-24">
+    <div className="flex min-h-screen flex-col bg-ground font-body text-ink">
+      <Header />
+      <main className="flex-1 pb-[var(--dock-space)] lg:pb-0">
         <Routes>
-          <Route path="/" element={<Home />} />
+          {SITE.map(([path, Page]) => <Route key={path} path={path} element={<Page />} />)}
+          <Route path="*" element={<Home />} />
         </Routes>
       </main>
-      <footer className="mx-auto max-w-page px-[var(--gutter)] py-12 text-sm text-ink-soft border-t border-line">
-        <T k="footer.line" /> · {name}
-        <PhotoCredits className="mt-3" />
-      </footer>
+      <Footer />
       <ContactDock />
     </div>
   );
