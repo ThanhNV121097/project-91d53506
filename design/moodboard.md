@@ -33,9 +33,9 @@ sections enter, hover that lifts a card's scrim. Native scrolling, nothing pinne
 The management area is a different kind of screen: left menu, dense tables, mono
 figures right-aligned, no hero and no footer.
 
-## COMMITMENTS
+COMMITMENTS
 
-1. The home search row (destination · date · travellers · price) bleeds to both viewport edges under a hairline, and is in view at 1440×790 with the first product row.
+- The home search row (destination · date · travellers · price) bleeds to both viewport edges under a hairline, and is in view at 1440×790 with the first product row.
 2. A vertical small-caps rail reading NGHỆ AN · DEPARTURES runs up the left edge of the home hero, outside the page grid.
 3. Every figure on the site is IBM Plex Mono, tabular; the price on a home product card is set at 34px.
 4. A featured product card IS its photograph — 4:5, name and mono price over a bottom scrim, seats-left in #C8381F — with no white card around it.
