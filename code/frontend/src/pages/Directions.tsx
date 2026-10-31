@@ -156,3 +156,106 @@ export function Directions2() {
     </div>
   );
 }
+
+const LISTINGS = [
+  { n: 1, name: "Pù Mát Boat & Jeep Co.", kind: "Tour", badge: "Licensed operator", rating: "4.8", dist: "148 km from Cửa Lò", price: "650.000" },
+  { n: 2, name: "Bản Nưa Homestay", kind: "Homestay", badge: "Verified host", rating: "4.9", dist: "112 km from Cửa Lò", price: "1.200.000" },
+  { n: 3, name: "Thanh Chương Tea Walks", kind: "Experience", badge: "Licensed operator", rating: "4.7", dist: "64 km from Cửa Lò", price: "350.000" },
+  { n: 4, name: "Kim Liên Heritage Guides", kind: "Experience", badge: "Verified host", rating: "4.9", dist: "18 km from Cửa Lò", price: "420.000" },
+  { n: 5, name: "Cửa Lò Beach Stays", kind: "Tour", badge: "Licensed operator", rating: "4.6", dist: "0 km", price: "1.850.000" },
+];
+
+const PINS = [
+  { n: 1, x: "28%", y: "20%" },
+  { n: 2, x: "20%", y: "44%" },
+  { n: 3, x: "47%", y: "58%" },
+  { n: 4, x: "58%", y: "70%" },
+  { n: 5, x: "74%", y: "84%" },
+];
+
+export function Directions3() {
+  return (
+    <div className="d3">
+      <div className="d3-list">
+        <div className="d3-top">
+          <span className="d3-kicker">Nghệ An · verified suppliers</span>
+          <h1>Who you are booking from, and exactly where they are.</h1>
+        </div>
+        {LISTINGS.map((l) => (
+          <a className="d3-row" key={l.n} href="#">
+            <span className="d3-n">{l.n}</span>
+            <span className="d3-m">
+              <b>{l.name}</b>
+              <span className="d3-badge">{l.badge}</span>
+              <span className="d3-sub">{l.kind} · {l.dist} · ★ {l.rating}</span>
+            </span>
+            <span className="d3-p">{l.price}<em> ₫</em></span>
+          </a>
+        ))}
+      </div>
+      <div className="d3-map">
+        <div className="d3-legend">
+          <span><i className="dot tour" /> Tour</span>
+          <span><i className="dot stay" /> Homestay</span>
+          <span><i className="dot exp" /> Experience</span>
+        </div>
+        <svg className="d3-svg" viewBox="0 0 100 100" preserveAspectRatio="none">
+          <path d="M0,10 C30,5 40,30 35,55 C30,78 55,70 60,95 L0,100 Z" className="d3-land" />
+          <path d="M55,0 L100,0 L100,100 L45,100 C55,70 35,55 42,30 C48,15 50,8 55,0 Z" className="d3-hill" />
+        </svg>
+        {PINS.map((p) => (
+          <span className="d3-pin" key={p.n} style={{ left: p.x, top: p.y }}>{p.n}</span>
+        ))}
+      </div>
+      <div className="d-label">Direction 3 · The map that knows the province</div>
+    </div>
+  );
+}
+
+const SIDE_STORIES = [
+  { tag: "Homestay", img: "/images/guide-kimlien.jpg", focus: "50% 55%", head: "A night in the house Uncle Hồ was born near", price: "420.000" },
+  { tag: "Nature", img: "/images/guide-tea.jpg", focus: "50% 45%", head: "Tea rows at dawn, before the mist lifts off Thanh Chương", price: "350.000" },
+  { tag: "Beach", img: "/images/guide-cualo.jpg", focus: "50% 60%", head: "The boats come in at Cửa Lò before the tourists wake", price: "1.850.000" },
+];
+
+export function Directions4() {
+  return (
+    <div className="d4">
+      <div className="d4-mast">
+        <span>No. 1 · Nghệ An Guide</span>
+        <span>Issue dated today</span>
+        <span className="d4-search">Search the province →</span>
+      </div>
+      <div className="d4-spread">
+        <article className="d4-feature">
+          <div className="d4-feat-pic">
+            <img src="/images/guide-pumat.jpg" alt="The river through Pù Mát forest" style={{ objectPosition: "55% 40%" }} />
+          </div>
+          <span className="d4-tag">Feature</span>
+          <h1>Pù Mát keeps its river wild, <i>and its guides nearby.</i></h1>
+          <p>
+            Two hours from the coast, the forest opens onto a river boat run by the
+            families who have always lived beside it — a morning trip, not a brochure
+            photograph.
+          </p>
+          <a className="d4-read" href="#">Read the guide · <span className="d4-pricepill">from 650.000 ₫</span></a>
+        </article>
+        <div className="d4-side">
+          {SIDE_STORIES.map((s) => (
+            <article className="d4-story" key={s.head}>
+              <div className="d4-story-pic">
+                <img src={s.img} alt={s.head} style={{ objectPosition: s.focus }} />
+              </div>
+              <div className="d4-story-body">
+                <span className="d4-tag small">{s.tag}</span>
+                <h2>{s.head}</h2>
+                <span className="d4-pricepill">from {s.price} ₫</span>
+              </div>
+            </article>
+          ))}
+        </div>
+      </div>
+      <div className="d-label">Direction 4 · The province&rsquo;s own guide</div>
+    </div>
+  );
+}
