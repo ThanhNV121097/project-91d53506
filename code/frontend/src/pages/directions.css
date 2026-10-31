@@ -153,7 +153,7 @@
 .d2-cta span { font-size: 13px; color: var(--ink-soft); }
 .d2-tiles {
   position: relative; z-index: 2; display: grid;
-  grid-template-columns: repeat(3, 252px); gap: 1px; margin: -128px 0 0 40px;
+  grid-template-columns: repeat(3, 288px); gap: 1px; margin: -112px 0 0 40px;
   background: var(--line); border: 1px solid var(--line); width: fit-content;
 }
 .d2-tile {
