@@ -35,9 +35,15 @@ export default function SignIn() {
           </label>
           <span className="flex flex-col gap-1">
             <span className="label text-ink-soft"><T k="pages.signin.role" /></span>
-            <Select id="role" value={role} onChange={(v) => setRole(v || "buyer")} aria-label={useContent("pages.signin.role")}
-              placeholder="Buyer"
-              options={[{ value: "buyer", label: "Buyer" }, { value: "supplier", label: "Supplier" }, { value: "admin", label: "Admin" }]} />
+            <span id="role" role="radiogroup" aria-label={roleLabel} className="flex overflow-hidden rounded-[var(--radius-sm)] border border-field">
+              {ROLES.map((r) => (
+                <button key={r.value} type="button" role="radio" aria-checked={role === r.value}
+                  data-testid={`role-${r.value}`} onClick={() => setRole(r.value)}
+                  className={`flex-1 px-3 py-2 text-sm ${role === r.value ? "bg-accent text-accent-ink" : "bg-surface text-ink hover:text-accent"}`}>
+                  {r.label}
+                </button>
+              ))}
+            </span>
           </span>
           <button type="submit" data-testid="signin-submit" className="mt-2 rounded-[var(--radius-sm)] bg-accent px-6 py-3 text-sm text-accent-ink hover:opacity-90">
             <T k="pages.signin.submit" />
