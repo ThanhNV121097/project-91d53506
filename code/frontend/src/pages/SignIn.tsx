@@ -36,11 +36,11 @@ export default function SignIn() {
           <span className="flex flex-col gap-1">
             <span className="label text-ink-soft"><T k="pages.signin.role" /></span>
             <span id="role" role="radiogroup" aria-label={roleLabel} className="flex overflow-hidden rounded-[var(--radius-sm)] border border-field">
-              {ROLES.map((r) => (
-                <button key={r.value} type="button" role="radio" aria-checked={role === r.value}
-                  data-testid={`role-${r.value}`} onClick={() => setRole(r.value)}
+              {roles.map((r) => (
+                <button key={String(r.value)} type="button" role="radio" aria-checked={role === r.value}
+                  data-testid={`role-${String(r.value)}`} onClick={() => setRole(String(r.value))}
                   className={`flex-1 px-3 py-2 text-sm ${role === r.value ? "bg-accent text-accent-ink" : "bg-surface text-ink hover:text-accent"}`}>
-                  {r.label}
+                  {String(r.label)}
                 </button>
               ))}
             </span>
