@@ -58,6 +58,7 @@ export default function Departures() {
               <td className="py-3 pr-4">
                 <Link to={`/tours/${d.product}`} className="text-ink hover:text-accent">{d.product_name}</Link>
               </td>
+              <td className="py-3 pr-4 text-ink-soft">{d.supplier_name}</td>
               <td className="hidden py-3 pr-4 text-ink-soft lg:table-cell">{d.season}{d.state !== "Open" ? ` · ${d.state}` : ""}</td>
               <td className={`fig py-3 pr-4 text-right ${d.seats <= 4 ? "text-accent" : "text-ink"}`}>{d.seats}</td>
               <td className="fig py-3 text-right text-ink">{formatPrice(d.price)}</td>
