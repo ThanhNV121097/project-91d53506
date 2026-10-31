@@ -6,9 +6,13 @@ import type { Row } from "../data";
 /** What travellers wrote, and the supplier's reply where there is one. */
 export default function TripReviews({ reviews }: { reviews: readonly Row[] }) {
   const waiting = useContent("pages.trip.reviewEmpty");
+  // A row with no traveller and no words is a place the owner has not filled:
+  // one waiting line, never a column of blank reviews.
+  const written = reviews.filter((r) => String(r.author ?? "") || String(r.text ?? ""));
+  if (written.length === 0) return <p className="mt-4 border-t border-line pt-4 text-sm text-ink-soft">{waiting}</p>;
   return (
     <ul className="mt-4 border-t border-line">
-      {reviews.map((r) => {
+      {written.map((r) => {
         const author = String(r.author ?? "");
         const text = String(r.text ?? "");
         const reply = String(r.reply ?? "");
