@@ -95,6 +95,13 @@ const TILES = [
   { place: "Thanh Chương", line: "The tea hills at dawn", from: "350.000", img: "/images/kind-village.jpg", focus: "50% 55%" },
 ];
 
+const DATES = [
+  ["Sat 12.07", "Cửa Lò, 2 nights", "1.850.000"],
+  ["Sun 13.07", "Thanh Chương, day", "350.000"],
+  ["Thu 17.07", "Pù Mát, 2 nights", "1.200.000"],
+  ["Sat 19.07", "Kim Liên, half day", "420.000"],
+];
+
 const COUNTS = [
   ["48", "listings"],
   ["21", "local operators"],
