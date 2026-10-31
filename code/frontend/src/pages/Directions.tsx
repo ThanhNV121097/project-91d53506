@@ -10,7 +10,7 @@ import "./directions.css";
 const PRODUCTS = [
   {
     kind: "Tour",
-    name: "Cửa Lò beach · 2 days 1 night",
+    name: "Cửa Lò beach · 2N1Đ",
     price: "1.850.000",
     seats: "6 left",
     img: "/images/cua-lo.jpg",
