@@ -8,8 +8,6 @@
         { "key": "destination", "label": "Destination", "type": "text" },
         { "key": "duration", "label": "Duration", "type": "text" },
         { "key": "price", "label": "Price per person", "type": "price", "currency": "VND" },
-        { "key": "rating", "label": "Rating", "type": "number" },
-        { "key": "review_count", "label": "Reviews", "type": "number" },
         { "key": "seats", "label": "Seats left on the next date", "type": "number" },
         { "key": "next_date", "label": "Next departure", "type": "text" },
         { "key": "image", "label": "Photograph", "type": "image" },
