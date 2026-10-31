@@ -67,6 +67,7 @@ export default function Departures() {
           ))}
         </tbody>
       </table>
+      </div>
       {loading && <p className="mt-4 text-sm text-ink-soft"><T k="pages.search.loading" /></p>}
       {hasMore && (
         <button type="button" onClick={loadMore} className="mt-8 rounded-[var(--radius-sm)] border border-field px-6 py-3 text-sm text-ink hover:border-accent hover:text-accent">
