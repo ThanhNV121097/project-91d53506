@@ -42,7 +42,7 @@ export default function SearchRow({ initial = {} }: { initial?: { where?: string
         <span className="label text-ink-soft">{useContent("search.people")}</span>
         <input id="people" type="number" min={1} max={60} value={people} onChange={(e) => setPeople(e.target.value)} className={`${field} fig text-right`} />
       </label>
-      <span className="flex flex-col gap-1 lg:w-48">
+      <span className="flex flex-col gap-1 lg:w-52">
         <span className="label text-ink-soft">{useContent("search.max")}</span>
         <Select
           id="max"
