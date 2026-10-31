@@ -152,6 +152,236 @@
     },
     "signin": "Sign in"
   },
+  "pages": {
+    "account": {
+      "cancel": "Cancel or change",
+      "count": "bookings",
+      "description": "Your booking history, each one's status, and how to ask for a cancellation or a refund.",
+      "heading": "Your bookings",
+      "refundCta": "Ask about a booking",
+      "refundHeading": "Cancellations, changes and refunds",
+      "refundSub": "Send us the booking code and what you need. The default refund window is still to be set, so we answer each request directly for now.",
+      "signOut": "Sign out",
+      "signedOut": "Sign in to see your bookings.",
+      "title": "Your bookings",
+      "view": "View code"
+    },
+    "admin": {
+      "title": "Admin overview"
+    },
+    "adminBookings": {
+      "title": "Bookings and disputes"
+    },
+    "adminContent": {
+      "title": "Content and marketing"
+    },
+    "adminFinance": {
+      "title": "Finance"
+    },
+    "adminModeration": {
+      "title": "Review moderation"
+    },
+    "adminQueue": {
+      "title": "Approval queue"
+    },
+    "adminSystem": {
+      "title": "System"
+    },
+    "adminUsers": {
+      "title": "Users and roles"
+    },
+    "book": {
+      "adults": "Adults",
+      "children": "Children",
+      "continue": "Continue to payment",
+      "date": "Travel date",
+      "description": "Choose the date, the travellers and the package, then enter who is travelling.",
+      "due": "Due now",
+      "email": "Email",
+      "heading": "Who is travelling",
+      "hold": "Seats held for",
+      "name": "Lead traveller",
+      "note": "Anything the supplier should know",
+      "pack": "Package",
+      "perPerson": "Per adult",
+      "phone": "Phone",
+      "signinHint": "Sign in to keep this booking in your account.",
+      "subtotal": "Travellers",
+      "title": "Your booking",
+      "travellerHeading": "Traveller details"
+    },
+    "checkout": {
+      "after": "After payment you get a booking code and a QR code, by email and on Zalo.",
+      "code": "Code",
+      "description": "Pay by VNPay, MoMo, ZaloPay or bank transfer and get your booking code straight away.",
+      "discount": "Discount",
+      "heading": "Pay and confirm",
+      "paidWith": "Paid with",
+      "pay": "How you are paying",
+      "payNow": "Pay now",
+      "paying": "Taking payment…",
+      "people": "travellers",
+      "sub": "Your seats are held while you pay. Payment is taken by the method you choose below.",
+      "title": "Pay for your booking",
+      "voucher": "Discount code",
+      "voucherNote": "If a supplier or campaign gave you a code, enter it here."
+    },
+    "confirmed": {
+      "bookings": "Your bookings",
+      "code": "Booking code",
+      "description": "Your booking code and QR code, with what you paid and when you travel.",
+      "eyebrow": "Paid and confirmed",
+      "heading": "You are booked. Show this code on the day.",
+      "more": "Book something else",
+      "paid": "Paid",
+      "qrNote": "The supplier scans this at check-in. It is also in your email and your Zalo message.",
+      "sent": "We have sent the code to your email and your Zalo. It is in your bookings too.",
+      "title": "Booking confirmed",
+      "trip": "Trip"
+    },
+    "contact": {
+      "description": "Send us a message about a booking, a refund or listing your own trips.",
+      "details": "Our details",
+      "detailsEmpty": "Our phone number, address and opening hours go here once they are confirmed.",
+      "eyebrow": "Talk to us",
+      "heading": "A question about a booking?",
+      "sub": "Send the booking code and what you need — a change of date, a cancellation, a refund, or help choosing a trip.",
+      "title": "Contact us"
+    },
+    "departures": {
+      "allSeasons": "Every rule",
+      "count": "dates open",
+      "date": "Date",
+      "description": "Every open departure date in Nghệ An, with the seats left and the price that day.",
+      "eyebrow": "Every open date",
+      "heading": "The departure board",
+      "price": "Price",
+      "rule": "Rule",
+      "season": "Pricing rule",
+      "seats": "Seats",
+      "title": "The departure board",
+      "trip": "Trip"
+    },
+    "guide": {
+      "description": "A guide to travelling in Nghệ An.",
+      "missing": "This guide is no longer here.",
+      "more": "More guides",
+      "title": "Guide"
+    },
+    "guides": {
+      "all": "All",
+      "count": "guides",
+      "description": "What to know before you travel in Nghệ An: Cửa Lò, Kim Liên, Pù Mát and the tea islands.",
+      "eyebrow": "Written in Nghệ An",
+      "heading": "What to know before you go",
+      "title": "Nghệ An travel guides"
+    },
+    "register": {
+      "agency": "Travel agency licence, if you have one",
+      "bank": "Bank account for payouts",
+      "description": "Register as a buyer to book, or as a supplier to list your trips in Nghệ An.",
+      "email": "Email",
+      "eyebrow": "Join the platform",
+      "haveAccount": "Already have an account?",
+      "heading": "Register to book, or to sell",
+      "licence": "Business licence",
+      "name": "Name or business name",
+      "phone": "Phone",
+      "role": "I am a",
+      "submit": "Create account",
+      "title": "Register",
+      "why1": "Your own listings, with photographs and itineraries",
+      "why2": "Your dates, capacity and seasonal prices",
+      "why3": "Online payment and payouts to your bank",
+      "why4": "Approval by an admin before anything goes live",
+      "whyHeading": "What a supplier account gives you"
+    },
+    "search": {
+      "allKinds": "Every type",
+      "anyDuration": "Any length",
+      "anyRating": "Any rating",
+      "count": "trips match",
+      "description": "Search tours, homestays, experiences, transport and tickets across Nghệ An by destination, date, travellers and price.",
+      "duration": "Duration",
+      "heading": "Trips in Nghệ An",
+      "kind": "Type",
+      "loading": "Loading…",
+      "map": "Where they are",
+      "mapSub": "Each pin is a trip on this page, at its starting point on the Nghệ An coast and in the hills.",
+      "more": "Show more",
+      "none": "Nothing matches these filters. Widen the price or clear a filter.",
+      "rating": "Rating",
+      "sort": "Order",
+      "title": "All trips in Nghệ An"
+    },
+    "signin": {
+      "description": "Sign in to book, to see your bookings, or to manage your products as a supplier.",
+      "email": "Email or phone",
+      "eyebrow": "Buyers, suppliers and admins",
+      "google": "Continue with Google",
+      "heading": "Sign in to book and to manage",
+      "noAccount": "No account yet?",
+      "otp": "One-time code, if you signed up by phone",
+      "register": "Register",
+      "role": "Sign in as",
+      "submit": "Sign in",
+      "title": "Sign in",
+      "why1": "Your booking code and QR in one place",
+      "why2": "Every date you have booked, and its status",
+      "why3": "Trips you saved to decide on later",
+      "why4": "Cancellations, changes and refund tracking",
+      "whyHeading": "What an account gives you"
+    },
+    "supplier": {
+      "title": "Supplier overview"
+    },
+    "supplierAccount": {
+      "title": "Profile and payouts"
+    },
+    "supplierBookings": {
+      "title": "Your bookings"
+    },
+    "supplierProduct": {
+      "title": "Edit a product"
+    },
+    "supplierProducts": {
+      "title": "Your products"
+    },
+    "supplierReviews": {
+      "title": "Your reviews"
+    },
+    "trip": {
+      "book": "Book this date",
+      "calendar": "Dates and prices",
+      "calendarSub": "Pick a date to see its price and the seats left. Weekend and peak-summer dates are priced by the supplier.",
+      "confirmEmpty": "Whether this trip confirms instantly or the supplier confirms it by hand is still to be set.",
+      "description": "Day-by-day itinerary, what is included, the calendar of dates and prices, the supplier and traveller reviews.",
+      "excludes": "Not included",
+      "from": "From, per person",
+      "includes": "Included",
+      "itinerary": "Day by day",
+      "missing": "This trip is no longer listed. Browse the trips that are.",
+      "policy": "Cancellation and refunds",
+      "policyEmpty": "This supplier has not set a policy yet, and the platform's default window is still to be decided.",
+      "related": "Other trips in Nghệ An",
+      "reviewEmpty": "Waiting on the first review",
+      "reviews": "reviews",
+      "save": "Save for later",
+      "saved": "Saved",
+      "seats": "seats left",
+      "supplier": "Who runs it",
+      "title": "Trip details",
+      "travellers": "What travellers said"
+    },
+    "wishlist": {
+      "browse": "Browse trips",
+      "count": "saved",
+      "description": "The trips you have saved to come back to.",
+      "empty": "Nothing saved yet. Tap the heart on a trip and it waits here.",
+      "heading": "Saved trips",
+      "title": "Saved trips"
+    }
+  },
   "search": {
     "any": "Any price",
     "date": "Travel date",
