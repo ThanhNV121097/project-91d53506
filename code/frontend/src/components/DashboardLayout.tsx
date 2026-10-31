@@ -2,6 +2,7 @@ import { useEffect, useState, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 import { NavLink } from "react-router-dom";
 import { allowed, useSession } from "../lib/session";
+import MenuToggle from "./MenuToggle";
 
 /**
  * The shell every page of a CMS sits in: a menu down the left, the work on
