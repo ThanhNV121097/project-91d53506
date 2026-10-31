@@ -259,3 +259,101 @@ export function Directions4() {
     </div>
   );
 }
+
+const STATS5 = [
+  ["9 yrs", "running trips"],
+  ["< 2 hrs", "reply time"],
+  ["340+", "guests hosted"],
+];
+
+export function Directions5() {
+  return (
+    <div className="d5">
+      <div className="d5-words">
+        <span className="d5-kicker">Pù Mát river, verified operator</span>
+        <p className="d5-quote">
+          &ldquo;I take six people on my boat, never more — the river decides, not the
+          booking page.&rdquo;
+        </p>
+        <div className="d5-sign">
+          <b>Ông Lương Văn Hải</b>
+          <span>Boat operator · Pù Mát</span>
+        </div>
+        <div className="d5-stats">
+          {STATS5.map(([n, label]) => (
+            <div key={label}><b>{n}</b><span>{label}</span></div>
+          ))}
+        </div>
+        <button className="d5-cta" type="button">Book directly with Hải</button>
+      </div>
+      <div className="d5-pic">
+        <img src="/images/host-portrait.jpg" alt="Ông Lương Văn Hải, Pù Mát boat operator" />
+      </div>
+      <div className="d-label">Direction 5 · The host, not the brochure</div>
+    </div>
+  );
+}
+
+const D6_FILTERS = [
+  ["Type", ["Tour", "Homestay", "Experience", "Transport"]],
+  ["Duration", ["Half day", "1 day", "2+ days"]],
+  ["Rating", ["4.5+", "4.0+", "Any"]],
+] as const;
+
+const D6_CARDS = [
+  { name: "Cửa Lò beach · 2N1Đ", r: "4.6 · Tour", price: "1.850.000", img: "/images/cua-lo.jpg" },
+  { name: "Thanh Chương tea walk", r: "4.7 · Experience", price: "350.000", img: "/images/thanh-chuong.jpg" },
+  { name: "Bản Nưa homestay", r: "4.9 · Homestay", price: "1.200.000", img: "/images/homestay.jpg" },
+  { name: "Kim Liên half day", r: "4.9 · Experience", price: "420.000", img: "/images/kim-lien.jpg" },
+  { name: "Pù Mát boat & jeep", r: "4.8 · Tour", price: "650.000", img: "/images/pu-mat.jpg" },
+  { name: "Cửa Lò seafood night", r: "4.5 · Experience", price: "290.000", img: "/images/kind-seafood.jpg" },
+  { name: "Tea island sunrise", r: "4.7 · Experience", price: "350.000", img: "/images/kind-village.jpg" },
+  { name: "Pù Mát river boat", r: "4.8 · Tour", price: "650.000", img: "/images/kind-boat.jpg" },
+];
+
+export function Directions6() {
+  return (
+    <div className="d6">
+      <div className="d6-bar">
+        <span className="d6-logo">Nghệ An booking</span>
+        <div className="d6-search">
+          <span>Cửa Lò</span><span>12.07 – 14.07</span><span>2 travellers</span>
+        </div>
+        <button className="d6-go" type="button">Search</button>
+      </div>
+      <div className="d6-body">
+        <aside className="d6-filters">
+          {D6_FILTERS.map(([label, opts]) => (
+            <div key={label}>
+              <h3>{label}</h3>
+              <ul>
+                {opts.map((o) => (
+                  <li key={o}><input type="checkbox" readOnly /><b>{o}</b></li>
+                ))}
+              </ul>
+            </div>
+          ))}
+        </aside>
+        <div className="d6-main">
+          <div className="d6-count">
+            <span>48 listings · sorted by price</span>
+            <span>Price ↑</span>
+          </div>
+          <div className="d6-grid">
+            {D6_CARDS.map((c) => (
+              <a className="d6-card" key={c.name} href="#">
+                <div className="d6-card-pic"><img src={c.img} alt={c.name} /></div>
+                <div className="d6-card-meta">
+                  <b>{c.name}</b>
+                  <div className="r">★ {c.r}</div>
+                  <div className="pr">{c.price} ₫</div>
+                </div>
+              </a>
+            ))}
+          </div>
+        </div>
+      </div>
+      <div className="d-label">Direction 6 · The whole province, sorted by price</div>
+    </div>
+  );
+}
