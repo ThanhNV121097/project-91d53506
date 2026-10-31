@@ -8,7 +8,13 @@
   text-transform: uppercase; padding: 8px 14px; z-index: 5; color: var(--ink-soft);
   background: var(--ground);
 }
-.d1 .d-label { bottom: auto; top: 0; border-left: 1px solid var(--line); }
+/* Direction 1 keeps its label in the layout, as a hairline column up the right
+   edge: fixed at the top-right it sat over the search row's button. */
+.d1 .d-label {
+  position: static; right: auto; bottom: auto; flex: 0 0 30px; padding: 14px 0;
+  writing-mode: vertical-rl; display: flex; justify-content: flex-start;
+  border-left: 1px solid var(--line); background: transparent;
+}
 
 /* ── Direction 1 · The departure board ─────────────────────────────── */
 
