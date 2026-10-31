@@ -28,14 +28,14 @@ export default function TripCard({ trip, eager = false, index = 0 }: { trip: Tri
       <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-ink to-transparent p-4 pt-16 text-surface">
         <p className="label text-surface/80">{trip.destination} · {trip.duration}</p>
         <h3 className="mt-1 text-base leading-snug">{trip.name}</h3>
-        <div className="mt-2 flex items-end justify-between gap-2">
-          <span className="fig text-[length:var(--size-price)] leading-none">{formatPrice(trip.price)}</span>
-          <span className="fig text-xs text-surface/80">{formatDate(trip.next_date)}</span>
-        </div>
-        <p className="mt-2 flex items-center gap-1 text-xs text-accent">
-          <Icon name="people" size={14} />
-          <span className="fig">{trip.seats}</span>
-          <span>seats left</span>
+        <p className="fig mt-2 text-[length:var(--size-price)] leading-none">{formatPrice(trip.price)}</p>
+        <p className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs">
+          <span className="fig text-surface/80">{formatDate(trip.next_date)}</span>
+          <span className="flex items-center gap-1 text-accent">
+            <Icon name="people" size={14} />
+            <span className="fig">{trip.seats}</span>
+            <span>seats left</span>
+          </span>
         </p>
       </div>
     </Link>
