@@ -6,6 +6,7 @@
 .d-label {
   position: fixed; right: 0; bottom: 0; font-size: 10px; letter-spacing: .18em;
   text-transform: uppercase; padding: 8px 14px; z-index: 5; color: var(--ink-soft);
+  background: var(--ground);
 }
 
 /* ── Direction 1 · The departure board ─────────────────────────────── */
