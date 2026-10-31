@@ -96,10 +96,10 @@ const TILES = [
 ];
 
 const DATES = [
-  ["Sat 12.07", "Cửa Lò, 2 nights", "1.850.000"],
-  ["Sun 13.07", "Thanh Chương, day", "350.000"],
-  ["Thu 17.07", "Pù Mát, 2 nights", "1.200.000"],
-  ["Sat 19.07", "Kim Liên, half day", "420.000"],
+  ["Sat 12.07", "Cửa Lò, 2 nights", "6 seats"],
+  ["Sun 13.07", "Thanh Chương, day", "4 seats"],
+  ["Thu 17.07", "Pù Mát, 2 nights", "2 rooms"],
+  ["Sat 19.07", "Kim Liên, half day", "18 seats"],
 ];
 
 const COUNTS = [
