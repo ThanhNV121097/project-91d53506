@@ -100,7 +100,10 @@ export default function Home() {
           {board.items.map((d) => (
             <li key={d.id} data-record={`departures:${d.id}`} className="flex flex-wrap items-baseline gap-x-4 gap-y-1 border-b border-line py-3">
               <span className="fig w-24 shrink-0 text-sm text-ink-soft">{formatDate(d.date)}</span>
-              <Link to={`/tours/${d.product}`} className="order-last w-full truncate text-sm text-ink hover:text-accent sm:order-none sm:w-auto sm:flex-1">{d.product_name}</Link>
+              <span className="order-last w-full min-w-0 sm:order-none sm:w-auto sm:flex-1">
+                <Link to={`/tours/${d.product}`} className="block truncate text-sm text-ink hover:text-accent">{d.product_name}</Link>
+                <span className="block truncate text-xs text-ink-soft">{d.supplier_name}</span>
+              </span>
               <span className="fig ml-auto w-14 shrink-0 text-right text-sm text-accent sm:ml-0">{d.seats}</span>
               <span className="fig w-28 shrink-0 text-right text-sm text-ink">{formatPrice(d.price)}</span>
             </li>
