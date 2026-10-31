@@ -324,6 +324,20 @@
       "otp": "One-time code, if you signed up by phone",
       "register": "Register",
       "role": "Sign in as",
+      "roles": [
+        {
+          "label": "Buyer",
+          "value": "buyer"
+        },
+        {
+          "label": "Supplier",
+          "value": "supplier"
+        },
+        {
+          "label": "Admin",
+          "value": "admin"
+        }
+      ],
       "submit": "Sign in",
       "title": "Sign in",
       "why1": "Your booking code and QR in one place",
