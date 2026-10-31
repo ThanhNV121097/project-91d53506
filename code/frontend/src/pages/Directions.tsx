@@ -90,9 +90,9 @@ export function Directions1() {
 }
 
 const TILES = [
-  { place: "Cửa Lò", line: "Beach & seafood", from: "900.000", img: "/images/cua-lo.jpg", focus: "45% 24%" },
-  { place: "Thanh Chương", line: "Tea island, by boat", from: "350.000", img: "/images/thanh-chuong.jpg", focus: "38% 78%" },
-  { place: "Kim Liên", line: "Village & history", from: "420.000", img: "/images/kim-lien.jpg", focus: "55% 74%" },
+  { place: "Cửa Lò", line: "Beach & seafood", from: "900.000", img: "/images/kind-seafood.jpg", focus: "50% 50%" },
+  { place: "Pù Mát", line: "Forest & river, by boat", from: "650.000", img: "/images/kind-boat.jpg", focus: "55% 45%" },
+  { place: "Thanh Chương", line: "The tea hills at dawn", from: "350.000", img: "/images/kind-village.jpg", focus: "50% 55%" },
 ];
 
 const COUNTS = [
