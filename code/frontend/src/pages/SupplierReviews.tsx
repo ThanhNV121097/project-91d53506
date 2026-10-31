@@ -24,6 +24,8 @@ export default function SupplierReviews() {
         <TableFilters onClear={t.filtering ? t.clear : undefined}>
           <SearchBox value={t.q} onChange={t.setQ} placeholder="Search reviews" />
         </TableFilters>
+        <div className="grid gap-4 xl:grid-cols-[1.6fr_1fr]">
+        <div className="min-w-0">
         <DataTable<Row>
           columns={[
             { key: "product_name", label: "Product" },
