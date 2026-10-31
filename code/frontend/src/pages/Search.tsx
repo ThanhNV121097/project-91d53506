@@ -61,7 +61,7 @@ export default function Search() {
             <span className="label text-ink-soft"><T k="pages.search.sort" /></span>
             <Select value={sort} onChange={(v) => set("sort", v)} aria-label={useContent("pages.search.sort")}
               placeholder={useContent("pages.search.sort")}
-              options={[{ value: "price", label: "Price, lowest first" }, { value: "-price", label: "Price, highest first" }, { value: "-rating", label: "Best rated" }, { value: "next_date", label: "Next departure" }]} />
+              options={[{ value: "price", label: "Price, lowest first" }, { value: "-price", label: "Price, highest first" }, { value: "next_date", label: "Next departure" }]} />
           </span>
         </div>
 
