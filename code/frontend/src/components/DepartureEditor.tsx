@@ -33,7 +33,9 @@ export default function DepartureEditor({ dates, total }: { dates: readonly Depa
           </tbody>
         </table>
       </div>
-      <p className="text-sm text-ink-soft"><span className="fig">{total}</span> dates</p>
+      <p className="text-sm text-ink-soft">
+        <span className="fig">1–{dates.length}</span> of <span className="fig">{total}</span> dates
+      </p>
     </>
   );
 }
