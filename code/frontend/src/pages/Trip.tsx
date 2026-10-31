@@ -10,6 +10,7 @@ import TripDates from "../components/TripDates";
 import TripReviews from "../components/TripReviews";
 import TripBooking from "../components/TripBooking";
 import { usePageMeta } from "../seo";
+import { formatDate } from "../lib/format";
 import type { Trip as TripRecord, Departure } from "../lib/trips";
 
 export default function Trip() {
