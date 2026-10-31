@@ -14,7 +14,7 @@
 .d1 {
   --ground: #EFEFEC; --ink: #111214; --ink-soft: #5A5C5F;
   --accent: #C8381F; --line: rgba(17, 18, 20, .14);
-  min-height: 100vh; background: var(--ground); color: var(--ink);
+  min-height: 100vh; height: 100vh; background: var(--ground); color: var(--ink);
   font-family: "IBM Plex Sans", system-ui, sans-serif;
   display: flex; overflow: hidden;
 }
