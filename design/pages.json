@@ -1,4 +1,6 @@
 [
   { "path": "/directions-1", "name": "The departure board" },
-  { "path": "/directions-2", "name": "The place sells the trip" }
+  { "path": "/directions-2", "name": "The place sells the trip" },
+  { "path": "/directions-3", "name": "The map that knows the province" },
+  { "path": "/directions-4", "name": "The province's own guide" }
 ]
