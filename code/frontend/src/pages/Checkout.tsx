@@ -60,7 +60,12 @@ export default function Checkout() {
       </div>
 
       <aside className="lg:sticky lg:top-24 lg:self-start">
-        <div className="rounded-[var(--radius-sm)] border border-line bg-surface p-5">
+        <div className="overflow-hidden rounded-[var(--radius-sm)] border border-line bg-surface">
+        <div className="relative w-full bg-ink" style={{ aspectRatio: "3 / 2" }}>
+          <Picture src={item.image} alt={item.name} width={1200} height={800}
+            className="absolute inset-0 h-full w-full object-cover" />
+        </div>
+        <div className="p-5">
           <h2 className="text-base">{item.name}</h2>
           <p className="fig mt-1 text-sm text-ink-soft">{formatDate(date)} · {draft.adults + draft.children} <T k="pages.checkout.people" /></p>
           <dl className="mt-4 flex flex-col gap-2 border-t border-line pt-4 text-sm">
