@@ -70,7 +70,7 @@ export default function Book() {
           <span className="flex flex-col gap-1">
             <span className="label text-ink-soft"><T k="pages.book.pack" /></span>
             <Select id="pack" value={draft.pack} onChange={(v) => setDraft({ ...draft, pack: v || "standard" })}
-              aria-label={useContent("pages.book.pack")} placeholder="Standard"
+              aria-label={packLabel} placeholder="Standard"
               options={PACKS.map((p) => ({ value: p.id, label: p.extra ? `${p.label} (+${formatPrice(p.extra)})` : p.label }))} />
           </span>
 
