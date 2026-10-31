@@ -1,22 +1,10 @@
 import { type ReactNode } from "react";
+import Select from "./Select";
 
 /**
  * The bar above a dashboard list: search, the filters, and a way out of them.
- *
- * Every list in a CMS is read through a question — "what is waiting for me",
- * "what did this supplier send last week", "which bookings are unpaid". A
- * table with no filters makes the person page through 137 rows to answer it.
- *
- *   <TableFilters onClear={t.filtering ? t.clear : undefined}>
- *     <SearchBox value={t.q} onChange={t.setQ} placeholder="Search products" />
- *     <FilterSelect label="Status" value={t.get("status")} onChange={(v) => t.set("status", v)}
- *       options={[["pending", "Awaiting review"], ["approved", "Approved"]]} />
- *     <DateRange label="Created" from={t.get("created_from")} to={t.get("created_to")}
- *       onChange={(from, to) => t.setRange("created", from, to)} />
- *   </TableFilters>
- *
- * The filters write themselves into the address bar (src/lib/table.ts), so
- * the question can be sent to somebody else as a link.
+ * The filters write themselves into the address bar (src/lib/table.ts), so the
+ * question can be sent to somebody else as a link.
  */
 export default function TableFilters({ children, onClear }: { children: ReactNode; onClear?: () => void }) {
   return (
@@ -31,7 +19,7 @@ export default function TableFilters({ children, onClear }: { children: ReactNod
   );
 }
 
-const FIELD = "rounded border border-field bg-surface px-3 py-2 text-sm text-ink";
+const FIELD = "appearance-none rounded-[var(--radius-sm)] border border-field bg-surface px-3 py-2 text-sm text-ink";
 
 export function SearchBox({ value, onChange, placeholder = "Search" }: {
   value: string;
@@ -61,15 +49,12 @@ export function FilterSelect({ label, value, onChange, options, anyLabel = "All"
   anyLabel?: string;
 }) {
   return (
-    <label className="flex flex-col gap-1 text-sm text-ink-soft">
-      {label}
-      <select value={value} onChange={(e) => onChange(e.target.value)} className={FIELD}>
-        <option value="">{anyLabel}</option>
-        {options.map(([v, text]) => (
-          <option key={v} value={v}>{text}</option>
-        ))}
-      </select>
-    </label>
+    <span className="flex flex-col gap-1 text-sm text-ink-soft">
+      <span className="label">{label}</span>
+      <Select value={value} onChange={onChange} aria-label={label} placeholder={anyLabel}
+        className="min-w-[11rem]"
+        options={options.map(([v, text]) => ({ value: v, label: text }))} />
+    </span>
   );
 }
 
@@ -81,21 +66,19 @@ export function DateRange({ label, from, to, onChange }: {
 }) {
   return (
     <fieldset className="flex flex-col gap-1 text-sm text-ink-soft">
-      <legend className="mb-1">{label}</legend>
+      <legend className="label mb-1">{label}</legend>
       <div className="flex items-center gap-2">
-        <input type="date" value={from} onChange={(e) => onChange(e.target.value, to)} className={FIELD} aria-label={`${label} from`} />
+        <input type="date" value={from} onChange={(e) => onChange(e.target.value, to)} className={`${FIELD} fig`} aria-label={`${label} from`} />
         <span aria-hidden="true">–</span>
-        <input type="date" value={to} onChange={(e) => onChange(from, e.target.value)} className={FIELD} aria-label={`${label} to`} />
+        <input type="date" value={to} onChange={(e) => onChange(from, e.target.value)} className={`${FIELD} fig`} aria-label={`${label} to`} />
       </div>
     </fieldset>
   );
 }
 
 /**
- * A record's state as a word with a mark beside it — awaiting review,
- * approved, rejected. The tone is the meaning, never the only carrier of it:
- * the word is always there, because a colour alone is unreadable to the
- * person who cannot see it and to the one printing the page.
+ * A record's state as a word with a mark beside it. The tone is the meaning,
+ * never the only carrier of it: the word is always there.
  */
 export function Badge({ tone = "neutral", children }: { tone?: "neutral" | "good" | "warn" | "bad"; children: ReactNode }) {
   const TONES = {

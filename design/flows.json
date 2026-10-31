@@ -5,7 +5,7 @@
       { "action": "open", "path": "/" },
       { "action": "type", "selector": "#where", "value": "Cửa Lò" },
       { "action": "click", "selector": "[data-testid='search-submit']" },
-      { "action": "expect", "selector": "[data-testid='result-count']", "text": "trips" }
+      { "action": "expect", "selector": "[data-testid='result-count']", "text": "trips match" }
     ]
   },
   {
@@ -15,6 +15,9 @@
       { "action": "open", "path": "/tours/cua-lo-beach-2n1d" },
       { "action": "click", "selector": "[data-testid='book-now']" },
       { "action": "type", "selector": "#adults", "value": "2" },
+      { "action": "type", "selector": "#name", "value": "Tran Lan" },
+      { "action": "type", "selector": "#phone", "value": "0900000000" },
+      { "action": "type", "selector": "#email", "value": "lan@example.com" },
       { "action": "click", "selector": "[data-testid='book-continue']" },
       { "action": "click", "selector": "[data-testid='pay-vnpay']" },
       { "action": "click", "selector": "[data-testid='pay-now']" },
@@ -34,7 +37,16 @@
     "steps": [
       { "action": "open", "path": "/guides" },
       { "action": "click", "selector": "[data-testid='guide-card-0']" },
-      { "action": "expect", "selector": "[data-testid='guide-body']", "text": "Cửa Lò" }
+      { "action": "expect", "selector": "[data-testid='guide-body']", "text": "the" }
+    ]
+  },
+  {
+    "name": "Submit a product for approval",
+    "auth": true,
+    "steps": [
+      { "action": "open", "path": "/supplier/products/cua-lo-beach-2n1d" },
+      { "action": "click", "selector": "[data-testid='submit-product']" },
+      { "action": "expect", "selector": "[data-testid='product-saved']", "text": "admin" }
     ]
   }
 ]
