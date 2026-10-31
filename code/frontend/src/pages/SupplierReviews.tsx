@@ -18,6 +18,8 @@ export default function SupplierReviews() {
     page: t.page, pageSize: t.size, sort: t.sort, q: t.q, search: ["product_name", "text"],
     where: { status: "published" },
   });
+  const rated = items.map((r) => Number(r.rating) || 0).filter((n) => n > 0);
+  const average = rated.length ? (rated.reduce((a, b) => a + b, 0) / rated.length).toFixed(1) : "";
   return (
     <RequireRole roles={["supplier"]}>
       <DashboardLayout title="Reviews" nav={SUPPLIER_NAV} brand="Nghệ An Departures">
