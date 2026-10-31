@@ -6,6 +6,18 @@ import Logo from "./components/Logo";
 import MenuToggle from "./components/MenuToggle";
 import ContactDock from "./components/ContactDock";
 import PhotoCredits from "./components/PhotoCredits";
+import { Directions1, Directions2 } from "./pages/Directions";
+
+/** The direction pages render alone — no header, no footer, no layout. */
+export default function App() {
+  return (
+    <Routes>
+      <Route path="/directions-1" element={<Directions1 />} />
+      <Route path="/directions-2" element={<Directions2 />} />
+      <Route path="*" element={<Site />} />
+    </Routes>
+  );
+}
 
 /**
  * The shell the design replaces.
