@@ -25,7 +25,12 @@ export default function SupplierBookings() {
   return (
     <RequireRole roles={["supplier"]}>
       <DashboardLayout title="Bookings" nav={SUPPLIER_NAV} brand="Nghệ An Departures"
-        actions={<button type="button" className="flex items-center gap-2 rounded-[var(--radius-sm)] border border-field px-4 py-2 text-sm text-ink"><Icon name="download" size={16} />Export passenger list</button>}>
+        actions={
+          <button type="button" aria-label="Export passenger list" title="Export passenger list"
+            className="flex shrink-0 items-center gap-2 whitespace-nowrap rounded-[var(--radius-sm)] border border-field px-4 py-2 text-sm text-ink">
+            <Icon name="download" size={22} /><span className="hidden sm:inline">Export passenger list</span>
+          </button>
+        }>
         <TableFilters onClear={t.filtering ? t.clear : undefined}>
           <SearchBox value={t.q} onChange={t.setQ} placeholder="Search by booking code" />
           <FilterSelect label="Status" value={t.get("status")} onChange={(v) => t.set("status", v)}
