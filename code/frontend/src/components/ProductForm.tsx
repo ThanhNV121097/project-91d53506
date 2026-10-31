@@ -2,7 +2,7 @@ import Icon from "./Icon";
 import Select from "./Select";
 import type { Trip } from "../lib/trips";
 
-const FIELD = "w-full rounded-[var(--radius-sm)] border border-field bg-surface px-3 py-2 text-sm text-ink";
+const FIELD = "w-full appearance-none rounded-[var(--radius-sm)] border border-field bg-surface px-3 py-2 text-sm text-ink";
 
 /** A supplier's product: title, description, itinerary, price, policy, photographs. */
 export default function ProductForm({ item }: { item?: Trip }) {
@@ -13,7 +13,7 @@ export default function ProductForm({ item }: { item?: Trip }) {
   const policy = item ? item.policy : "";
   const kind = item ? item.kind : "tour";
   return (
-    <form className="flex flex-col gap-5">
+    <form className="flex max-w-3xl flex-col gap-5">
       <label className="flex flex-col gap-1">
         <span className="label text-ink-soft">Title</span>
         <input id="title" defaultValue={name} className={FIELD} />
@@ -31,7 +31,7 @@ export default function ProductForm({ item }: { item?: Trip }) {
           <span className="label text-ink-soft">Price per person</span>
           <input id="price" type="number" defaultValue={price} className={`${FIELD} fig text-right`} />
         </label>
-        <span className="flex flex-col gap-1">
+        <span className="flex min-w-[12rem] flex-col gap-1">
           <span className="label text-ink-soft">Type</span>
           <Select value={kind} onChange={() => undefined} aria-label="Type" placeholder="Tour"
             options={[
