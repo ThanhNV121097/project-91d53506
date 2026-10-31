@@ -78,6 +78,7 @@ export default function Checkout() {
             </div>
           </dl>
         </div>
+        </div>
         <div className="mt-4 rounded-[var(--radius-sm)] border border-line bg-surface p-5">
           <p className="flex items-center gap-2 text-sm text-ink">
             <Icon name="hours" size={16} className="text-accent" /><T k="pages.checkout.holdHeading" />
