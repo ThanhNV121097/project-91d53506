@@ -121,7 +121,7 @@
 }
 .d2-top .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); }
 .d2-top .soft { opacity: .62; }
-.d2-words { position: absolute; left: 40px; top: 100px; right: 40px; }
+.d2-words { position: absolute; left: 40px; top: 100px; right: 380px; }
 .d2-words h1 {
   margin: 0; font-family: "Bricolage Grotesque", system-ui, sans-serif;
   font-weight: 500; font-size: 72px; line-height: 1.02; letter-spacing: -.035em;
