@@ -119,3 +119,54 @@ no product list yet.
 - **The one device:** the price is never the loudest thing on the screen — it sits as a
   small pill at the end of a sentence, so the page reads as an issue of a magazine that
   happens to let you book, not a shop that happens to have articles.
+
+## The host, not the brochure
+
+- **Suits you if:** you think a booking happens because of trust in a *person*, not a
+  layout — put one real local operator's face and their own words on the screen before
+  any price, and let that carry the weight a map pin or a star rating can't.
+- **Palette (dark):** ground `#1B3A2F` (deep forest, not a neutral — the colour itself
+  is the brand, not a backdrop for one) · surface `#234A3B` · ink `#F6F1E4` ·
+  ink-soft `#B9C9BE` · accent `#E8A33D` (turmeric gold, a market and lantern colour) ·
+  accent-ink `#1B3A2F` · line `rgba(246,241,228,0.16)`
+- **Faces:** display Lora (OFL) — **the one unlock**, a warm, conversational serif built
+  to carry a spoken line rather than a slogan, because this screen's headline is a
+  sentence someone actually said, not copy written for them; body Inter.
+- **Scale at 1440:** quote 38px / 1.35, serif italic, no tracking change · host name
+  signature 22px upright Lora, set under its own hairline · stat figures 20px Inter,
+  tabular · stat labels 11px uppercase, 0.14em tracking. No 70px+ headline anywhere:
+  the quote is long enough to need room to breathe, not a slogan's single line.
+- **First screen:** split screen, no search row and no card grid. Right 55%, a full-bleed
+  portrait photograph of one named local operator, cropped close. Left 45%, on the deep
+  forest ground: a large quoted line in their own words as the headline, their name and
+  role signed underneath on its own hairline, then a plain three-figure trust row
+  (listings run, response time, years operating) and a single "Book directly with
+  [name]" button — nothing else competes with the quote for the eye.
+- **The one device:** the hairline under the host's name is cut to the exact width of
+  the name set above it, so it reads as a signature closing the quote, not a rule left
+  over from a template.
+
+## The whole province, sorted by price
+
+- **Suits you if:** you think your buyer already has three tabs open comparing prices,
+  and the fastest way to win the booking is to skip the pitch entirely — show every
+  bookable thing at once, filterable, sorted by price, the second the page loads.
+- **Palette (light):** ground `#F5F6F8` · surface `#FFFFFF` · ink `#14181D` ·
+  ink-soft `#6B7280` · accent `#1555D6` (plain utility blue — chosen because this screen
+  is selling speed, not a mood) · accent-ink `#FFFFFF` · line `rgba(20,24,29,0.12)`
+- **Faces:** display and body Inter — no unlock. The screen's one idea is that it does
+  not need a personality: every pixel not spent on a filter, a rating or a price is a
+  pixel slowing the comparison down.
+- **Scale at 1440:** no real h1 — the masthead label sits at 13px uppercase · filter
+  labels 12px · card title 14px · card price 20px Inter, tabular, bold, the single
+  largest thing on the screen. Density over drama: more bookable things visible beats a
+  bigger headline.
+- **First screen:** a thin top bar (logo, a compact destination/date/traveller search)
+  over a two-part body with no hero at all: left a fixed 220px filter column (type,
+  destination, price range, star rating, duration, all as plain checkboxes and a
+  slider), right a tight four-column grid of a dozen small listing cards — thumbnail,
+  operator name, rating, duration tag, price — above a result count and a sort-by
+  control.
+- **The one device:** every card's price sits in the same bottom-right corner
+  regardless of how tall its card is, so the whole grid reads as one scannable column
+  of numbers, which is the entire argument for showing this many things on one screen.
