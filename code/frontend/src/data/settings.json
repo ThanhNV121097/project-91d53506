@@ -1,0 +1,7 @@
+[
+  { "id": "commission-rate", "name": "Global commission rate", "value": "", "note": "The percentage the platform keeps on every booking, and whether it differs for tours, homestays and transport. Nobody has set a starting rate yet, so every finance figure below counts commission at nothing.", "_source": "assumed" },
+  { "id": "confirmation-mode", "name": "Manual or instant confirmation", "value": "", "note": "Which products a supplier must confirm by hand and which confirm instantly with a QR code — set per product or per supplier.", "_source": "assumed" },
+  { "id": "cancellation-window", "name": "Default cancellation window", "value": "", "note": "The refund window that applies before a supplier sets a policy of their own.", "_source": "assumed" },
+  { "id": "hold-party-size", "name": "Largest party a 15-minute hold covers", "value": "", "note": "Whether the checkout hold has a ceiling on party size, or holds seat by seat for a 45-person coach.", "_source": "assumed" },
+  { "id": "departure-scope", "name": "Departure scope", "value": "", "note": "Whether the platform sells travel inside Nghệ An only, or also inbound packages leaving Hà Nội and HCM.", "_source": "assumed" }
+]

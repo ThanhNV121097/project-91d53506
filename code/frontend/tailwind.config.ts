@@ -19,6 +19,7 @@ export default {
       fontFamily: {
         display: ["var(--font-display)", "system-ui", "sans-serif"],
         body: ["var(--font-body)", "sans-serif"],
+        mono: ["var(--font-mono)", "ui-monospace", "monospace"],
       },
       borderRadius: { DEFAULT: "var(--radius)" },
       maxWidth: { page: "var(--page)" },

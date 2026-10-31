@@ -1,0 +1,12 @@
+[
+  { "id": "u-01", "name": "", "email": "", "role": "Buyer", "permissions": "", "status": "Active", "joined": "2026-06-14", "_source": "assumed" },
+  { "id": "u-02", "name": "", "email": "", "role": "Buyer", "permissions": "", "status": "Active", "joined": "2026-07-02", "_source": "assumed" },
+  { "id": "u-03", "name": "", "email": "", "role": "Buyer", "permissions": "", "status": "Locked", "joined": "2026-07-19", "_source": "assumed" },
+  { "id": "u-04", "name": "Cửa Lò Beach Stays", "email": "", "role": "Supplier", "permissions": "Own products, own bookings", "status": "Active", "joined": "2026-01-19", "_source": "assumed" },
+  { "id": "u-05", "name": "Pù Mát Boat & Jeep", "email": "", "role": "Supplier", "permissions": "Own products, own bookings", "status": "Active", "joined": "2026-02-11", "_source": "assumed" },
+  { "id": "u-06", "name": "Vinh Airport Transfers", "email": "", "role": "Supplier", "permissions": "Own products, own bookings", "status": "Awaiting documents", "joined": "2026-10-18", "_source": "assumed" },
+  { "id": "u-07", "name": "Sông Lam Kayak Club", "email": "", "role": "Supplier", "permissions": "Own products, own bookings", "status": "Awaiting documents", "joined": "2026-10-24", "_source": "assumed" },
+  { "id": "u-08", "name": "", "email": "", "role": "Admin", "permissions": "Everything", "status": "Active", "joined": "2026-01-05", "_source": "assumed" },
+  { "id": "u-09", "name": "", "email": "", "role": "Sub-admin", "permissions": "Content moderation", "status": "Active", "joined": "2026-05-08", "_source": "assumed" },
+  { "id": "u-10", "name": "", "email": "", "role": "Sub-admin", "permissions": "Finance only", "status": "Active", "joined": "2026-05-08", "_source": "assumed" }
+]

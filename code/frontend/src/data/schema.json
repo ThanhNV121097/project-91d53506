@@ -1,3 +1,194 @@
 {
-  "collections": {}
+  "collections": {
+    "products": {
+      "label": "Products",
+      "fields": [
+        { "key": "name", "label": "Name", "type": "text" },
+        { "key": "kind", "label": "Type", "type": "text" },
+        { "key": "destination", "label": "Destination", "type": "text" },
+        { "key": "duration", "label": "Duration", "type": "text" },
+        { "key": "price", "label": "Price per person", "type": "price", "currency": "VND" },
+        { "key": "seats", "label": "Seats left on the next date", "type": "number" },
+        { "key": "next_date", "label": "Next departure", "type": "text" },
+        { "key": "image", "label": "Photograph", "type": "image" },
+        { "key": "summary", "label": "Description", "type": "longtext" },
+        { "key": "itinerary", "label": "Day by day", "type": "list" },
+        { "key": "includes", "label": "Included", "type": "list" },
+        { "key": "excludes", "label": "Not included", "type": "list" },
+        { "key": "policy", "label": "Cancellation policy", "type": "longtext" },
+        { "key": "confirmation", "label": "Confirmation", "type": "text" },
+        { "key": "supplier", "label": "Supplier", "type": "ref:suppliers" },
+        { "key": "status", "label": "Status", "type": "text" },
+        { "key": "place", "label": "Where it starts", "type": "text" },
+        { "key": "map_x", "label": "Map position across", "type": "number" },
+        { "key": "map_y", "label": "Map position down", "type": "number" }
+      ]
+    },
+    "destinations": {
+      "label": "Destinations",
+      "fields": [
+        { "key": "name", "label": "Name", "type": "text" },
+        { "key": "line", "label": "One line", "type": "text" },
+        { "key": "image", "label": "Photograph", "type": "image" },
+        { "key": "from_price", "label": "From", "type": "price", "currency": "VND" }
+      ]
+    },
+    "categories": {
+      "label": "Product types",
+      "fields": [
+        { "key": "name", "label": "Name", "type": "text" },
+        { "key": "icon", "label": "Icon", "type": "text" }
+      ]
+    },
+    "departures": {
+      "label": "Departure dates",
+      "fields": [
+        { "key": "product", "label": "Product", "type": "ref:products" },
+        { "key": "product_name", "label": "Product name", "type": "text" },
+        { "key": "supplier", "label": "Operator", "type": "ref:suppliers" },
+        { "key": "supplier_name", "label": "Operator name", "type": "text" },
+        { "key": "date", "label": "Date", "type": "text" },
+        { "key": "seats", "label": "Seats left", "type": "number" },
+        { "key": "capacity", "label": "Capacity", "type": "number" },
+        { "key": "price", "label": "Price that day", "type": "price", "currency": "VND" },
+        { "key": "season", "label": "Pricing rule", "type": "text" },
+        { "key": "state", "label": "State", "type": "text" }
+      ]
+    },
+    "guides": {
+      "label": "Guides",
+      "fields": [
+        { "key": "title", "label": "Title", "type": "text" },
+        { "key": "category", "label": "Category", "type": "text" },
+        { "key": "date", "label": "Published", "type": "text" },
+        { "key": "image", "label": "Photograph", "type": "image" },
+        { "key": "excerpt", "label": "Standfirst", "type": "longtext" },
+        { "key": "body", "label": "Body", "type": "longtext" }
+      ]
+    },
+    "reviews": {
+      "label": "Reviews",
+      "fields": [
+        { "key": "product", "label": "Product", "type": "ref:products" },
+        { "key": "product_name", "label": "Product name", "type": "text" },
+        { "key": "author", "label": "Traveller", "type": "text" },
+        { "key": "rating", "label": "Rating", "type": "number" },
+        { "key": "date", "label": "Date", "type": "text" },
+        { "key": "text", "label": "What they wrote", "type": "longtext" },
+        { "key": "reply", "label": "Supplier's reply", "type": "longtext" },
+        { "key": "status", "label": "Status", "type": "text" }
+      ]
+    },
+    "suppliers": {
+      "label": "Suppliers",
+      "fields": [
+        { "key": "name", "label": "Name", "type": "text" },
+        { "key": "place", "label": "Based in", "type": "text" },
+        { "key": "kind", "label": "Kind", "type": "text" },
+        { "key": "documents", "label": "Documents", "type": "text" },
+        { "key": "verified", "label": "Verified", "type": "bool" },
+        { "key": "joined", "label": "Joined", "type": "text" },
+        { "key": "products", "label": "Products", "type": "number" },
+        { "key": "commission", "label": "Commission %", "type": "number" }
+      ]
+    },
+    "bookings": {
+      "label": "Bookings",
+      "fields": [
+        { "key": "code", "label": "Booking code", "type": "text" },
+        { "key": "product_name", "label": "Product", "type": "text" },
+        { "key": "customer", "label": "Traveller", "type": "text" },
+        { "key": "supplier_name", "label": "Supplier", "type": "text" },
+        { "key": "date", "label": "Travel date", "type": "text" },
+        { "key": "travellers", "label": "Travellers", "type": "number" },
+        { "key": "total", "label": "Total", "type": "price", "currency": "VND" },
+        { "key": "status", "label": "Status", "type": "text" },
+        { "key": "payment", "label": "Paid with", "type": "text" },
+        { "key": "created", "label": "Booked on", "type": "text" },
+        { "key": "image", "label": "Photograph", "type": "image" }
+      ]
+    },
+    "payouts": {
+      "label": "Payouts",
+      "fields": [
+        { "key": "period", "label": "Period", "type": "text" },
+        { "key": "supplier_name", "label": "Supplier", "type": "text" },
+        { "key": "gross", "label": "Gross", "type": "price", "currency": "VND" },
+        { "key": "commission", "label": "Commission", "type": "price", "currency": "VND" },
+        { "key": "net", "label": "Payout", "type": "price", "currency": "VND" },
+        { "key": "status", "label": "Status", "type": "text" },
+        { "key": "paid_on", "label": "Paid on", "type": "text" }
+      ]
+    },
+    "users": {
+      "label": "Users",
+      "fields": [
+        { "key": "name", "label": "Name", "type": "text" },
+        { "key": "email", "label": "Email", "type": "text" },
+        { "key": "role", "label": "Role", "type": "text" },
+        { "key": "permissions", "label": "Permissions", "type": "text" },
+        { "key": "status", "label": "Status", "type": "text" },
+        { "key": "joined", "label": "Joined", "type": "text" }
+      ]
+    },
+    "vouchers": {
+      "label": "Discount codes",
+      "fields": [
+        { "key": "code", "label": "Code", "type": "text" },
+        { "key": "discount", "label": "Discount", "type": "text" },
+        { "key": "used", "label": "Used", "type": "number" },
+        { "key": "limit", "label": "Limit", "type": "number" },
+        { "key": "expires", "label": "Expires", "type": "text" },
+        { "key": "status", "label": "Status", "type": "text" }
+      ]
+    },
+    "campaigns": {
+      "label": "Marketing campaigns",
+      "fields": [
+        { "key": "name", "label": "Name", "type": "text" },
+        { "key": "channel", "label": "Channel", "type": "text" },
+        { "key": "start", "label": "Starts", "type": "text" },
+        { "key": "end", "label": "Ends", "type": "text" },
+        { "key": "bookings", "label": "Bookings", "type": "number" },
+        { "key": "status", "label": "Status", "type": "text" }
+      ]
+    },
+    "complaints": {
+      "label": "Complaints & refunds",
+      "fields": [
+        { "key": "booking_code", "label": "Booking", "type": "text" },
+        { "key": "customer", "label": "Traveller", "type": "text" },
+        { "key": "issue", "label": "Issue", "type": "text" },
+        { "key": "opened", "label": "Opened", "type": "text" },
+        { "key": "refund", "label": "Refund asked", "type": "price", "currency": "VND" },
+        { "key": "status", "label": "Status", "type": "text" }
+      ]
+    },
+    "audit": {
+      "label": "Audit log",
+      "fields": [
+        { "key": "at", "label": "When", "type": "text" },
+        { "key": "who", "label": "Who", "type": "text" },
+        { "key": "action", "label": "Action", "type": "text" },
+        { "key": "target", "label": "On", "type": "text" }
+      ]
+    },
+    "notifications": {
+      "label": "Notifications",
+      "fields": [
+        { "key": "event", "label": "Event", "type": "text" },
+        { "key": "channel", "label": "Channel", "type": "text" },
+        { "key": "template", "label": "Template", "type": "text" },
+        { "key": "status", "label": "Status", "type": "text" }
+      ]
+    },
+    "settings": {
+      "label": "Platform settings the owner must decide",
+      "fields": [
+        { "key": "name", "label": "Setting", "type": "text" },
+        { "key": "value", "label": "Value", "type": "text" },
+        { "key": "note", "label": "What it decides", "type": "longtext" }
+      ]
+    }
+  }
 }

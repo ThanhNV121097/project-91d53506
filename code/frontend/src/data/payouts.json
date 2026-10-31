@@ -1,0 +1,9 @@
+[
+  { "id": "po-01", "period": "2026-10-01", "supplier_name": "Cửa Lò Beach Stays", "gross": 9515000, "commission": 0, "net": 9515000, "status": "Awaiting commission rate", "paid_on": "", "_source": "assumed" },
+  { "id": "po-02", "period": "2026-10-01", "supplier_name": "Pù Mát Boat & Jeep", "gross": 6600000, "commission": 0, "net": 6600000, "status": "Awaiting commission rate", "paid_on": "", "_source": "assumed" },
+  { "id": "po-03", "period": "2026-10-01", "supplier_name": "Thanh Chương Tea Walks", "gross": 1600000, "commission": 0, "net": 1600000, "status": "Awaiting commission rate", "paid_on": "", "_source": "assumed" },
+  { "id": "po-04", "period": "2026-10-01", "supplier_name": "Kim Liên Heritage Guides", "gross": 4200000, "commission": 0, "net": 4200000, "status": "Awaiting commission rate", "paid_on": "", "_source": "assumed" },
+  { "id": "po-05", "period": "2026-10-01", "supplier_name": "Bản Nưa Homestay", "gross": 1960000, "commission": 0, "net": 1960000, "status": "Awaiting commission rate", "paid_on": "", "_source": "assumed" },
+  { "id": "po-06", "period": "2026-09-01", "supplier_name": "Cửa Lò Beach Stays", "gross": 7250000, "commission": 0, "net": 7250000, "status": "Awaiting commission rate", "paid_on": "", "_source": "assumed" },
+  { "id": "po-07", "period": "2026-09-01", "supplier_name": "Vinh Airport Transfers", "gross": 1520000, "commission": 0, "net": 1520000, "status": "Awaiting commission rate", "paid_on": "", "_source": "assumed" }
+]

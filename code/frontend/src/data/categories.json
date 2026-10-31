@@ -1,0 +1,7 @@
+[
+  { "id": "tour", "name": "Tours", "icon": "people", "_source": "assumed" },
+  { "id": "homestay", "name": "Homestays", "icon": "store", "_source": "assumed" },
+  { "id": "experience", "name": "Experiences", "icon": "star", "_source": "assumed" },
+  { "id": "transport", "name": "Transport", "icon": "fast", "_source": "assumed" },
+  { "id": "ticket", "name": "Attraction tickets", "icon": "tag", "_source": "assumed" }
+]

@@ -124,18 +124,15 @@ export default function DataTable<T>({
           {onSize && (
             <>
               {" · "}
-              <label>
-                <span className="sr-only">Rows per page</span>
-                <select
-                  value={size}
-                  onChange={(e) => onSize(Number(e.target.value))}
-                  className="rounded border border-field bg-surface px-2 py-1 text-ink"
-                >
-                  {sizes.map((n) => (
-                    <option key={n} value={n}>{n} per page</option>
-                  ))}
-                </select>
-              </label>
+              <span className="inline-flex gap-1">
+                {sizes.map((n) => (
+                  <button key={n} type="button" onClick={() => onSize(n)} aria-current={n === size ? "true" : undefined}
+                    className={`fig rounded-[var(--radius-sm)] border px-2 py-0.5 ${n === size ? "border-accent text-accent" : "border-line text-ink-soft"}`}>
+                    {n}
+                  </button>
+                ))}
+                <span>per page</span>
+              </span>
             </>
           )}
         </p>

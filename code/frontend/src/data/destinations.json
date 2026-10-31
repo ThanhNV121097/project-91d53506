@@ -1,0 +1,6 @@
+[
+  { "id": "cua-lo", "name": "Cửa Lò", "line": "Beach, seafood and July crowds", "image": "/images/dest-cua-lo.jpg", "from_price": 290000, "_source": "assumed" },
+  { "id": "kim-lien", "name": "Kim Liên", "line": "Uncle Hồ's hometown, 18 km inland", "image": "/images/kim-lien.jpg", "from_price": 420000, "_source": "assumed" },
+  { "id": "pu-mat", "name": "Pù Mát", "line": "River, forest and waterfalls", "image": "/images/pu-mat.jpg", "from_price": 650000, "_source": "assumed" },
+  { "id": "thanh-chuong", "name": "Thanh Chương Tea Island", "line": "Tea rows at first light", "image": "/images/thanh-chuong.jpg", "from_price": 350000, "_source": "assumed" }
+]
