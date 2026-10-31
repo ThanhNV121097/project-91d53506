@@ -45,6 +45,7 @@ export default function Departures() {
           <tr className="border-y border-line">
             <th scope="col" className="label py-3 pr-4 font-normal text-ink-soft"><T k="pages.departures.date" /></th>
             <th scope="col" className="label py-3 pr-4 font-normal text-ink-soft"><T k="pages.departures.trip" /></th>
+            <th scope="col" className="label py-3 pr-4 font-normal text-ink-soft"><T k="pages.departures.operator" /></th>
             <th scope="col" className="label hidden py-3 pr-4 font-normal text-ink-soft lg:table-cell"><T k="pages.departures.rule" /></th>
             <th scope="col" className="label py-3 pr-4 text-right font-normal text-ink-soft"><T k="pages.departures.seats" /></th>
             <th scope="col" className="label py-3 text-right font-normal text-ink-soft"><T k="pages.departures.price" /></th>
