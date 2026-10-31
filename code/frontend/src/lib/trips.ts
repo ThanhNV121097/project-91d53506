@@ -26,6 +26,8 @@ export interface Departure {
   id: string;
   product: string;
   product_name: string;
+  supplier: string;
+  supplier_name: string;
   date: string;
   seats: number;
   capacity: number;
