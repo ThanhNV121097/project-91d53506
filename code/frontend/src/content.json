@@ -303,7 +303,6 @@
     "search": {
       "allKinds": "Every type",
       "anyDuration": "Any length",
-      "anyRating": "Any rating",
       "count": "trips match",
       "description": "Search tours, homestays, experiences, transport and tickets across Nghệ An by destination, date, travellers and price.",
       "duration": "Duration",
