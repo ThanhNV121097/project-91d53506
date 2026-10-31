@@ -31,7 +31,7 @@ export default function App() {
  * a <Route> below, sharing the header and footer. The footer keeps
  * <PhotoCredits/>: the stock photos' credits, which their licences ask for.
  */
-export default function App() {
+function Site() {
   const links = useList<{ label: string; href: string }>("nav.links");
   const name = useContent("site.name");
   const [open, setOpen] = useState(false);
