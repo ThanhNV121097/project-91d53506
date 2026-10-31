@@ -28,23 +28,27 @@ export default function Trip() {
   const chosen = dates.items.find((d) => d.date === date);
   return (
     <article data-record={`products:${item.id}`}>
-      <div className="relative w-full overflow-hidden bg-ink" style={{ aspectRatio: "21 / 9" }}>
-        <Picture src={item.image} alt={item.name} width={1800} height={771} loading="eager"
-          className="absolute inset-0 h-full w-full object-cover" />
-      </div>
-      <div className="mx-auto grid max-w-page gap-10 px-[var(--gutter)] py-8 lg:grid-cols-[1.6fr_1fr]">
-        <div>
+      <div className="grid gap-0 lg:grid-cols-[1fr_1fr]">
+        <div className="relative w-full overflow-hidden bg-ink" style={{ aspectRatio: "4 / 3" }}>
+          <Picture src={item.image} alt={item.name} width={853} height={640} loading="eager"
+            className="absolute inset-0 h-full w-full object-cover" />
+        </div>
+        <div className="flex flex-col justify-center px-[var(--gutter)] py-8">
           <p className="label text-ink-soft">{item.kind} · {item.destination} · {item.duration}</p>
-          <h1 className="mt-2 max-w-[26ch] text-[length:var(--size-h1)]">{item.name}</h1>
-          <div className="mt-3 flex flex-wrap items-center gap-3 text-sm text-ink-soft">
+          <h1 className="mt-2 max-w-[22ch] text-[length:var(--size-h1)]">{item.name}</h1>
+          <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-ink-soft">
             <Rating value={item.rating} />
             <span className="fig">{item.rating}</span>
             <span>(<span className="fig">{item.review_count}</span> <T k="pages.trip.reviews" />)</span>
             <span className="flex items-center gap-1"><Icon name="address" size={14} />{item.place}</span>
           </div>
-          <p className="mt-5 max-w-[62ch] text-base leading-relaxed text-ink">{item.summary}</p>
+          <p className="mt-5 max-w-[52ch] text-base leading-relaxed text-ink">{item.summary}</p>
+        </div>
+      </div>
 
-          <h2 className="mt-12 text-[length:var(--size-h2)]"><T k="pages.trip.itinerary" /></h2>
+      <div className="mx-auto grid max-w-page gap-10 px-[var(--gutter)] py-10 lg:grid-cols-[1.6fr_1fr]">
+        <div className="min-w-0">
+          <h2 className="text-[length:var(--size-h2)]"><T k="pages.trip.itinerary" /></h2>
           <ol className="mt-4 border-t border-line">
             {item.itinerary.map((line, i) => (
               <li key={i} className="flex gap-4 border-b border-line py-4">
