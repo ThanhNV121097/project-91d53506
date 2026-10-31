@@ -18,7 +18,7 @@ export default function Trip() {
   const { item } = useRecord<TripRecord>("products", id);
   const dates = useCollection<Departure>("departures", { where: { product: id ?? "" }, sort: "date", pageSize: 12 });
   const reviews = useCollection("reviews", { where: { product: id ?? "", status: "published" }, pageSize: 4 });
-  const related = useCollection<TripRecord>("products", { where: { status: "approved" }, sort: "-rating", pageSize: 5 });
+  const related = useCollection<TripRecord>("products", { where: { status: "approved" }, sort: "next_date", pageSize: 5 });
   const supplier = useRecord("suppliers", item?.supplier);
   const [picked, setPicked] = useState("");
   const policyEmpty = useContent("pages.trip.policyEmpty");
