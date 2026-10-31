@@ -107,15 +107,7 @@ export default function DashboardLayout({ title, nav, actions, children, brand }
 
       <div className="flex min-w-0 flex-1 flex-col">
         <header className="flex items-center gap-3 border-b border-line bg-surface px-[var(--gutter)] py-3">
-          <button
-            type="button"
-            onClick={() => setOpen(true)}
-            aria-label="Sections"
-            aria-expanded={open}
-            className="rounded border border-line px-2 py-1 text-ink lg:hidden"
-          >
-            ☰
-          </button>
+          <MenuToggle open={open} onToggle={() => setOpen((o) => !o)} className="lg:hidden" />
           <h1 className="min-w-0 flex-1 truncate font-display text-xl text-ink">{title}</h1>
           {actions}
           {session && (
