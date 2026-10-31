@@ -170,3 +170,10 @@ no product list yet.
 - **The one device:** every card's price sits in the same bottom-right corner
   regardless of how tall its card is, so the whole grid reads as one scannable column
   of numbers, which is the entire argument for showing this many things on one screen.
+
+CHOSEN: The departure board — most bookings here come from people who already know
+they want Cửa Lò or Kim Liên and are comparing three other tabs, so this business wins
+on showing the date, the seats left and the real price for that date first: the search
+row bleeds edge to edge above everything, the figures are mono and tabular all the way
+through the catalogue, the calendar, the checkout and the dashboard tables, and a
+departure board is the one shape that reads as a booking engine rather than a brochure.
