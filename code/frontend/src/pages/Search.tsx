@@ -58,12 +58,6 @@ export default function Search() {
               options={[{ value: "Half day", label: "Half day" }, { value: "1 day", label: "1 day" }, { value: "2 days", label: "2 days" }, { value: "2 nights", label: "2 nights" }]} />
           </span>
           <span className="flex flex-col gap-1">
-            <span className="label text-ink-soft"><T k="pages.search.rating" /></span>
-            <Select value={rating} onChange={(v) => set("rating", v)} aria-label={useContent("pages.search.rating")}
-              placeholder={useContent("pages.search.anyRating")}
-              options={[{ value: "4.5", label: "4.5 and up" }, { value: "4", label: "4.0 and up" }]} />
-          </span>
-          <span className="flex flex-col gap-1">
             <span className="label text-ink-soft"><T k="pages.search.sort" /></span>
             <Select value={sort} onChange={(v) => set("sort", v)} aria-label={useContent("pages.search.sort")}
               placeholder={useContent("pages.search.sort")}
