@@ -39,12 +39,15 @@ export default function SupplierReviews() {
           rowKey={(r) => r.id} caption="Reviews left on your products"
           empty={<p>No review yet. They appear here after a trip is completed.</p>}
         />
-        <form className="flex max-w-[52ch] flex-col gap-2" onSubmit={(e) => e.preventDefault()}>
+        </div>
+        <form className="flex flex-col gap-2 self-start rounded-[var(--radius-sm)] border border-line bg-surface p-4" onSubmit={(e) => e.preventDefault()}>
           <label htmlFor="reply" className="label text-ink-soft">Reply to a review</label>
-          <textarea id="reply" rows={3} value={reply} onChange={(e) => setReply(e.target.value)}
-            className="rounded-[var(--radius-sm)] border border-field bg-surface px-3 py-2 text-sm text-ink" />
+          <p className="text-sm text-ink-soft">A reply is published under the review on the trip page, signed with your supplier name.</p>
+          <textarea id="reply" rows={5} value={reply} onChange={(e) => setReply(e.target.value)}
+            className="appearance-none rounded-[var(--radius-sm)] border border-field bg-surface px-3 py-2 text-sm text-ink" />
           <button type="submit" className="self-start rounded-[var(--radius-sm)] bg-accent px-4 py-2 text-sm text-accent-ink">Publish reply</button>
         </form>
+        </div>
       </DashboardLayout>
     </RequireRole>
   );
