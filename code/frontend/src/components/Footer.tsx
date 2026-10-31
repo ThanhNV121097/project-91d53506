@@ -23,11 +23,6 @@ export default function Footer() {
             {email && <li className="flex items-center gap-2"><Icon name="mail" size={16} /><T k="contact.email" /></li>}
             {zalo && <li className="flex items-center gap-2"><SocialIcon network="zalo" size={16} /><T k="contact.zalo" /></li>}
           </ul>
-          <div className="mt-5 flex items-center gap-3 text-ink">
-            <a href="https://zalo.me" aria-label="Zalo" className="hover:text-accent"><SocialIcon network="zalo" /></a>
-            <a href="https://facebook.com" aria-label="Facebook" className="hover:text-accent"><SocialIcon network="facebook" /></a>
-            <a href="https://youtube.com" aria-label="YouTube" className="hover:text-accent"><SocialIcon network="youtube" /></a>
-          </div>
         </div>
         {cols.map((col, i) => (
           <nav key={col.heading} aria-label={col.heading}>
