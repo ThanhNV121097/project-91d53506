@@ -39,7 +39,8 @@ export default function Departures() {
 
       <p className="mt-6 text-sm text-ink-soft"><span className="fig">{total}</span> <T k="pages.departures.count" /></p>
 
-      <table className="mt-4 w-full border-collapse text-left text-sm">
+      <div className="mt-4 overflow-x-auto">
+      <table className="w-full border-collapse text-left text-sm">
         <caption className="sr-only">{useContent("pages.departures.heading")}</caption>
         <thead>
           <tr className="border-y border-line">
