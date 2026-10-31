@@ -134,7 +134,7 @@ export default function Trip() {
               <Icon name="wishlist" size={16} />
               <T k={has(item.id) ? "pages.trip.saved" : "pages.trip.save"} />
             </button>
-            <p className="mt-4 text-xs text-ink-soft">{item.confirmation || useContent("pages.trip.confirmEmpty")}</p>
+            <p className="mt-4 text-xs text-ink-soft">{item.confirmation || confirmEmpty}</p>
           </div>
         </aside>
       </div>
