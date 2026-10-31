@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { T, useContent } from "../editable";
 import { useRecord } from "../data";
+import { Picture } from "../picture";
 import Icon from "../components/Icon";
 import { usePageMeta } from "../seo";
 import { formatPrice, formatDate } from "../lib/format";
