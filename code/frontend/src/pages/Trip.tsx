@@ -4,7 +4,6 @@ import { T, useContent } from "../editable";
 import { useRecord, useCollection } from "../data";
 import { Picture } from "../picture";
 import Icon from "../components/Icon";
-import Rating from "../components/Rating";
 import Reveal from "../components/Reveal";
 import TripCard from "../components/TripCard";
 import TripDates from "../components/TripDates";
