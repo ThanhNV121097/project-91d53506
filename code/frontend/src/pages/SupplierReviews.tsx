@@ -39,14 +39,20 @@ export default function SupplierReviews() {
           empty={<p>No review yet. They appear here after a trip is completed.</p>}
         />
         </div>
-        <form className="flex flex-col gap-2 self-start rounded-[var(--radius-sm)] border border-line bg-surface p-4" onSubmit={(e) => e.preventDefault()}>
-          <label htmlFor="reply" className="label text-ink-soft">Reply to a review</label>
-          <p className="text-sm text-ink-soft">A reply is published under the review on the trip page, signed with your supplier name.</p>
-          <textarea id="reply" rows={5} value={reply} onChange={(e) => setReply(e.target.value)}
-            className="appearance-none rounded-[var(--radius-sm)] border border-field bg-surface px-3 py-2 text-sm text-ink" />
-          <button type="submit" className="self-start rounded-[var(--radius-sm)] bg-accent px-4 py-2 text-sm text-accent-ink">Publish reply</button>
+        <form className="grid gap-4 rounded-[var(--radius-sm)] border border-line bg-surface p-4 lg:grid-cols-[1fr_1fr]" onSubmit={(e) => e.preventDefault()}>
+          <div className="flex min-w-0 flex-col gap-2">
+            <label htmlFor="reply" className="label text-ink-soft">Reply to a review</label>
+            <textarea id="reply" rows={5} value={reply} onChange={(e) => setReply(e.target.value)}
+              className="appearance-none rounded-[var(--radius-sm)] border border-field bg-surface px-3 py-2 text-sm text-ink" />
+            <button type="submit" className="self-start rounded-[var(--radius-sm)] bg-accent px-4 py-2 text-sm text-accent-ink">Publish reply</button>
+          </div>
+          <dl className="flex flex-col gap-3 border-t border-line pt-4 text-sm lg:border-l lg:border-t-0 lg:pl-6 lg:pt-0">
+            <div className="flex items-baseline justify-between gap-4"><dt className="text-ink-soft">Reviews published</dt><dd className="fig">{total}</dd></div>
+            <div className="flex items-baseline justify-between gap-4"><dt className="text-ink-soft">Awaiting your reply</dt><dd className="fig">{items.filter((r) => !String(r.reply)).length}</dd></div>
+            <div className="flex items-baseline justify-between gap-4"><dt className="text-ink-soft">Average rating</dt><dd className="fig">{average || "—"}</dd></div>
+            <p className="text-ink-soft">A reply is published under the review on the trip page, signed with your supplier name. A review that breaks the policy is reported to an admin instead.</p>
+          </dl>
         </form>
-        </div>
       </DashboardLayout>
     </RequireRole>
   );
