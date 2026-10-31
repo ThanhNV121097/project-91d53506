@@ -8,6 +8,7 @@
   text-transform: uppercase; padding: 8px 14px; z-index: 5; color: var(--ink-soft);
   background: var(--ground);
 }
+.d1 .d-label { bottom: auto; top: 0; border-left: 1px solid var(--line); }
 
 /* ── Direction 1 · The departure board ─────────────────────────────── */
 
