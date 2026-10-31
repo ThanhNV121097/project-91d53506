@@ -24,7 +24,6 @@ export default function Search() {
       destination: where || undefined,
       kind: kind || undefined,
       price: max ? { to: Number(max) } : undefined,
-      rating: rating ? { from: Number(rating) } : undefined,
       duration: duration || undefined,
     },
     sort,
