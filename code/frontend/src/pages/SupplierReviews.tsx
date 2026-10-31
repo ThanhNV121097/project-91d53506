@@ -30,7 +30,7 @@ export default function SupplierReviews() {
         <DataTable<Row>
           columns={[
             { key: "product_name", label: "Product" },
-            { key: "author", label: "Traveller", render: (r) => String(r.author) || "Waiting on the first review" },
+            { key: "author", label: "Traveller", render: (r) => String(r.author) || "—" },
             { key: "rating", label: "Rating", render: (r) => <Rating value={Number(r.rating) || 0} /> },
             { key: "date", label: "Date", align: "right", render: (r) => <span className="fig">{formatDate(String(r.date))}</span> },
             { key: "reply", label: "Replied", render: (r) => <Badge tone={String(r.reply) ? "good" : "neutral"}>{String(r.reply) ? "Replied" : "No reply"}</Badge> },
