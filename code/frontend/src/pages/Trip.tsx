@@ -22,6 +22,9 @@ export default function Trip() {
   const supplier = useRecord("suppliers", item?.supplier);
   const { has, toggle } = useWishlist();
   const [picked, setPicked] = useState("");
+  const policyEmpty = useContent("pages.trip.policyEmpty");
+  const confirmEmpty = useContent("pages.trip.confirmEmpty");
+  const reviewEmpty = useContent("pages.trip.reviewEmpty");
   if (!item) return <p className="mx-auto max-w-page px-[var(--gutter)] py-20 text-ink-soft"><T k="pages.trip.missing" /></p>;
   const date = picked || String(item.next_date);
   const chosen = dates.items.find((d) => d.date === date);
