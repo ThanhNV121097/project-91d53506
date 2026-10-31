@@ -5,8 +5,8 @@ import Icon from "./Icon";
 import type { Trip } from "../lib/trips";
 
 /**
- * A bookable product: the photograph IS the card, 4:5, with the name and the
- * mono price over a bottom scrim and the seats left in the accent.
+ * A bookable product: the photograph IS the card, 2:3 as the files are, with
+ * the name and the mono price over a bottom scrim and the seats in the accent.
  */
 export default function TripCard({ trip, eager = false, index = 0 }: { trip: Trip; eager?: boolean; index?: number }) {
   return (
@@ -14,14 +14,14 @@ export default function TripCard({ trip, eager = false, index = 0 }: { trip: Tri
       to={`/tours/${trip.id}`}
       data-record={`products:${trip.id}`}
       data-testid={`trip-card-${index}`}
-      className="group relative block overflow-hidden rounded-[var(--radius-sm)] bg-ink"
-      style={{ aspectRatio: "4 / 5" }}
+      className="group relative block h-full overflow-hidden rounded-[var(--radius-sm)] bg-ink"
+      style={{ aspectRatio: "2 / 3" }}
     >
       <Picture
         src={trip.image}
         alt={trip.name}
-        width={800}
-        height={1000}
+        width={853}
+        height={1280}
         loading={eager ? "eager" : "lazy"}
         className="absolute inset-0 h-full w-full object-cover transition-transform duration-[var(--duration-base)] group-hover:scale-[1.03]"
       />
