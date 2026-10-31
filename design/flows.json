@@ -1,0 +1,40 @@
+[
+  {
+    "name": "Search for a trip",
+    "steps": [
+      { "action": "open", "path": "/" },
+      { "action": "type", "selector": "#where", "value": "Cửa Lò" },
+      { "action": "click", "selector": "[data-testid='search-submit']" },
+      { "action": "expect", "selector": "[data-testid='result-count']", "text": "trips" }
+    ]
+  },
+  {
+    "name": "Book a trip and pay",
+    "auth": true,
+    "steps": [
+      { "action": "open", "path": "/tours/cua-lo-beach-2n1d" },
+      { "action": "click", "selector": "[data-testid='book-now']" },
+      { "action": "type", "selector": "#adults", "value": "2" },
+      { "action": "click", "selector": "[data-testid='book-continue']" },
+      { "action": "click", "selector": "[data-testid='pay-vnpay']" },
+      { "action": "click", "selector": "[data-testid='pay-now']" },
+      { "action": "expect", "selector": "[data-testid='booking-code']", "text": "NA-" }
+    ]
+  },
+  {
+    "name": "Check a booking's status",
+    "auth": true,
+    "steps": [
+      { "action": "open", "path": "/account" },
+      { "action": "expect", "selector": "[data-testid='account-bookings']", "text": "NA-" }
+    ]
+  },
+  {
+    "name": "Read a Nghệ An guide",
+    "steps": [
+      { "action": "open", "path": "/guides" },
+      { "action": "click", "selector": "[data-testid='guide-card-0']" },
+      { "action": "expect", "selector": "[data-testid='guide-body']", "text": "Cửa Lò" }
+    ]
+  }
+]
