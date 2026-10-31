@@ -105,7 +105,7 @@ export default function Trip() {
               <li key={r.id} data-record={`reviews:${r.id}`} className="border-b border-line py-4">
                 <div className="flex items-center gap-3">
                   <Rating value={Number(r.rating) || 0} />
-                  <span className="text-sm text-ink">{String(r.author) || useContent("pages.trip.reviewEmpty")}</span>
+                  <span className="text-sm text-ink">{String(r.author) || reviewEmpty}</span>
                   <span className="fig text-xs text-ink-soft">{formatDate(String(r.date))}</span>
                 </div>
                 {String(r.text) && <p className="mt-2 text-sm text-ink">{String(r.text)}</p>}
