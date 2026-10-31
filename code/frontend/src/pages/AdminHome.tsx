@@ -62,6 +62,9 @@ export default function AdminHome() {
               </li>
             ))}
           </ul>
+          <p className="mt-3 text-xs text-ink-soft">
+            <span className="fig">1–{bookings.items.length}</span> of <span className="fig">{bookings.total}</span>
+          </p>
           <Link to="/admin/bookings" className="mt-3 inline-block text-sm text-ink underline hover:text-accent">Every booking</Link>
         </div>
       </DashboardLayout>
