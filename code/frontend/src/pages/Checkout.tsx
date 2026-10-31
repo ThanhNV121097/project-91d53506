@@ -73,6 +73,16 @@ export default function Checkout() {
             </div>
           </dl>
         </div>
+        <div className="mt-4 rounded-[var(--radius-sm)] border border-line bg-surface p-5">
+          <p className="flex items-center gap-2 text-sm text-ink">
+            <Icon name="hours" size={16} className="text-accent" /><T k="pages.checkout.holdHeading" />
+          </p>
+          <T k="pages.checkout.holdNote" as="p" className="mt-2 text-xs text-ink-soft" />
+          <p className="mt-4 flex items-center gap-2 border-t border-line pt-4 text-sm text-ink">
+            <Icon name="secure" size={16} className="text-accent" /><T k="pages.checkout.secure" />
+          </p>
+          <T k="pages.checkout.policy" as="p" className="mt-2 text-xs text-ink-soft" />
+        </div>
       </aside>
     </section>
   );
