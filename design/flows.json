@@ -42,8 +42,11 @@
   },
   {
     "name": "Submit a product for approval",
-    "auth": true,
     "steps": [
+      { "action": "open", "path": "/signin" },
+      { "action": "type", "selector": "#email", "value": "hue@cualohomestay.vn" },
+      { "action": "click", "selector": "[data-testid='role-supplier']" },
+      { "action": "click", "selector": "[data-testid='signin-submit']" },
       { "action": "open", "path": "/supplier/products/cua-lo-beach-2n1d" },
       { "action": "click", "selector": "[data-testid='submit-product']" },
       { "action": "expect", "selector": "[data-testid='product-saved']", "text": "admin" }
