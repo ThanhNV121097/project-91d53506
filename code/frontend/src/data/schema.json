@@ -45,6 +45,8 @@
       "fields": [
         { "key": "product", "label": "Product", "type": "ref:products" },
         { "key": "product_name", "label": "Product name", "type": "text" },
+        { "key": "supplier", "label": "Operator", "type": "ref:suppliers" },
+        { "key": "supplier_name", "label": "Operator name", "type": "text" },
         { "key": "date", "label": "Date", "type": "text" },
         { "key": "seats", "label": "Seats left", "type": "number" },
         { "key": "capacity", "label": "Capacity", "type": "number" },
