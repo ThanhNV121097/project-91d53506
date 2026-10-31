@@ -13,7 +13,7 @@ import { formatPrice, formatDate } from "../lib/format";
 import type { Trip, Departure } from "../lib/trips";
 
 export default function Home() {
-  const featured = useCollection<Trip>("products", { where: { status: "approved" }, sort: "-rating", pageSize: 4 });
+  const featured = useCollection<Trip>("products", { where: { status: "approved" }, sort: "next_date", pageSize: 4 });
   const places = useCollection("destinations", { pageSize: 4 });
   const kinds = useCollection("categories", { pageSize: 5 });
   const board = useCollection<Departure>("departures", { where: { state: "Open" }, sort: "date", pageSize: 6 });
