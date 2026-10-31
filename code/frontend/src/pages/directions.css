@@ -166,6 +166,37 @@
   font-variant-numeric: tabular-nums;
 }
 .d2-tile .t i u { text-decoration: none; color: var(--accent); }
+/* The right edge of the hero: what this platform has that a brochure has not —
+   a real calendar. Hairline rows, the figures tabular. */
+.d2-dates {
+  position: absolute; right: 40px; top: 104px; width: 300px; z-index: 2;
+  border-top: 1px solid var(--line);
+}
+.d2-dates h2 {
+  margin: 0; padding: 14px 0 12px; font-size: 11px; letter-spacing: .2em;
+  text-transform: uppercase; color: var(--ink-soft); font-weight: 400;
+}
+.d2-dates a {
+  display: flex; align-items: baseline; gap: 12px; padding: 13px 0;
+  border-top: 1px solid var(--line); text-decoration: none; color: inherit;
+  transition: padding-left .3s cubic-bezier(.22, 1, .36, 1);
+}
+.d2-dates a:hover { padding-left: 8px; }
+.d2-dates a b {
+  font-family: "Bricolage Grotesque", system-ui, sans-serif; font-weight: 500;
+  font-size: 19px; letter-spacing: -.01em; font-variant-numeric: tabular-nums;
+  min-width: 68px;
+}
+.d2-dates a span { font-size: 13px; color: var(--ink-soft); }
+.d2-dates a u {
+  margin-left: auto; text-decoration: none; color: var(--accent); font-size: 14px;
+  font-variant-numeric: tabular-nums;
+}
+.d2-dates p {
+  margin: 14px 0 0; border-top: 1px solid var(--line); padding-top: 14px;
+  font-size: 12px; color: var(--ink-soft);
+}
+
 .d2-foot {
   display: flex; align-items: center; gap: 34px; padding: 22px 40px 26px;
   font-size: 11px; letter-spacing: .14em; text-transform: uppercase; color: var(--ink-soft);
