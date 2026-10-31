@@ -43,6 +43,9 @@ export default function AdminHome() {
                 </li>
               ))}
             </ul>
+            <p className="mt-3 text-xs text-ink-soft">
+              <span className="fig">1–{settings.items.length}</span> of <span className="fig">{settings.total}</span>
+            </p>
             <Link to="/admin/system" className="mt-3 inline-block text-sm text-ink underline hover:text-accent">Set them in System</Link>
           </div>
         </div>
