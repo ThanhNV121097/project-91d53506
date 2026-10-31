@@ -1,0 +1,8 @@
+[
+  { "id": "booking-paid", "event": "Booking paid", "channel": "Email + Zalo OA", "template": "booking-confirmed", "status": "On", "_source": "assumed" },
+  { "id": "booking-confirmed", "event": "Supplier confirmed a booking", "channel": "Email + Zalo OA", "template": "booking-confirmed-supplier", "status": "On", "_source": "assumed" },
+  { "id": "product-approved", "event": "Product approved", "channel": "In-dashboard", "template": "product-approved", "status": "On", "_source": "assumed" },
+  { "id": "product-rejected", "event": "Product rejected", "channel": "Email + in-dashboard", "template": "product-rejected", "status": "On", "_source": "assumed" },
+  { "id": "refund-processed", "event": "Refund processed", "channel": "Email", "template": "refund-processed", "status": "On", "_source": "assumed" },
+  { "id": "departure-tomorrow", "event": "Departure tomorrow", "channel": "Zalo OA", "template": "departure-reminder", "status": "Off", "_source": "assumed" }
+]

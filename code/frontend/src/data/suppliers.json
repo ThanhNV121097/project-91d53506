@@ -1,0 +1,9 @@
+[
+  { "id": "pu-mat-boat", "name": "Pù Mát Boat & Jeep", "place": "Con Cuông", "kind": "Tour operator", "documents": "Business licence, travel agency licence", "verified": true, "joined": "2026-02-11", "products": 3, "commission": 0, "_source": "assumed" },
+  { "id": "ban-nua", "name": "Bản Nưa Homestay", "place": "Con Cuông", "kind": "Homestay", "documents": "Business licence", "verified": true, "joined": "2026-03-04", "products": 2, "commission": 0, "_source": "assumed" },
+  { "id": "tea-walks", "name": "Thanh Chương Tea Walks", "place": "Thanh Chương", "kind": "Experience", "documents": "Business licence", "verified": true, "joined": "2026-03-22", "products": 2, "commission": 0, "_source": "assumed" },
+  { "id": "kim-lien-guides", "name": "Kim Liên Heritage Guides", "place": "Nam Đàn", "kind": "Experience", "documents": "Business licence, guide cards", "verified": true, "joined": "2026-04-02", "products": 2, "commission": 0, "_source": "assumed" },
+  { "id": "cua-lo-stays", "name": "Cửa Lò Beach Stays", "place": "Cửa Lò", "kind": "Tour operator", "documents": "Business licence, travel agency licence", "verified": true, "joined": "2026-01-19", "products": 3, "commission": 0, "_source": "assumed" },
+  { "id": "vinh-transfers", "name": "Vinh Airport Transfers", "place": "Vinh", "kind": "Transport", "documents": "Awaiting business licence", "verified": false, "joined": "2026-10-18", "products": 1, "commission": 0, "_source": "assumed" },
+  { "id": "song-lam-kayak", "name": "Sông Lam Kayak Club", "place": "Nam Đàn", "kind": "Experience", "documents": "Awaiting documents", "verified": false, "joined": "2026-10-24", "products": 1, "commission": 0, "_source": "assumed" }
+]
