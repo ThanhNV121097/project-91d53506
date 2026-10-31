@@ -10,7 +10,7 @@ import { usePageMeta } from "../seo";
 import { formatPrice, formatDate } from "../lib/format";
 import { ADMIN_NAV } from "../lib/nav";
 
-const FIELD = "w-full rounded-[var(--radius-sm)] border border-field bg-surface px-3 py-2 text-sm text-ink";
+const FIELD = "w-full appearance-none rounded-[var(--radius-sm)] border border-field bg-surface px-3 py-2 text-sm text-ink";
 
 export default function AdminFinance() {
   usePageMeta("pages.adminFinance.title");
