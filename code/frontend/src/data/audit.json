@@ -1,0 +1,8 @@
+[
+  { "id": "a-01", "at": "2026-10-31", "who": "Admin", "action": "Approved product", "target": "Cửa Lò sunrise with the fishing fleet", "_source": "assumed" },
+  { "id": "a-02", "at": "2026-10-31", "who": "Cửa Lò Beach Stays", "action": "Submitted for approval", "target": "Cửa Lò sea-view room, 2 nights", "_source": "assumed" },
+  { "id": "a-03", "at": "2026-10-30", "who": "Admin", "action": "Locked account", "target": "Buyer u-03", "_source": "assumed" },
+  { "id": "a-04", "at": "2026-10-30", "who": "Sub-admin (content)", "action": "Hid a review", "target": "Review r-06", "_source": "assumed" },
+  { "id": "a-05", "at": "2026-10-29", "who": "Admin", "action": "Rejected product", "target": "Sông Lam kayak day — no permit on file", "_source": "assumed" },
+  { "id": "a-06", "at": "2026-10-28", "who": "Sub-admin (finance)", "action": "Opened a payout period", "target": "October 2026", "_source": "assumed" }
+]

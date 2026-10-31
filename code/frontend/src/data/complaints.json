@@ -1,0 +1,5 @@
+[
+  { "id": "cp-01", "booking_code": "NA-3KF95R", "customer": "", "issue": "Trek cancelled by the operator for weather", "opened": "2026-10-16", "refund": 1300000, "status": "Refunded", "_source": "assumed" },
+  { "id": "cp-02", "booking_code": "NA-4RN72T", "customer": "", "issue": "Traveller cancelled, asking for a refund", "opened": "2026-10-22", "refund": 1450000, "status": "Awaiting cancellation policy", "_source": "assumed" },
+  { "id": "cp-03", "booking_code": "NA-9HT63B", "customer": "", "issue": "Guide arrived 40 minutes late", "opened": "2026-10-25", "refund": 0, "status": "Open", "_source": "assumed" }
+]
