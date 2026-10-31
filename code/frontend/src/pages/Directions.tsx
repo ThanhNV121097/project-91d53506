@@ -133,7 +133,7 @@ export function Directions2() {
         <div className="d2-dates">
           <h2>Leaving soon</h2>
           {DATES.map((d) => (
-            <a key={d[0]} href="#"><b>{d[0]}</b><span>{d[1]}</span><u>{d[2]} ₫</u></a>
+            <a key={d[0]} href="#"><b>{d[0]}</b><span>{d[1]}</span><u>{d[2]}</u></a>
           ))}
           <p>Prices move with the date. A seat is held 15 minutes while you pay.</p>
         </div>
