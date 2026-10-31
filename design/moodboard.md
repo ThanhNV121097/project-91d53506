@@ -35,10 +35,10 @@ figures right-aligned, no hero and no footer.
 
 COMMITMENTS
 
-- The home search row (destination · date · travellers · price) bleeds to both viewport edges under a hairline, and is in view at 1440×790 with the first product row.
-2. A vertical small-caps rail reading NGHỆ AN · DEPARTURES runs up the left edge of the home hero, outside the page grid.
-3. Every figure on the site is IBM Plex Mono, tabular; the price on a home product card is set at 34px.
-4. A featured product card IS its photograph — 4:5, name and mono price over a bottom scrim, seats-left in #C8381F — with no white card around it.
-5. The departures page is a board: a right-aligned mono column of dates, seats and prices whose digits line up, one hairline per row.
-6. Dashboard pages carry no marketing header, no hero and no footer — a left menu, filters in the address bar, and every list a table with "1–20 of N" under it.
-7. One mode only: the palette above in `:root` of theme.css with `color-scheme: light`, and no second palette anywhere.
+- The home search row (destination · date · travellers · price) bleeds to both viewport edges under a hairline, above everything else on the page.
+- A vertical small-caps rail reading NGHỆ AN · DEPARTURES runs up the left edge of the home hero, outside the page grid.
+- Every figure on the site is IBM Plex Mono, tabular; a product card's price is set at the mono price size, 34px at 1440.
+- A featured product card IS its photograph — the whole card, name and mono price over a bottom scrim, seats-left in the red — with no white card around it.
+- The departures page is a board: right-aligned mono columns of dates, seats and prices whose digits line up, one hairline per row.
+- Dashboard pages carry no marketing header, no hero and no footer — a left menu, filters in the address bar, and every list a table with "1–20 of N" under it.
+- One mode only: the palette above in `:root` of theme.css with `color-scheme: light`, and no second palette anywhere.
