@@ -219,6 +219,135 @@
   font-variant-numeric: tabular-nums;
 }
 
+/* ── Direction 3 · The map that knows the province ─────────────────── */
+
+.d3 {
+  --ground: #F3EEE2; --surface: #FFFFFF; --ink: #1E2A22; --ink-soft: #5C6B5E;
+  --accent: #B5542B; --line: rgba(30, 42, 34, .16);
+  min-height: 100vh; height: 100vh; background: var(--ground); color: var(--ink);
+  font-family: Inter, system-ui, sans-serif;
+  display: flex; overflow: hidden;
+}
+.d3 * { box-sizing: border-box; }
+.d3-list {
+  width: 45%; flex: 0 0 45%; overflow: hidden; display: flex; flex-direction: column;
+  border-right: 1px solid var(--line); background: var(--surface);
+}
+.d3-top { padding: 40px 44px 24px; }
+.d3-kicker {
+  display: block; font-size: 11px; letter-spacing: .18em; text-transform: uppercase;
+  color: var(--accent); margin-bottom: 14px;
+}
+.d3-top h1 {
+  margin: 0; font-family: Fraunces, Georgia, serif; font-weight: 500; font-size: 50px;
+  line-height: 1.08; letter-spacing: -.01em; max-width: 17ch;
+}
+.d3-row {
+  display: grid; grid-template-columns: 34px 1fr auto; align-items: center;
+  gap: 16px; padding: 18px 44px; border-top: 1px solid var(--line);
+  text-decoration: none; color: inherit;
+}
+.d3-n {
+  font-family: Fraunces, Georgia, serif; font-size: 18px; color: var(--ink-soft);
+}
+.d3-m { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.d3-m b { font-size: 16px; font-weight: 600; }
+.d3-badge {
+  font-size: 10px; letter-spacing: .1em; text-transform: uppercase; color: var(--accent);
+}
+.d3-sub { font-size: 12px; color: var(--ink-soft); }
+.d3-p {
+  font-family: Inter, sans-serif; font-size: 20px; font-variant-numeric: tabular-nums;
+  letter-spacing: -.01em; white-space: nowrap;
+}
+.d3-p em { font-style: normal; font-size: 13px; color: var(--ink-soft); }
+.d3-map {
+  flex: 1; position: relative; background: #DFE6D8; overflow: hidden;
+}
+.d3-svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+.d3-land { fill: #CBD6C0; }
+.d3-hill { fill: #B9C8AC; }
+.d3-legend {
+  position: absolute; top: 24px; right: 32px; display: flex; gap: 18px;
+  font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--ink-soft);
+  z-index: 2;
+}
+.d3-legend span { display: flex; align-items: center; gap: 6px; }
+.dot { width: 9px; height: 9px; border-radius: 50%; display: inline-block; }
+.dot.tour { background: var(--accent); }
+.dot.stay { background: #1E2A22; }
+.dot.exp { background: #5C6B5E; }
+.d3-pin {
+  position: absolute; width: 26px; height: 26px; border-radius: 50% 50% 50% 0;
+  background: var(--accent); color: #FFFFFF; transform: translate(-50%, -100%) rotate(-45deg);
+  display: flex; align-items: center; justify-content: center; font-size: 12px;
+  font-weight: 600; z-index: 3; box-shadow: 0 2px 6px rgba(30, 42, 34, .3);
+}
+.d3-pin > * { transform: rotate(45deg); }
+.d3 .d-label {
+  right: 0; bottom: 0; background: var(--surface); color: var(--ink-soft);
+}
+
+/* ── Direction 4 · The province's own guide ────────────────────────── */
+
+.d4 {
+  --ground: #FBF7EF; --surface: #F1E9D8; --ink: #241C14; --ink-soft: #756658;
+  --accent: #1F3A5F; --line: rgba(36, 28, 20, .16);
+  min-height: 100vh; height: 100vh; background: var(--ground); color: var(--ink);
+  font-family: Inter, system-ui, sans-serif;
+  display: flex; flex-direction: column; overflow: hidden;
+}
+.d4 * { box-sizing: border-box; }
+.d4-mast {
+  display: flex; align-items: center; gap: 28px; padding: 22px 48px;
+  border-bottom: 1px solid var(--line); font-size: 11px; letter-spacing: .16em;
+  text-transform: uppercase; color: var(--ink-soft);
+}
+.d4-mast span:first-child { color: var(--ink); font-weight: 600; }
+.d4-search { margin-left: auto; color: var(--accent); }
+.d4-spread {
+  flex: 1; display: grid; grid-template-columns: 1.5fr 1fr; gap: 0; min-height: 0;
+}
+.d4-feature {
+  padding: 38px 48px 30px; border-right: 1px solid var(--line);
+  display: flex; flex-direction: column; min-height: 0;
+}
+.d4-feat-pic { flex: 1; min-height: 0; overflow: hidden; margin-bottom: 20px; }
+.d4-feat-pic img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.d4-tag {
+  display: inline-block; font-size: 11px; letter-spacing: .14em; text-transform: uppercase;
+  color: var(--accent); margin-bottom: 10px;
+}
+.d4-tag.small { margin-bottom: 8px; }
+.d4-feature h1 {
+  margin: 0 0 14px; font-family: Fraunces, Georgia, serif; font-weight: 500;
+  font-size: 44px; line-height: 1.08; letter-spacing: -.01em; max-width: 24ch;
+}
+.d4-feature h1 i { font-style: italic; color: var(--accent); }
+.d4-feature p { margin: 0 0 16px; font-size: 15px; line-height: 1.6; color: var(--ink-soft); max-width: 48ch; }
+.d4-read {
+  font-size: 14px; font-weight: 600; color: var(--ink); text-decoration: none;
+  display: inline-flex; align-items: center; gap: 10px;
+}
+.d4-pricepill {
+  font-size: 12px; font-variant-numeric: tabular-nums; color: var(--accent);
+  border: 1px solid var(--line); border-radius: 999px; padding: 4px 11px;
+}
+.d4-side { display: flex; flex-direction: column; min-height: 0; }
+.d4-story {
+  flex: 1; display: grid; grid-template-columns: 112px 1fr; gap: 16px;
+  padding: 18px 40px; border-bottom: 1px solid var(--line); min-height: 0;
+}
+.d4-story:last-child { border-bottom: 0; }
+.d4-story-pic { overflow: hidden; align-self: stretch; }
+.d4-story-pic img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.d4-story-body { display: flex; flex-direction: column; gap: 8px; justify-content: center; min-width: 0; }
+.d4-story-body h2 {
+  margin: 0; font-family: Fraunces, Georgia, serif; font-weight: 500; font-style: italic;
+  font-size: 19px; line-height: 1.25;
+}
+.d4 .d-label { right: 0; bottom: 0; background: var(--ground); color: var(--ink-soft); }
+
 @media (prefers-reduced-motion: reduce) {
   .d1-pic img, .d2-tile img { transition: none; }
 }
