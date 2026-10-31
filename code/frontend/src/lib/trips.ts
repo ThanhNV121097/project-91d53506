@@ -6,8 +6,6 @@ export interface Trip {
   destination: string;
   duration: string;
   price: number;
-  rating: number;
-  review_count: number;
   seats: number;
   next_date: string;
   image: string;
