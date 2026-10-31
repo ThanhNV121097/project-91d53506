@@ -1,8 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { T, useContent } from "../editable";
+import { T, useContent, useList } from "../editable";
 import Icon from "../components/Icon";
-import Select from "../components/Select";
 import { usePageMeta } from "../seo";
 import { signIn } from "../lib/session";
 
