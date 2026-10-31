@@ -3,7 +3,7 @@ import { Picture } from "../picture";
 import { formatDate } from "../lib/format";
 import type { Row } from "../data";
 
-/** A guide: its photograph at the files' own 16:9, then its category, date and title. */
+/** A guide: its photograph at the files' own 3:2, then its category, date and title. */
 export default function GuideCard({ guide, index = 0, excerpt = false }: { guide: Row; index?: number; excerpt?: boolean }) {
   const summary = String(guide.excerpt ?? "");
   return (
