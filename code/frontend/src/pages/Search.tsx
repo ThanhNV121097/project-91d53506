@@ -15,7 +15,6 @@ export default function Search() {
   const where = params.get("where") ?? "";
   const kind = params.get("kind") ?? "";
   const max = params.get("max") ?? "";
-  const rating = params.get("rating") ?? "";
   const duration = params.get("duration") ?? "";
   const sort = params.get("sort") ?? "price";
   const kinds = useCollection("categories", { pageSize: 10 });
