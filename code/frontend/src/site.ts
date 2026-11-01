@@ -33,16 +33,14 @@ export interface Enquiry {
 
 /** Sends the form; rejects with a sentence to show the customer. */
 export async function sendEnquiry(e: Enquiry): Promise<void> {
-  if (!canSend) throw new Error("This form is not connected yet.");
-  const res = await fetch(`${API}/${KEY}/messages`, {
+  const res = await fetch(`${apiBase}/v1/contact`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ ...e, page: window.location.pathname }),
+    body: JSON.stringify({ name: e.name, contact: e.reply_to, message: e.message, honeypot: e.website ?? "" }),
   });
-  if (!res.ok) {
-    const body = (await res.json().catch(() => ({}))) as { error?: string };
-    throw new Error(body.error ?? "The message could not be sent. Please try again, or call us.");
-  }
+  if (res.status === 202) return;
+  const body = (await res.json().catch(() => ({}))) as { error?: { message?: string } };
+  throw new Error(body.error?.message ?? "The message could not be sent. Please try again, or call us.");
 }
 
 function watched(): boolean {
