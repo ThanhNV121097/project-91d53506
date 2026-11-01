@@ -1,0 +1,1 @@
+diag2 plain text with no mention of permission or auth at all.
