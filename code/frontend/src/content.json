@@ -213,8 +213,10 @@
     "checkout": {
       "after": "After payment you get a booking code and a QR code, by email and on Zalo.",
       "code": "Code",
+      "comingSoon": "Coming soon",
       "description": "Pay by VNPay, MoMo, ZaloPay or bank transfer and get your booking code straight away.",
       "discount": "Discount",
+      "failed": "Payment did not go through. Your seats are still held — you can try again.",
       "heading": "Pay and confirm",
       "holdHeading": "Your seats are held for 15 minutes",
       "holdNote": "The hold ends when the timer runs out and the seats go back on sale. No charge is made until you pay.",
