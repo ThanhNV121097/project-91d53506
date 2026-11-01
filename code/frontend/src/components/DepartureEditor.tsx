@@ -123,12 +123,12 @@ export default function DepartureEditor({
             options={SEASONS.map((s) => ({ value: s, label: s }))}
           />
         </span>
-        <button type="submit" className="rounded-[var(--radius-sm)] bg-accent px-4 py-2 text-sm text-accent-ink">
+        <button type="submit" className="rounded-[var(--radius-sm)] bg-accent px-6 py-2.5 text-sm text-accent-ink">
           Add departure
         </button>
       </form>
       {error && (
-        <p role="alert" className="text-sm text-accent">
+        <p role="alert" className="text-sm text-ink">
           {error}
         </p>
       )}
