@@ -8,8 +8,30 @@ import { useTableQuery } from "../lib/table";
 import { usePageMeta } from "../seo";
 import { formatPrice, formatDate } from "../lib/format";
 import { SUPPLIER_NAV } from "../lib/nav";
+import { useSupplierRevenue } from "../lib/mock/supplier-revenue-and-payout-reporting";
 
 const FIELD = "w-full rounded-[var(--radius-sm)] border border-field bg-surface px-3 py-2 text-sm text-ink";
+
+function Revenue() {
+  const r = useSupplierRevenue();
+  return (
+    <div className="grid max-w-3xl gap-3 sm:grid-cols-3">
+      <div className="rounded-[var(--radius-sm)] border border-line bg-surface p-4">
+        <p className="label text-ink-soft">Revenue</p>
+        <p className="fig mt-2 text-[length:var(--size-price)] leading-none text-ink">{formatPrice(r.revenue)}</p>
+      </div>
+      <div className="rounded-[var(--radius-sm)] border border-line bg-surface p-4">
+        <p className="label text-ink-soft">Platform commission</p>
+        <p className="fig mt-2 text-[length:var(--size-price)] leading-none text-ink">{formatPrice(r.commission)}</p>
+        {r.rate === 0 && <p className="mt-2 text-xs text-ink-soft">No commission rate has been set yet.</p>}
+      </div>
+      <div className="rounded-[var(--radius-sm)] border border-line bg-surface p-4">
+        <p className="label text-ink-soft">Expected payout</p>
+        <p className="fig mt-2 text-[length:var(--size-price)] leading-none text-ink">{formatPrice(r.expectedPayout)}</p>
+      </div>
+    </div>
+  );
+}
 
 export default function SupplierAccount() {
   usePageMeta("pages.supplierAccount.title");
