@@ -13,6 +13,10 @@ export interface PayoutRow {
   gross: number;
   status: "Pending" | "Paid";
   paidOn: string;
+  /** The commission rate applied when this period was reconciled. Set only
+   * on a reconciled (`Paid` or closed-`Pending`) row — a later change to
+   * the global or per-supplier rate never touches it, per ADMIN-005 AC-4. */
+  appliedRate?: number;
 }
 
 export const SUPPLIERS = [
