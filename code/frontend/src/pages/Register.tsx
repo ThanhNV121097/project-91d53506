@@ -1,31 +1,41 @@
-import { useState } from "react";
+import { useState, type FormEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { T, useContent } from "../editable";
 import Icon from "../components/Icon";
 import Select from "../components/Select";
 import { usePageMeta } from "../seo";
 import { signIn } from "../lib/session";
+import { register } from "../lib/mock/buyer-role-sign-up-and-sign-in";
 
 export default function Register() {
   usePageMeta("pages.register.title", "pages.register.description");
   const [role, setRole] = useState("buyer");
   const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [name, setName] = useState("");
+  const [error, setError] = useState("");
+  const errorDuplicate = useContent("pages.register.errorDuplicate");
   const navigate = useNavigate();
   const field = "w-full rounded-[var(--radius-sm)] border border-field bg-surface px-3 py-2 text-sm text-ink";
+
+  function submit(e: FormEvent) {
+    e.preventDefault();
+    setError("");
+    try {
+      const user = register(email, password, role, name);
+      signIn(user.email, user.name, user.role);
+      navigate(role === "supplier" ? "/supplier/account" : "/account");
+    } catch {
+      setError(errorDuplicate);
+    }
+  }
+
   return (
     <section className="mx-auto grid max-w-page gap-12 px-[var(--gutter)] py-14 lg:grid-cols-[1fr_1fr]">
       <div>
         <T k="pages.register.eyebrow" as="p" className="label text-ink-soft" />
         <T k="pages.register.heading" as="h1" className="mt-2 max-w-[22ch] text-[length:var(--size-h1)]" />
-        <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            signIn(email, name, role);
-            navigate(role === "supplier" ? "/supplier/account" : "/account");
-          }}
-          className="mt-8 flex max-w-[36ch] flex-col gap-4"
-        >
+        <form onSubmit={submit} className="mt-8 flex max-w-[36ch] flex-col gap-4">
           <span className="flex flex-col gap-1">
             <span className="label text-ink-soft"><T k="pages.register.role" /></span>
             <Select id="role" value={role} onChange={(v) => setRole(v || "buyer")} aria-label={useContent("pages.register.role")}
@@ -38,6 +48,10 @@ export default function Register() {
           <label className="flex flex-col gap-1">
             <span className="label text-ink-soft"><T k="pages.register.email" /></span>
             <input id="reg-email" type="email" required value={email} onChange={(e) => setEmail(e.target.value)} className={field} />
+          </label>
+          <label className="flex flex-col gap-1">
+            <span className="label text-ink-soft"><T k="pages.register.password" /></span>
+            <input id="reg-password" type="password" required minLength={8} maxLength={72} value={password} onChange={(e) => setPassword(e.target.value)} className={field} />
           </label>
           <label className="flex flex-col gap-1">
             <span className="label text-ink-soft"><T k="pages.register.phone" /></span>
@@ -59,6 +73,7 @@ export default function Register() {
               </label>
             </>
           )}
+          {error && <p role="alert" className="text-sm text-ink">{error}</p>}
           <button type="submit" data-testid="register-submit" className="mt-2 rounded-[var(--radius-sm)] bg-accent px-6 py-3 text-sm text-accent-ink hover:opacity-90">
             <T k="pages.register.submit" />
           </button>
