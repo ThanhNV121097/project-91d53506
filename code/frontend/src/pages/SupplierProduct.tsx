@@ -40,7 +40,17 @@ export default function SupplierProduct() {
         )}
         <ProductForm item={item} />
         <h2 className="mt-4 text-base text-ink">Dates, capacity and seasonal pricing</h2>
-        <DepartureEditor dates={dates.items} total={dates.total} />
+        <DepartureEditor
+          dates={dates.items}
+          total={dates.total}
+          product={{
+            id: id ?? "",
+            name: item?.name ?? "",
+            supplier: item?.supplier ?? "",
+            supplierName: item?.supplier ?? "",
+            basePrice: item?.price ?? 0,
+          }}
+        />
       </DashboardLayout>
     </RequireRole>
   );
