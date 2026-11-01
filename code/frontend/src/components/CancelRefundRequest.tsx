@@ -15,6 +15,7 @@ export default function CancelRefundRequest({ bookingCode }: { bookingCode: stri
   const [open, setOpen] = useState(false);
   const [issue, setIssue] = useState("");
   const [error, setError] = useState("");
+  const issueRequired = useContent("pages.account.issueRequired");
 
   if (existing) {
     return (
