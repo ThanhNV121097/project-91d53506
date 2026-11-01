@@ -20,7 +20,7 @@ export default function AdminModeration() {
     where: { status: t.get("status") },
   });
   return (
-    <RequireRole roles={["admin"]}>
+    <RequireRole roles={["admin"]} permission="moderation-only">
       <DashboardLayout title="Review moderation" nav={ADMIN_NAV} brand="Nghệ An Departures">
         <div className="grid gap-3 sm:grid-cols-3">
           <Stat label="Reviews" value={String(total)} icon="star" />
