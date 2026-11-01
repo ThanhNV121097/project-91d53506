@@ -8,6 +8,7 @@ import { formatPrice, formatDate } from "../lib/format";
 import { useSession, signOut } from "../lib/session";
 import { useDemo } from "../lib/demo";
 import type { Booking } from "../lib/trips";
+import CancelRefundRequest from "../components/CancelRefundRequest";
 
 export default function Account() {
   usePageMeta("pages.account.title", "pages.account.description");
