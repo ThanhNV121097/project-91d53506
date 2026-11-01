@@ -138,14 +138,18 @@ export function useSession(): Session | null {
 
 /**
  * Signs the visitor in as email — any address: this is the design's mock.
- * `role` is the role they act as on a site that has more than one.
+ * `role` is the role they act as on a site that has more than one;
+ * `permissions` is the restricted set a sub-admin signs in with, read from
+ * their own `users` row (absent for a plain admin or any other role).
  */
-export function signIn(email: string, name?: string, role?: string): void {
+export function signIn(email: string, name?: string, role?: string, permissions?: string): void {
   const address = email.trim();
   if (!address) return;
   const session: Session = { email: address, name: name?.trim() || nameFrom(address) };
   const acting = role?.trim().toLowerCase();
   if (acting) session.role = acting;
+  const scope = permissions?.trim().toLowerCase();
+  if (scope) session.permissions = scope;
   store(JSON.stringify(session));
   changed();
 }
