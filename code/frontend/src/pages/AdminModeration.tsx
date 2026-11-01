@@ -53,7 +53,9 @@ export default function AdminModeration() {
           rowKey={(r) => r.id} caption="Reviews, and the ones reported as breaking policy"
           empty={<p>No review matches these filters.</p>}
           actions={(r) => (
-            <button type="button" className="text-sm text-ink underline hover:text-accent">{r.status === "hidden" ? "Publish" : "Hide"}</button>
+            <button type="button" onClick={() => toggleReview(r)} className="text-sm text-ink underline hover:text-accent">
+              {r.status === "hidden" ? "Publish" : "Hide"}
+            </button>
           )}
         />
       </DashboardLayout>
