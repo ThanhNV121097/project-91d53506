@@ -155,14 +155,18 @@
   "pages": {
     "account": {
       "cancel": "Cancel or change",
+      "cancelRequest": "Never mind",
       "count": "bookings",
       "description": "Your booking history, each one's status, and how to ask for a cancellation or a refund.",
       "heading": "Your bookings",
+      "issueLabel": "What do you need?",
       "refundCta": "Ask about a booking",
       "refundHeading": "Cancellations, changes and refunds",
       "refundSub": "Send us the booking code and what you need. The default refund window is still to be set, so we answer each request directly for now.",
+      "requested": "Requested",
       "signOut": "Sign out",
       "signedOut": "Sign in to see your bookings.",
+      "submitRequest": "Send request",
       "title": "Your bookings",
       "view": "View code"
     },
