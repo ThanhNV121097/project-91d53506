@@ -38,13 +38,18 @@ export default function Checkout() {
         <T k="pages.checkout.sub" as="p" className="mt-2 max-w-[52ch] text-sm text-ink-soft" />
 
         <h2 className="mt-10 text-[length:var(--size-h2)]"><T k="pages.checkout.pay" /></h2>
+        {failed && <T k="pages.checkout.failed" as="p" role="alert" className="mt-4 rounded-[var(--radius-sm)] border border-field bg-surface px-4 py-3 text-sm text-ink" />}
         <div className="mt-4 flex flex-col gap-2">
-          {PAYMENTS.map((p) => (
-            <button key={p.id} type="button" data-testid={`pay-${p.id}`} onClick={() => setDraft({ ...draft, payment: p.id })}
-              className={`flex items-center justify-between rounded-[var(--radius-sm)] border px-4 py-3 text-left text-sm ${draft.payment === p.id ? "border-accent text-accent" : "border-field text-ink"}`}>
-              <span className="flex items-center gap-2"><Icon name={p.id === "vietqr" ? "qr" : "wallet"} size={16} />{p.label}</span>
-              {draft.payment === p.id && <Icon name="check" size={16} />}
-            </button>
+          {PAYMENT_METHODS.map((p) => (
+            <div key={p.id}>
+              <button type="button" data-testid={`pay-${p.id}`} disabled={!p.enabled}
+                onClick={() => setDraft({ ...draft, payment: p.id })}
+                className={`flex w-full items-center justify-between rounded-[var(--radius-sm)] border px-4 py-3 text-left text-sm disabled:opacity-60 ${draft.payment === p.id ? "border-accent text-accent" : "border-field text-ink"}`}>
+                <span className="flex items-center gap-2"><Icon name={p.id === "vietqr" ? "qr" : "wallet"} size={16} />{p.label}</span>
+                {p.enabled && draft.payment === p.id && <Icon name="check" size={16} />}
+              </button>
+              {!p.enabled && <T k="pages.checkout.comingSoon" as="p" className="mt-1 pl-1 text-xs text-ink-soft" />}
+            </div>
           ))}
         </div>
 
