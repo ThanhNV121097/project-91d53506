@@ -51,6 +51,9 @@ export default function SupplierAccount() {
           <button type="submit" className="self-start rounded-[var(--radius-sm)] bg-accent px-6 py-2.5 text-sm text-accent-ink lg:col-span-2">Save profile</button>
         </form>
 
+        <h2 className="mt-6 text-base text-ink">Revenue & commission</h2>
+        <Revenue />
+
         <h2 className="mt-6 text-base text-ink">Payout history</h2>
         <DataTable<Row>
           columns={[
