@@ -37,7 +37,7 @@ export default function CancelRefundRequest({ bookingCode }: { bookingCode: stri
   function submit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
     if (!issue.trim()) {
-      setError("Tell us what you need.");
+      setError(issueRequired);
       return;
     }
     setExisting(createRequest(bookingCode, issue.trim()));
