@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useSearchParams, Link } from "react-router-dom";
 import { T, useContent } from "../editable";
 import { useCollection } from "../data";
@@ -7,7 +8,10 @@ import Select from "../components/Select";
 import Icon from "../components/Icon";
 import { usePageMeta } from "../seo";
 import { formatPrice } from "../lib/format";
-import type { Trip } from "../lib/trips";
+import type { Trip, Departure } from "../lib/trips";
+import { searchTrips, sortTrips } from "../lib/mock/search-and-filter-trips-by-criteria";
+
+const PAGE_SIZE = 8;
 
 export default function Search() {
   usePageMeta("pages.search.title", "pages.search.description");
@@ -17,18 +21,24 @@ export default function Search() {
   const max = params.get("max") ?? "";
   const duration = params.get("duration") ?? "";
   const sort = params.get("sort") ?? "price";
+  const date = params.get("date") ?? "";
+  const people = Number(params.get("people") ?? "1") || 1;
   const kinds = useCollection("categories", { pageSize: 10 });
-  const { items, total, hasMore, loading, loadMore } = useCollection<Trip>("products", {
-    where: {
-      status: "approved",
-      destination: where || undefined,
-      kind: kind || undefined,
-      price: max ? { to: Number(max) } : undefined,
-      duration: duration || undefined,
-    },
+  // All approved products and every departure row, filtered client-side so a
+  // search date can check real seat availability (SEARCH-001) — the real
+  // GET /v1/search will do this join server-side and this module goes away.
+  const { items: products, loading: productsLoading } = useCollection<Trip>("products", { pageSize: 1000 });
+  const { items: departures, loading: departuresLoading } = useCollection<Departure>("departures", { pageSize: 1000 });
+  const loading = productsLoading || departuresLoading;
+  const [shown, setShown] = useState(PAGE_SIZE);
+  const matched = sortTrips(
+    searchTrips({ where, kind, duration, max: max ? Number(max) : undefined, date, people }, products, departures),
     sort,
-    pageSize: 8,
-  });
+  );
+  const total = matched.length;
+  const items = matched.slice(0, shown);
+  const hasMore = shown < total;
+  const loadMore = () => setShown((s) => s + PAGE_SIZE);
   const set = (key: string, value: string) => {
     const next = new URLSearchParams(params);
     if (value) next.set(key, value);
