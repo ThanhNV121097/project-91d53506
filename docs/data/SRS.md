@@ -49,9 +49,10 @@ products, `admin` writes supplier/product status) and are specified there.
 
 - Any write to a collection (creating a product, confirming a booking,
   approving a supplier) — specified in the module that owns that action.
-- Authentication and permission checks on who may call the API — `auth`
-  module; this module's endpoints are public reads, matching what the
-  storefront already shows to every visitor today.
+- The authentication mechanism itself (login, session/token issuance) —
+  `auth` module. This module enforces the resulting sign-in requirement at
+  its own endpoints (DATA-002, DATA-003) for the nine private collections
+  listed there, but does not implement sign-in.
 - The inventory hold, seat decrement and booking state machine — `booking`
   module.
 
