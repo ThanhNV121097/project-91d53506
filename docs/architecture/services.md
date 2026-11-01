@@ -1,3 +1,255 @@
+## 3.9.1 `GET /v1/admin/queue` — List pending suppliers and products (ADMIN-001)
+
+**Auth** — `admin` (full or sub-admin).
+**Permissions** — `full`, `moderation-only`. Any other `permissions` value
+(e.g. `finance-only`, `content-only`), and any non-admin role (`buyer`,
+`supplier`), is denied.
+
+**Request**
+
+```
+GET /v1/admin/queue
+```
+
+No query parameters — the design's two lists (`AdminQueue.tsx`) are each
+fixed to one filter: `suppliers.verified = false`, `products.status =
+'pending'`. A caller wanting a different `products.status` uses the
+existing `GET /v1/products?status=` reader (`data` module), not this
+endpoint — this one is the moderation queue, not a general product list.
+
+**Response** — `200`
+
+```json
+{
+  "suppliers": [
+    { "id": "...", "name": "...", "documents": ["https://cdn.../a.pdf"] }
+  ],
+  "products": [
+    { "id": "...", "name": "...", "kind": "...", "next_date": "2026-11-20",
+      "price": 480000, "status": "pending" }
+  ]
+}
+```
+
+`next_date` is the earliest `departures.date` with `state = 'Open'` for
+that product (same derivation `SITE-001` already uses for a product
+card's date; null if the product has no open departure yet — the design's
+table renders that cell blank, no frontend change).
+
+**Errors**
+
+| Status | `error.code` | When |
+|---|---|---|
+| 401 | `UNAUTHENTICATED` | No valid session token |
+| 403 | `PERMISSION_DENIED` | Signed in, but not `admin`, or an `admin` whose `permissions` is neither `full` nor `moderation-only` |
+| 500 | `INTERNAL` | The query fails for a reason other than a refused connection |
+| 503 | `UNAVAILABLE` | The database refuses the connection |
+
+No `404` — an empty queue is `200` with both arrays empty (SRS §5 "empty"
+screen state).
+
+---
+
+## 3.9.2 `POST /v1/admin/suppliers/{id}/approve` — Approve a supplier profile (ADMIN-001)
+
+**Auth** — `admin` (full or sub-admin).
+**Permissions** — `full`, `moderation-only`.
+
+**Request** — no body. Any body field is rejected.
+
+**Behaviour** — a single conditional update: `UPDATE suppliers SET
+verified = true, rejection_reason = NULL, updated_at = now() WHERE id =
+$1 AND verified = false RETURNING *`. Zero rows updated because the row
+does not exist is `404`; zero rows updated because it was already
+`verified = true` is `409` (covers the near-simultaneous-approval race:
+the second request's `WHERE verified = false` matches nothing).
+
+**Response** — `200`
+
+```json
+{ "id": "...", "verified": true, "rejection_reason": null, "updated_at": "..." }
+```
+
+**Errors**
+
+| Status | `error.code` | When |
+|---|---|---|
+| 400 | `MALFORMED_REQUEST` | A body field is present |
+| 401 | `UNAUTHENTICATED` | No valid session token |
+| 403 | `PERMISSION_DENIED` | Signed in, but not `admin`, or an `admin` whose `permissions` is neither `full` nor `moderation-only` |
+| 404 | `NOT_FOUND` | No `suppliers` row with that `id` |
+| 409 | `CONFLICT` | The row exists but `verified` is already `true` (already decided, including the second of two near-simultaneous approvals) |
+| 500 | `INTERNAL` | The update query fails for a reason other than a refused connection |
+| 503 | `UNAVAILABLE` | The database refuses the connection |
+
+---
+
+## 3.9.3 `POST /v1/admin/suppliers/{id}/reject` — Reject a supplier profile (ADMIN-001)
+
+**Auth** — `admin` (full or sub-admin).
+**Permissions** — `full`, `moderation-only`.
+
+**Request**
+
+```json
+{ "reason": "Business licence expired" }
+```
+
+No other field is accepted.
+
+**Behaviour** — `reason` trimmed must be non-empty (AC-4). A single
+conditional update: `UPDATE suppliers SET rejection_reason = $2,
+updated_at = now() WHERE id = $1 AND verified = false RETURNING *`.
+Rejecting never changes `verified` — it only records the reason, visible
+to the supplier on their own `GET /v1/supplier/profile` read (§3.8.1).
+Zero rows updated because the row does not exist is `404`; zero rows
+updated because it is already `verified = true` is `409` (a reject-after-
+approve attempt never overwrites an approval).
+
+**Response** — `200`
+
+```json
+{ "id": "...", "verified": false, "rejection_reason": "Business licence expired", "updated_at": "..." }
+```
+
+**Errors**
+
+| Status | `error.code` | When |
+|---|---|---|
+| 400 | `MALFORMED_REQUEST` | A field the request body does not define is present (e.g. `autoNotify`) |
+| 401 | `UNAUTHENTICATED` | No valid session token |
+| 403 | `PERMISSION_DENIED` | Signed in, but not `admin`, or an `admin` whose `permissions` is neither `full` nor `moderation-only` |
+| 404 | `NOT_FOUND` | No `suppliers` row with that `id` |
+| 409 | `CONFLICT` | The row is already `verified = true` (approved by another admin first) |
+| 422 | `VALIDATION_FAILED` | `reason` is absent, or trims to empty (AC-4) |
+| 500 | `INTERNAL` | The update query fails for a reason other than a refused connection |
+| 503 | `UNAVAILABLE` | The database refuses the connection |
+
+---
+
+## 3.9.4 `POST /v1/admin/products/{id}/approve` — Approve a product (ADMIN-001)
+
+**Auth** — `admin` (full or sub-admin).
+**Permissions** — `full`, `moderation-only`.
+
+**Request** — no body. Any body field is rejected.
+
+**Behaviour** — a single conditional update: `UPDATE products SET status
+= 'approved', rejection_reason = NULL, updated_at = now() WHERE id = $1
+AND status = 'pending' RETURNING *`. Zero rows updated because the row
+does not exist is `404`; zero rows updated because its `status` is no
+longer `pending` (already `approved`/`rejected`/decided by another admin
+moments earlier) is `409`. A product resubmitted from `rejected` back to
+`pending` by its supplier and approved here has its stale
+`rejection_reason` cleared to `NULL` in the same write — the response
+never carries a reason left over from the earlier rejection.
+
+**Response** — `200`
+
+```json
+{ "id": "...", "status": "approved", "rejection_reason": null, "updated_at": "..." }
+```
+
+**Errors**
+
+| Status | `error.code` | When |
+|---|---|---|
+| 400 | `MALFORMED_REQUEST` | A body field is present |
+| 401 | `UNAUTHENTICATED` | No valid session token |
+| 403 | `PERMISSION_DENIED` | Signed in, but not `admin`, or an `admin` whose `permissions` is neither `full` nor `moderation-only` |
+| 404 | `NOT_FOUND` | No `products` row with that `id` |
+| 409 | `CONFLICT` | The row's `status` is no longer `pending` (already decided — covers both the near-simultaneous-approval race and an approve attempted after another admin already rejected it) |
+| 500 | `INTERNAL` | The update query fails for a reason other than a refused connection |
+| 503 | `UNAVAILABLE` | The database refuses the connection |
+
+---
+
+## 3.9.5 `POST /v1/admin/products/{id}/reject` — Reject a product, or request edits (ADMIN-001)
+
+**Auth** — `admin` (full or sub-admin).
+**Permissions** — `full`, `moderation-only`.
+
+**Request**
+
+```json
+{ "reason": "Photos too dark" }
+```
+
+No other field is accepted. The design's "Request edits" control
+(`AdminQueue.tsx`) calls this same endpoint with its own message text —
+there is no separate action or status value for "edits requested"
+(`admin/SRS.md` §4.1 behaviour 4, §7's resolved open question): the
+message is the only difference a caller can express.
+
+**Behaviour** — `reason` trimmed must be non-empty (AC-4). A single
+conditional update: `UPDATE products SET status = 'rejected',
+rejection_reason = $2, updated_at = now() WHERE id = $1 AND status =
+'pending' RETURNING *`. Zero rows updated because the row does not exist
+is `404`; zero rows updated because its `status` is no longer `pending`
+is `409` (covers rejecting a product another admin already approved —
+the approval is never silently overwritten).
+
+**Response** — `200`
+
+```json
+{ "id": "...", "status": "rejected", "rejection_reason": "Photos too dark", "updated_at": "..." }
+```
+
+**Errors**
+
+| Status | `error.code` | When |
+|---|---|---|
+| 400 | `MALFORMED_REQUEST` | A field the request body does not define is present (e.g. `autoNotify`) |
+| 401 | `UNAUTHENTICATED` | No valid session token |
+| 403 | `PERMISSION_DENIED` | Signed in, but not `admin`, or an `admin` whose `permissions` is neither `full` nor `moderation-only` |
+| 404 | `NOT_FOUND` | No `products` row with that `id` |
+| 409 | `CONFLICT` | The row's `status` is no longer `pending` (already approved by another admin) |
+| 422 | `VALIDATION_FAILED` | `reason` is absent, or trims to empty (AC-4) |
+| 500 | `INTERNAL` | The update query fails for a reason other than a refused connection |
+| 503 | `UNAVAILABLE` | The database refuses the connection |
+
+**Notes (§3.9.1–§3.9.5)**
+
+- Reviewed against PR #73 (`AdminQueue.tsx`): it has no mock module —
+  it reuses the shared `suppliers`/`products` store that
+  `GET /v1/products`/`GET /v1/suppliers` already serve, writing
+  `verified`/`status`/`rejection_reason` straight onto those rows via
+  `setCollection`. That client-side shape (clear `rejection_reason` on
+  approve, set it plus `status: "rejected"` on reject, one shared reason
+  textarea keyed to whichever row is targeted) matches the five contracts
+  above field-for-field; only `approveSupplier`/`approveProduct`/
+  `submitReject`'s bodies change from a local `setCollection` call to
+  these `fetch` calls — no component markup change.
+- No ERD change: `suppliers.verified`, `suppliers.rejection_reason`,
+  `products.status`, `products.rejection_reason` and their `CHECK`
+  constraints (`ck_products_status`) already exist (erd.md §3.4, §3.5),
+  as do `idx_suppliers_verified` (serves §3.9.1's supplier half) and
+  `idx_products_status` (serves §3.9.1's product half and the `409`
+  conditional-update check on both endpoints below it).
+- The `409` conflict check needs no new column or lock: every write here
+  is a single `UPDATE ... WHERE id = $1 AND <current-state column> =
+  <expected prior state>`, so a concurrent second write simply matches
+  zero rows and the handler reports `409` instead of re-reading first —
+  no optimistic-lock version column, no explicit transaction beyond the
+  single statement.
+
+## 8.6 Migration plan — Admin supplier and product approval queue (ADMIN-001)
+
+No schema change. `suppliers.verified`, `suppliers.rejection_reason`,
+`products.status`, `products.rejection_reason` and their constraints
+(`ck_products_status`), plus `idx_suppliers_verified` and
+`idx_products_status`, already exist from the base ERD (erd.md §3.4,
+§3.5), written ahead of this story and already covering every value and
+query the five endpoints above need.
+
+No new table, column, index or constraint. Five endpoints added:
+§3.9.1–§3.9.5 above.
+
+**Forward:** none to run. **Backward:** none to run. **Safety on a
+populated table:** not applicable — no DDL in this story.
+
+---
+
 ## 3.9.10 `GET /v1/admin/bookings` — List/search bookings (ADMIN-004)
 
 **Auth** — `admin` (full or sub-admin).
@@ -191,7 +443,6 @@ No new table, column, index or constraint. Three endpoints added: §3.9.10,
 populated table:** not applicable — no DDL in this story.
 
 ---
-
 ## 3.8.1 `GET /v1/supplier/profile` — Supplier registration and verification (SUPPLIERS-001)
 
 **Auth** — `supplier`. Returns the caller's own `suppliers` row only
@@ -337,6 +588,3 @@ its `SupplierProfile` shape and its `uploadDocument` stand-in match
 frontend change required when these handlers replace the mock; only the
 two functions' bodies change from a `localStorage` read/write to a real
 `fetch`.
-
-**Forward:** none to run — no DDL. **Backward:** none to run.
-**Safety on a populated table:** not applicable, no DDL in this story.
