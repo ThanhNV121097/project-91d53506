@@ -23,10 +23,18 @@ else wrote after the design shipped.
 |---|---|---|
 | Any caller (frontend) | Every page/component using `useCollection`/`useRecord` | Read a page of a collection, or one record by id, through the public API |
 
-This module has no write endpoints and no role distinctions of its own:
-every collection it serves is read-only here. Writes to these same tables
-belong to the module that owns that action (e.g. `suppliers` writes
-products, `admin` writes supplier/product status) and are specified there.
+This module has no write endpoints of its own — every collection it serves
+is read-only here. Writes to these same tables belong to the module that
+owns that action (e.g. `suppliers` writes products, `admin` writes
+supplier/product status) and are specified there. It does carry one role
+distinction on reads: nine collections — `audit`, `bookings`,
+`campaigns`, `complaints`, `notifications`, `payouts`, `settings`,
+`users`, `vouchers` — are private and require a signed-in caller; every
+page in the approved design that reads one of them is itself behind
+sign-in, or no page reads it at all. The remaining collections
+(`categories`, `departures`, `destinations`, `guides`, `products`,
+`reviews`, `suppliers`) stay public, unauthenticated reads, matching what
+the storefront already shows to every visitor today.
 
 ## 3. Scope
 
