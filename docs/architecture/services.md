@@ -588,3 +588,123 @@ its `SupplierProfile` shape and its `uploadDocument` stand-in match
 frontend change required when these handlers replace the mock; only the
 two functions' bodies change from a `localStorage` read/write to a real
 `fetch`.
+
+---
+
+## 3.3.1 `GET /v1/account/bookings` — List the signed-in Buyer's own bookings (ACCOUNT-001)
+
+**Auth** — `buyer` only. No `admin`/`supplier` session may call this
+endpoint (that is `GET /v1/admin/bookings`, §3.9.10, a separate contract).
+
+**Request**
+
+```
+GET /v1/account/bookings?limit=&cursor=
+```
+
+Query parameters — exactly these, no others. There is no caller-supplied
+`buyer_id`/filter: the row set is always `WHERE buyer_id = caller.id`,
+server-side, never a client-supplied value (ACCOUNT-001.2, AC-3).
+
+| Param | Type | Notes |
+|---|---|---|
+| `limit` | integer, 1–100 | Default 20, same cursor scheme as §3.9.10 |
+| `cursor` | string | Opaque, from a previous response's `next_cursor` |
+
+**Response** — `200`
+
+```json
+{
+  "data": [
+    {
+      "id": "...",
+      "code": "NA-7X42K9",
+      "product_name": "...",
+      "date": "2026-11-20",
+      "total": 1850000,
+      "status": "Awaiting Payment",
+      "created_at": "..."
+    }
+  ],
+  "has_more": false,
+  "next_cursor": null
+}
+```
+
+Sorted `created_at DESC`. `product_name` and `date` are read via the same
+join §3.9.10 already uses (`departures.product_id → products.name`,
+`departures.date`) — no denormalized columns added to `bookings` for this
+story either. `status` is read straight off `bookings.status`, so a row
+always reflects the latest write (ACCOUNT-001.3) — no caching layer sits
+between this query and the table.
+
+**Errors**
+
+| Status | `error.code` | When |
+|---|---|---|
+| 400 | `MALFORMED_REQUEST` | A query parameter outside `limit`/`cursor` is present (e.g. `buyer_id`) |
+| 401 | `UNAUTHENTICATED` | No valid session token |
+| 403 | `PERMISSION_DENIED` | Signed in, but role is not `buyer` |
+| 422 | `VALIDATION_FAILED` | `limit` present and >100 (never clamped) or ≤0 |
+| 500 | `INTERNAL` | The query fails for a reason other than a refused connection |
+| 503 | `UNAVAILABLE` | The database refuses the connection |
+
+No `404` — zero bookings is `200` with `data: []`, `has_more: false`
+(ACCOUNT-001 Boundary).
+
+---
+
+## 3.3.2 `GET /v1/bookings/{id_or_code}` — Fetch a single booking by id or code (ACCOUNT-001, BOOKING-003)
+
+**Auth** — `buyer`, and only when the booking's `buyer_id` is the caller's
+own. This is the shared single-booking reader: ACCOUNT-001 AC-3's
+"fetch another buyer's booking id directly" case and BOOKING-003's
+confirmation-page lookup are the same endpoint (BOOKING-003 AC-2 already
+names its contract; this story adds no second reader).
+
+**Request**
+
+```
+GET /v1/bookings/{id_or_code}
+```
+
+`{id_or_code}` matches `bookings.id` (uuid) or `bookings.code` (the
+`NA-XXXXXX` string) — whichever shape it parses as.
+
+**Response** — `200`, the same row shape as §3.3.1's list entries, plus
+the fields the confirmation page needs (`departure_id`, `adults`,
+`children`, `traveller_name`, `traveller_phone`, `traveller_email`,
+`payment`) — unchanged from BOOKING-003's own contract; this story adds
+no field to it.
+
+**Errors**
+
+| Status | `error.code` | When |
+|---|---|---|
+| 401 | `UNAUTHENTICATED` | No valid session token |
+| 404 | `NOT_FOUND` | No booking matches `{id_or_code}`, **or** it exists but `buyer_id` is not the caller's own — the same code either way, so a Buyer probing another's id learns nothing about whether it exists (ACCOUNT-001 AC-3) |
+| 500 | `INTERNAL` | The query fails for a reason other than a refused connection |
+| 503 | `UNAVAILABLE` | The database refuses the connection |
+
+**Notes**
+
+- No ERD change. `bookings.buyer_id` and `idx_bookings_buyer_id`
+  (erd.md §3.11) already exist, written for exactly this "owning Buyer"
+  filter, and `uq_bookings_code` already serves the `{code}` half of the
+  lookup. §3.3.1 and §3.3.2 are new handlers over existing columns and
+  indexes only.
+- There is no mock to compare against: this story has no UI pull request
+  on `/account` — ACCOUNT-001's screen already renders against
+  `docs/account/SRS.md`'s own wording, read directly here.
+
+## 8.7 Migration plan — Buyer booking history and status (ACCOUNT-001)
+
+No schema change. `bookings.buyer_id`, `idx_bookings_buyer_id` and
+`uq_bookings_code` already exist from the base ERD (erd.md §3.11), written
+ahead of this story and already covering both endpoints' only filter and
+lookup. No new table, column, index or constraint.
+
+Two endpoints added: §3.3.1, §3.3.2 above.
+
+**Forward:** none to run. **Backward:** none to run. **Safety on a
+populated table:** not applicable — no DDL in this story.
