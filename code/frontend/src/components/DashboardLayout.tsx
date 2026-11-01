@@ -75,7 +75,7 @@ export default function DashboardLayout({ title, nav, actions, children, brand }
   }, [open]);
 
   const groups = nav
-    .map((g) => ({ ...g, items: g.items.filter((i) => allowed(session, i.roles) || !i.roles) }))
+    .map((g) => ({ ...g, items: g.items.filter((i) => (allowed(session, i.roles) || !i.roles) && hasPermission(session, i.permission)) }))
     .filter((g) => g.items.length > 0);
 
   const menu = (
