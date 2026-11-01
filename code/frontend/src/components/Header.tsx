@@ -11,6 +11,8 @@ import { useWishlist } from "../lib/mock/wishlist";
 export default function Header() {
   const links = useList<{ label: string; href: string }>("nav.links");
   const name = useContent("site.name");
+  const rawCtaHref = useContent("nav.cta.href");
+  const ctaHref = rawCtaHref && rawCtaHref.startsWith("/") ? rawCtaHref : "/search";
   const [open, setOpen] = useState(false);
   const session = useSession();
   const { ids } = useWishlist();
@@ -39,7 +41,7 @@ export default function Header() {
           <Link to={session ? "/account" : "/signin"} aria-label={useContent("nav.icons.account")} className="grid h-10 w-10 place-items-center text-ink hover:text-accent">
             <Icon name="account" />
           </Link>
-          <Link to="/search" data-testid="header-book" className="ml-2 hidden rounded-[var(--radius-sm)] bg-ink px-4 py-2 text-sm text-surface hover:bg-accent lg:inline-block">
+          <Link to={ctaHref} data-testid="header-book" className="ml-2 hidden rounded-[var(--radius-sm)] bg-ink px-4 py-2 text-sm text-surface hover:bg-accent lg:inline-block">
             <T k="nav.cta.label" />
           </Link>
           <MenuToggle open={open} onToggle={() => setOpen((o) => !o)} className="lg:hidden" />

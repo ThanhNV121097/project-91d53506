@@ -120,7 +120,7 @@
   },
   "nav": {
     "cta": {
-      "href": "#contact",
+      "href": "/search",
       "label": "Find a trip"
     },
     "icons": {
