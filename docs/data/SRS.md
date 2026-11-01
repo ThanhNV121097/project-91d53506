@@ -50,7 +50,13 @@ products, `admin` writes supplier/product status) and are specified there.
 - Any write to a collection (creating a product, confirming a booking,
   approving a supplier) — specified in the module that owns that action.
 - Authentication and permission checks on who may call the API — `auth`
-  module; this module's endpoints are public reads, matching what the
+  module; within this module, nine collections (`bookings`, `payouts`,
+  `users`, `complaints`, `vouchers`, `notifications`, `settings`,
+  `campaigns`, `audit`) require a signed-in caller and return only rows
+  that caller may see — an admin sees every row, anyone else sees only
+  their own records, filtered in the database query — while the remaining
+  seven collections (`categories`, `departures`, `destinations`, `guides`,
+  `products`, `reviews`, `suppliers`) stay public reads, matching what the
   storefront already shows to every visitor today.
 - The inventory hold, seat decrement and booking state machine — `booking`
   module.
