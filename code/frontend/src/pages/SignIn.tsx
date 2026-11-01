@@ -117,7 +117,7 @@ export default function SignIn() {
                 signIn("google@example.com", user.name, "buyer");
                 navigate("/account");
               } catch {
-                setError(useContent("pages.signin.googleError"));
+                setError(googleError);
               }
             }}
               className="flex items-center justify-center gap-2 rounded-[var(--radius-sm)] border border-field px-6 py-3 text-sm text-ink hover:border-accent hover:text-accent">
