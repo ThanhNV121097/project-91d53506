@@ -1,7 +1,7 @@
 import { useEffect, useState, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 import { NavLink } from "react-router-dom";
-import { allowed, useSession } from "../lib/session";
+import { allowed, hasPermission, useSession } from "../lib/session";
 import MenuToggle from "./MenuToggle";
 
 /**
@@ -43,6 +43,8 @@ export interface NavItem {
   badge?: number;
   /** Which roles see it. Everyone signed in when not given. */
   roles?: readonly string[];
+  /** The sub-admin permission section this item belongs to. No restriction when not given. */
+  permission?: string;
 }
 
 export interface NavGroup {
@@ -73,7 +75,7 @@ export default function DashboardLayout({ title, nav, actions, children, brand }
   }, [open]);
 
   const groups = nav
-    .map((g) => ({ ...g, items: g.items.filter((i) => allowed(session, i.roles) || !i.roles) }))
+    .map((g) => ({ ...g, items: g.items.filter((i) => (allowed(session, i.roles) || !i.roles) && hasPermission(session, i.permission)) }))
     .filter((g) => g.items.length > 0);
 
   const menu = (

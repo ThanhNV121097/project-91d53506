@@ -41,6 +41,14 @@ export interface Session {
    * to open the page as somebody else and check it is refused.
    */
   role?: string;
+
+  /**
+   * The restricted set a sub-admin acts within — "moderation-only",
+   * "finance-only", "content-only" or "users-only" (the closed set
+   * `docs/architecture/services.md` §3.9.7 names). Absent on a plain admin
+   * (full access) and on every other role.
+   */
+  permissions?: string;
 }
 
 const KEY = "agentteam:session";
@@ -75,13 +83,15 @@ function nameFrom(email: string): string {
 function parse(raw: string | null): Session | null {
   if (!raw) return null;
   try {
-    const v = JSON.parse(raw) as { email?: unknown; name?: unknown; role?: unknown } | null;
+    const v = JSON.parse(raw) as { email?: unknown; name?: unknown; role?: unknown; permissions?: unknown } | null;
     const email = typeof v?.email === "string" ? v.email.trim() : "";
     if (!email) return null;
     const name = typeof v?.name === "string" ? v.name.trim() : "";
     const session: Session = { email, name: name || nameFrom(email) };
     const role = typeof v?.role === "string" ? v.role.trim().toLowerCase() : "";
     if (role) session.role = role;
+    const permissions = typeof v?.permissions === "string" ? v.permissions.trim().toLowerCase() : "";
+    if (permissions) session.permissions = permissions;
     return session;
   } catch {
     return null;
@@ -128,14 +138,18 @@ export function useSession(): Session | null {
 
 /**
  * Signs the visitor in as email — any address: this is the design's mock.
- * `role` is the role they act as on a site that has more than one.
+ * `role` is the role they act as on a site that has more than one;
+ * `permissions` is the restricted set a sub-admin signs in with, read from
+ * their own `users` row (absent for a plain admin or any other role).
  */
-export function signIn(email: string, name?: string, role?: string): void {
+export function signIn(email: string, name?: string, role?: string, permissions?: string): void {
   const address = email.trim();
   if (!address) return;
   const session: Session = { email: address, name: name?.trim() || nameFrom(address) };
   const acting = role?.trim().toLowerCase();
   if (acting) session.role = acting;
+  const scope = permissions?.trim().toLowerCase();
+  if (scope) session.permissions = scope;
   store(JSON.stringify(session));
   changed();
 }
@@ -167,4 +181,19 @@ export function allowed(session: Session | null, roles?: readonly string[]): boo
   if (!roles || roles.length === 0) return true;
   const role = session.role ?? "";
   return roles.some((r) => r.trim().toLowerCase() === role);
+}
+
+/**
+ * Whether the visitor's `permissions` value grants `required` — a section
+ * named `moderation-only`/`finance-only`/`content-only`/`users-only`
+ * (ADMIN-003 AC-3; the closed set `docs/architecture/services.md` §3.9.7
+ * names). A plain admin has no `permissions` value and so reaches every
+ * section (full access); a sub-admin reaches only the one their value names.
+ * `required` absent means the section names no restriction.
+ */
+export function hasPermission(session: Session | null, required?: string): boolean {
+  if (!required) return true;
+  if (!session) return false;
+  if (!session.permissions) return true;
+  return session.permissions === required;
 }

@@ -19,7 +19,7 @@ export default function AdminFinance() {
   const suppliers = useCollection("suppliers", { pageSize: 20 });
   const gross = payouts.items.reduce((n, p) => n + Number(p.gross ?? 0), 0);
   return (
-    <RequireRole roles={["admin"]}>
+    <RequireRole roles={["admin"]} permission="finance-only">
       <DashboardLayout title="Finance" nav={ADMIN_NAV} brand="Nghệ An Departures">
         <div className="grid gap-3 sm:grid-cols-3">
           <Stat label="Gross booked" value={formatPrice(gross)} icon="wallet" />

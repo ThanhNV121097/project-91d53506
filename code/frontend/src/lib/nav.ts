@@ -17,18 +17,18 @@ export const SUPPLIER_NAV: readonly NavGroup[] = [
 export const ADMIN_NAV: readonly NavGroup[] = [
   { heading: "Moderation", items: [
     { to: "/admin", label: "Overview" },
-    { to: "/admin/queue", label: "Approval queue", badge: 2 },
-    { to: "/admin/moderation", label: "Reviews" },
+    { to: "/admin/queue", label: "Approval queue", badge: 2, permission: "moderation-only" },
+    { to: "/admin/moderation", label: "Reviews", permission: "moderation-only" },
   ] },
   { heading: "Operations", items: [
-    { to: "/admin/bookings", label: "Bookings & disputes" },
-    { to: "/admin/users", label: "Users & roles" },
+    { to: "/admin/bookings", label: "Bookings & disputes", permission: "finance-only" },
+    { to: "/admin/users", label: "Users & roles", permission: "users-only" },
   ] },
   { heading: "Money", items: [
-    { to: "/admin/finance", label: "Finance" },
+    { to: "/admin/finance", label: "Finance", permission: "finance-only" },
   ] },
   { heading: "Platform", items: [
-    { to: "/admin/content", label: "Content & marketing" },
+    { to: "/admin/content", label: "Content & marketing", permission: "content-only" },
     { to: "/admin/system", label: "System" },
   ] },
 ];

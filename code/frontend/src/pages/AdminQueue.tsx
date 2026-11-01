@@ -19,7 +19,7 @@ export default function AdminQueue() {
   });
   const suppliers = useCollection("suppliers", { where: { verified: false }, pageSize: 10 });
   return (
-    <RequireRole roles={["admin"]}>
+    <RequireRole roles={["admin"]} permission="moderation-only">
       <DashboardLayout title="Approval queue" nav={ADMIN_NAV} brand="Nghệ An Departures">
         <h2 className="text-base text-ink">Supplier profiles</h2>
         <ul className="flex flex-col gap-2">
