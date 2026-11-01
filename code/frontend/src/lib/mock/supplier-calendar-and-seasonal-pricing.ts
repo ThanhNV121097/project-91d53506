@@ -55,7 +55,14 @@ export function addDeparture(
   return { ok: true };
 }
 
-/** SUPPLIERS-004 AC-2/AC-3 and the boundary row: capacity never drops below seats already committed. */
+/**
+ * SUPPLIERS-004 AC-2/AC-3 and the boundary row: capacity never drops below
+ * seats already committed. Blocking a departure (AC-4) zeroes its bookable
+ * seats outright — `seats` is what every other screen's "seats left"/search
+ * availability check reads, so a Blocked row reads as sold out everywhere,
+ * not just badged differently here. Unblocking restores the seats still
+ * free under its capacity.
+ */
 export function patchDeparture(id: string, patch: Partial<Pick<Departure, "price" | "season" | "state" | "capacity">>): Result {
   const all = rows();
   const row = all.find((d) => d.id === id);
@@ -68,7 +75,9 @@ export function patchDeparture(id: string, patch: Partial<Pick<Departure, "price
   const next = all.map((d) => {
     if (d.id !== id) return d;
     const capacity = patch.capacity ?? d.capacity;
-    const seats = patch.capacity !== undefined ? capacity - (d.capacity - d.seats) : d.seats;
+    const committed = d.capacity - d.seats;
+    const state = patch.state ?? d.state;
+    const seats = state === "Blocked" ? 0 : capacity - committed;
     return { ...d, ...patch, capacity, seats };
   });
   setCollection("departures", next as unknown as Row[]);
