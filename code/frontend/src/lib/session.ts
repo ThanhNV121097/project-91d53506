@@ -182,3 +182,18 @@ export function allowed(session: Session | null, roles?: readonly string[]): boo
   const role = session.role ?? "";
   return roles.some((r) => r.trim().toLowerCase() === role);
 }
+
+/**
+ * Whether the visitor's `permissions` value grants `required` — a section
+ * named `moderation-only`/`finance-only`/`content-only`/`users-only`
+ * (ADMIN-003 AC-3; the closed set `docs/architecture/services.md` §3.9.7
+ * names). A plain admin has no `permissions` value and so reaches every
+ * section (full access); a sub-admin reaches only the one their value names.
+ * `required` absent means the section names no restriction.
+ */
+export function hasPermission(session: Session | null, required?: string): boolean {
+  if (!required) return true;
+  if (!session) return false;
+  if (!session.permissions) return true;
+  return session.permissions === required;
+}
