@@ -11,7 +11,7 @@ import { MY_BOOKINGS } from "../lib/mock/buyer-booking-history-and-status";
 
 const TONE: Record<string, "neutral" | "good" | "warn" | "bad"> = {
   Paid: "good", Confirmed: "good", Completed: "neutral",
-  "Awaiting payment": "warn", Cancelled: "bad", Refunded: "bad",
+  "Awaiting Payment": "warn", Cancelled: "bad", Refunded: "bad",
 };
 
 export default function Account() {
