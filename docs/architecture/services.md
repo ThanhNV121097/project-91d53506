@@ -1341,6 +1341,19 @@ notify call too slow, which this project's seeded scale does not reach).
 | SSR for product pages (deferred per `site/SRS.md` §7) | Additive | `/v1/products/{id}` (via `data` module, 3.1.2) is already a plain JSON read; an SSR frontend change consumes the same endpoint, no contract change needed |
 | A sitemap endpoint | Additive | New `GET /sitemap.xml`, served outside `/v1` (static, not JSON) |
 
+## 8.1 Migration plan — Booking confirmation with QR and notice (BOOKING-003)
+
+No schema change. `bookings` (incl. `uq_bookings_code`, the `status` CHECK
+and values, `departure_id` FK) and `notifications` (incl.
+`uq_notifications_event_channel`) already exist from the base migration
+(`docs/architecture/erd.md` §3.11, §3.18, §8) — this story only extends
+`GET /v1/bookings/{id_or_code}`'s handler behaviour (the status gate on a
+code lookup, and the `departure` join in the response) and relies on the
+`payments` module (3.6.3) to call `notify.Raise("booking.confirmed:<id>",
+...)` on the `Awaiting Payment` → `Confirmed` transition. Forward: none to
+run. Backward: none to run. Safety on a populated table: not applicable —
+no DDL in this story.
+
 ## 9. Open questions
 
 | Question | Owner | Blocking |
