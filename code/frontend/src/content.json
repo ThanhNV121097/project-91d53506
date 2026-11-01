@@ -212,6 +212,7 @@
     },
     "checkout": {
       "after": "After payment you get a booking code and a QR code, by email and on Zalo.",
+      "apply": "Apply",
       "code": "Code",
       "description": "Pay by VNPay, MoMo, ZaloPay or bank transfer and get your booking code straight away.",
       "discount": "Discount",
@@ -228,6 +229,13 @@
       "sub": "Your seats are held while you pay. Payment is taken by the method you choose below.",
       "title": "Pay for your booking",
       "voucher": "Discount code",
+      "voucherApplied": "Code applied:",
+      "voucherError": {
+        "EXPIRED": "This code has expired.",
+        "INACTIVE": "This code is not active.",
+        "NOT_FOUND": "We don't recognise that code.",
+        "OVER_LIMIT": "This code has reached its limit."
+      },
       "voucherNote": "If a supplier or campaign gave you a code, enter it here."
     },
     "confirmed": {
