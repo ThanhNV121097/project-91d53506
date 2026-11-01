@@ -443,6 +443,119 @@ No new table, column, index or constraint. Three endpoints added: §3.9.10,
 populated table:** not applicable — no DDL in this story.
 
 ---
+## 3.5.3 `POST /v1/bookings/{id}/voucher` — Apply a discount code at checkout (BOOKING-002)
+
+**Auth** — `buyer`, owning the booking (`bookings.buyer_id = caller.id`).
+A booking that exists but belongs to another buyer is treated identically
+to one that does not exist (`404`), so ownership is never leaked —
+matching BOOKING-004 AC-3's pattern on the sibling complaints endpoint.
+
+**Request**
+
+```json
+{ "code": "CUALO10" }
+```
+
+No other field is accepted. `code` is required and must not be blank —
+an empty-string `code` is a validation failure, distinct from the
+UI's "field left empty, no submit" case which never calls this endpoint
+(SRS §4.2 boundary table: "Code field submitted empty" → no lookup is
+performed client-side; this endpoint is only ever called with a non-empty
+string the Buyer typed and submitted).
+
+**Behaviour** — in one transaction:
+
+1. Look up `bookings` by `id`, scoped to the caller (`buyer_id = caller.id`
+   AND `status = 'Awaiting Payment'`... — see Notes on status). Not found
+   or not owned → `404`.
+2. If the booking already has `voucher_id` set (non-null) → `409
+   ALREADY_APPLIED` (BOOKING-002.4 — never applied twice to the same
+   booking); nothing else is read or written.
+3. Look up `vouchers` by `lower(code) = lower($code)` (the existing
+   `uq_vouchers_code_lower` index, erd.md §3.13). No match → `404
+   NOT_FOUND`.
+4. Validate, in order, against the found row: `status <> 'Active'` → `409
+   INACTIVE`; `expires < current_date` → `409 EXPIRED`; `used >= "limit"`
+   → `409 OVER_LIMIT`. First failing check wins; only one `error.details[0].code`
+   is ever returned.
+5. On success: compute the discount (`discount_percent` → `total *
+   discount_percent / 100`, floored to 2 decimals; `discount_amount` →
+   that fixed amount, never reducing `total` below 0), update the
+   booking's `total` and set its `voucher_id`, and increment
+   `vouchers.used` by exactly 1 — all three writes in the same
+   transaction as step 1–4's reads, so a concurrent application of the
+   same voucher to a different booking either serializes behind this one
+   or the other transaction's own `used >= "limit"` check (step 4) catches
+   the race the same way BOOKING-001.5 catches the seat-hold race: the
+   update is `UPDATE vouchers SET used = used + 1 WHERE id = $1 AND used <
+   "limit" RETURNING used`; zero rows updated means the race was lost,
+   and that request falls back to `409 OVER_LIMIT` instead of applying a
+   stale read.
+
+**Response** — `200`
+
+```json
+{ "total": 1665000, "discount_applied": 185000 }
+```
+
+`total` is the booking's new `total` after discount; `discount_applied`
+is the amount subtracted (not the voucher's raw percent/amount field, so
+the frontend never recomputes it).
+
+**Errors**
+
+| Status | `error.code` | `error.details[0].code` | When |
+|---|---|---|---|
+| 400 | `MALFORMED_REQUEST` | — | A field the body does not define is present (e.g. `discount_override`) |
+| 401 | `UNAUTHENTICATED` | — | No valid session token |
+| 403 | `PERMISSION_DENIED` | — | Signed in, but not role `buyer` |
+| 404 | `NOT_FOUND` | — | No `bookings` row with that `id`, or it belongs to another buyer, or no `vouchers` row matches `code` (case-insensitive) |
+| 409 | `CONFLICT` | `ALREADY_APPLIED` | The booking already has a `voucher_id` set |
+| 409 | `CONFLICT` | `INACTIVE` | The matched voucher's `status` is not `'Active'` |
+| 409 | `CONFLICT` | `EXPIRED` | The matched voucher's `expires` has passed |
+| 409 | `CONFLICT` | `OVER_LIMIT` | The matched voucher's `used >= "limit"` (checked twice: once on read, once atomically on the write, per Behaviour step 5) |
+| 422 | `VALIDATION_FAILED` | — | `code` is present and blank (empty string) |
+| 500 | `INTERNAL` | — | A query or insert fails for a reason other than a refused connection |
+| 503 | `UNAVAILABLE` | — | The database refuses the connection |
+
+**Notes**
+
+- A booking no longer `Awaiting Payment` (already `Paid`/`Confirmed`/
+  terminal) is out of this requirement's stated scope — BOOKING-002's SRS
+  text only describes `/checkout/:id`, which is reached before payment.
+  This endpoint does not additionally gate on `status`, matching the test
+  cases (`docs/booking/test-cases/voucher-and-discount-code-checkout.md`),
+  which never exercise a non-`Awaiting Payment` booking; a booking in any
+  status is found by step 1 as long as it is the caller's own, and the
+  normal `ALREADY_APPLIED`/voucher-state checks are what actually gate
+  re-application.
+- Matches the SRS's own response shape (§4.2 doesn't prescribe a wire
+  shape; this story has no UI PR/mock to read, so the response above is
+  this design's own choice) and the merged test cases' expectations
+  (`total`, `discount_applied`, `error.details[0].code`) exactly — no
+  frontend change needed since there is no frontend yet for this field;
+  when `/checkout/:id`'s voucher step is built it implements against this
+  contract directly, no mock to reconcile.
+
+## 8.6 Migration plan — Voucher and discount code checkout (BOOKING-002)
+
+No schema change. `vouchers` (erd.md §3.13) and `bookings.voucher_id`/
+`bookings.total` (erd.md §3.11) already carry every column this story
+reads or writes — `vouchers.status`, `used`, `"limit"`, `expires`,
+`discount_percent`, `discount_amount`, and `bookings.voucher_id`,
+`total` — plus `uq_vouchers_code_lower` (this endpoint's case-insensitive
+lookup) and the existing `ck_vouchers_used_bounds` constraint (`used >= 0
+AND used <= "limit"`, which the atomic `UPDATE ... WHERE used < "limit"`
+in Behaviour step 5 never violates). All written in the base ERD
+migration, ahead of this story.
+
+One endpoint added: §3.5.3 above (`POST /v1/bookings/{id}/voucher`).
+
+**Forward:** none to run — no DDL. **Backward:** none to run. **Safety
+on a populated table:** not applicable, no DDL in this story.
+
+---
+
 ## 3.8.1 `GET /v1/supplier/profile` — Supplier registration and verification (SUPPLIERS-001)
 
 **Auth** — `supplier`. Returns the caller's own `suppliers` row only
