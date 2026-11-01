@@ -49,4 +49,6 @@ export interface Booking {
   payment: string;
   created: string;
   image: string;
+  /** Empty: this booking's product needs the supplier's manual confirm/reject. Non-empty: it auto-confirms. */
+  confirmation: string;
 }
