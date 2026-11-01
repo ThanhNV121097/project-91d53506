@@ -38,7 +38,11 @@ export default function Checkout() {
         <T k="pages.checkout.sub" as="p" className="mt-2 max-w-[52ch] text-sm text-ink-soft" />
 
         <h2 className="mt-10 text-[length:var(--size-h2)]"><T k="pages.checkout.pay" /></h2>
-        {failed && <T k="pages.checkout.failed" as="p" role="alert" className="mt-4 rounded-[var(--radius-sm)] border border-field bg-surface px-4 py-3 text-sm text-ink" />}
+        {failed && (
+          <p role="alert" className="mt-4 rounded-[var(--radius-sm)] border border-field bg-surface px-4 py-3 text-sm text-ink">
+            <T k="pages.checkout.failed" />
+          </p>
+        )}
         <div className="mt-4 flex flex-col gap-2">
           {PAYMENT_METHODS.map((p) => (
             <div key={p.id}>
