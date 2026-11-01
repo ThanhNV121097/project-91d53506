@@ -69,7 +69,16 @@ export default function AdminBookings() {
           onPage={() => undefined} rowKey={(r) => r.id}
           caption="Complaints raised against bookings"
           empty={<p>No complaint is open.</p>}
-          actions={() => <button type="button" className="text-sm text-accent underline">Refund manually</button>}
+          actions={(r) => (
+            <button
+              type="button"
+              disabled={r.status === "Refunded"}
+              onClick={() => refund(String(r.id), String(r.booking_code))}
+              className="text-sm text-accent underline disabled:text-ink-soft disabled:no-underline"
+            >
+              {r.status === "Refunded" ? "Refunded" : "Refund manually"}
+            </button>
+          )}
         />
       </DashboardLayout>
     </RequireRole>
