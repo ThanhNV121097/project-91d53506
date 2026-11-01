@@ -67,7 +67,7 @@ export default function AdminFinance() {
   }, [payouts, t.sort]);
 
   const gross = payouts.reduce((n, p) => n + p.gross, 0);
-  const revenue = payouts.reduce((n, p) => n + split(p.gross, Number(rateFor(p.supplierId)) || 0).commission, 0);
+  const revenue = payouts.reduce((n, p) => n + split(p.gross, appliedRateFor(p)).commission, 0);
   const owed = gross - revenue;
 
   return (
