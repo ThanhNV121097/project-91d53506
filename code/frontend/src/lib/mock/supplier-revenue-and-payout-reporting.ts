@@ -1,55 +1,46 @@
-/**
- * SUPPLIERS-007 — revenue, the applicable commission rate, and what the
- * platform still owes this supplier, reconciled against bookings and any
- * payout period already closed.
- *
- * Mock data access layer: reads the same JSON collections every other
- * supplier screen reads (src/data/*.json) through useCollection. Deleted
- * once GET /v1/supplier/revenue exists (docs/architecture/services.md
- * §3.8.10) — that endpoint already returns this exact shape, so the
- * backend step swaps this file for a fetch and nothing else changes.
- */
 import { useCollection } from "../../data";
-import type { Booking } from "../trips";
 
-const QUALIFYING = new Set(["Paid", "Confirmed", "Completed"]);
+/** Demo supplier this screen reports for — the one the rest of the mock already books against. */
+const SUPPLIER_NAME = "Cửa Lò Beach Stays";
+const SUPPLIER_ID = "cua-lo-stays";
 
-export interface SupplierRevenue {
-  revenue: number;
-  commissionRate: number;
-  commission: number;
-  expectedPayout: number;
-  /** False when no rate is set anywhere (global or override) — AC-2. */
-  rateSet: boolean;
-  loading: boolean;
-}
+const COUNTS = new Set(["Paid", "Confirmed", "Completed"]);
 
-export function useSupplierRevenue(): SupplierRevenue {
-  const bookings = useCollection<Booking>("bookings", { pageSize: 200 });
+/**
+ * Revenue, commission and expected payout for the demo supplier, per
+ * SUPPLIERS-007: revenue sums this supplier's own Paid/Confirmed/Completed
+ * bookings; commission is revenue × the supplier's override rate, or else
+ * the platform's global rate, or 0 when neither is set; expected payout is
+ * revenue minus commission, minus whatever a closed payout period already
+ * covers (its own net), so a settled period is never counted twice.
+ */
+export function useSupplierRevenue() {
+  const bookings = useCollection("bookings", { pageSize: 200 });
   const payouts = useCollection("payouts", { pageSize: 200 });
-  const settings = useCollection("settings", { pageSize: 50 });
   const suppliers = useCollection("suppliers", { pageSize: 50 });
+  const settings = useCollection("settings", { pageSize: 50 });
 
   const revenue = bookings.items
-    .filter((b) => QUALIFYING.has(b.status))
-    .reduce((n, b) => n + b.total, 0);
+    .filter((b) => b.supplier_name === SUPPLIER_NAME && COUNTS.has(String(b.status)))
+    .reduce((n, b) => n + Number(b.total ?? 0), 0);
 
-  const globalRate = Number(settings.items.find((s) => s.id === "commission-rate")?.value) || 0;
-  const overrideRate = Number(suppliers.items[0]?.commission) || 0;
-  const ratePercent = overrideRate || globalRate;
-  const commissionRate = ratePercent / 100;
-  const commission = Math.round(revenue * commissionRate);
+  const own = suppliers.items.find((s) => s.id === SUPPLIER_ID);
+  const override = Number(own?.commission ?? 0);
+  const globalRate = Number(settings.items.find((s) => s.id === "commission-rate")?.value ?? 0);
+  const rate = override > 0 ? override : globalRate > 0 ? globalRate : 0;
 
-  // Revenue already covered by a closed payout period must not be paid out
-  // twice (SUPPLIERS-007 behaviour 3): expected payout applies the rate only
-  // to what is left after every settled period's gross is taken out.
-  const settledGross = payouts.items.reduce((n, p) => n + Number(p.gross ?? 0), 0);
-  const unsettled = Math.max(0, revenue - settledGross);
-  const expectedPayout = Math.round(unsettled * (1 - commissionRate));
+  const commission = Math.round(revenue * (rate / 100));
+  const settled = payouts.items
+    .filter((p) => p.supplier_name === SUPPLIER_NAME)
+    .reduce((n, p) => n + Number(p.net ?? 0), 0);
+  const expectedPayout = Math.max(0, revenue - commission - settled);
 
   return {
-    revenue, commissionRate, commission, expectedPayout,
-    rateSet: commissionRate > 0,
-    loading: bookings.loading || payouts.loading || settings.loading || suppliers.loading,
+    revenue,
+    rate,
+    commission,
+    expectedPayout,
+    loading: bookings.loading || payouts.loading,
+    supplierName: SUPPLIER_NAME,
   };
 }
