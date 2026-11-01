@@ -27,9 +27,9 @@ export default function SupplierHome() {
           <Stat label="Bookings" value={String(bookings.total)} icon="date" />
           <Stat label="Revenue" value={formatPrice(rev.revenue)} icon="wallet" />
           <Stat label="Platform commission" value={formatPrice(rev.commission)} icon="tag"
-            note={rev.rateSet ? undefined : "No commission rate has been set yet."} />
+            note={rev.rate > 0 ? undefined : "No commission rate has been set yet."} />
           <Stat label="Expected payout" value={formatPrice(rev.expectedPayout)} icon="card"
-            note={rev.rateSet ? undefined : "Gross, until a commission rate is set."} />
+            note={rev.rate > 0 ? undefined : "Gross, until a commission rate is set."} />
         </div>
         <div className="grid gap-3 lg:grid-cols-[1.4fr_1fr]">
           <Bars data={WEEKS} label="Bookings by week" />
