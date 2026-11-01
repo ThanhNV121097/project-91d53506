@@ -40,7 +40,7 @@ export default function AdminUsers() {
   };
 
   return (
-    <RequireRole roles={["admin"]}>
+    <RequireRole roles={["admin"]} permission="users-only">
       <DashboardLayout title="Users & roles" nav={ADMIN_NAV} brand="Nghệ An Departures"
         actions={
           <button type="button" aria-expanded={open} onClick={() => setOpen((o) => !o)}
