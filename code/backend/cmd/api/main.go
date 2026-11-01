@@ -13,6 +13,8 @@ import (
 
 	_ "github.com/jackc/pgx/v5/stdlib"
 
+	"github.com/ThanhNV121097/project-91d53506/backend/internal/contact"
+	"github.com/ThanhNV121097/project-91d53506/backend/internal/httpx"
 	"github.com/ThanhNV121097/project-91d53506/backend/internal/migrate"
 	"github.com/ThanhNV121097/project-91d53506/backend/migrations"
 )
