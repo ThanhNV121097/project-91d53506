@@ -114,8 +114,8 @@ export default function AdminFinance() {
             { key: "period", label: "Period", sortable: true, render: (r) => <span className="fig">{formatDate(r.period)}</span> },
             { key: "supplierName", label: "Supplier" },
             { key: "gross", label: "Gross", align: "right", sortable: true, render: (r) => <span className="fig">{formatPrice(r.gross)}</span> },
-            { key: "commission", label: "Commission", align: "right", render: (r) => <span className="fig">{formatPrice(split(r.gross, Number(rateFor(r.supplierId)) || 0).commission)}</span> },
-            { key: "net", label: "Payout", align: "right", render: (r) => <span className="fig">{formatPrice(split(r.gross, Number(rateFor(r.supplierId)) || 0).net)}</span> },
+            { key: "commission", label: "Commission", align: "right", render: (r) => <span className="fig">{formatPrice(split(r.gross, appliedRateFor(r)).commission)}</span> },
+            { key: "net", label: "Payout", align: "right", render: (r) => <span className="fig">{formatPrice(split(r.gross, appliedRateFor(r)).net)}</span> },
             { key: "status", label: "Status", render: (r) => <Badge tone={r.status === "Paid" ? "good" : "warn"}>{r.status}</Badge> },
           ]}
           rows={sorted} total={sorted.length} page={1} pages={1}
