@@ -1402,6 +1402,7 @@ checkout total that disagrees with what the booking form showed.
 | Exact sign-in rate-limit figures (§6) — no SRS states a number for `/v1/auth/login` | Stakeholder | No — a conservative default (10/10min) ships; tightening later is additive per api-conventions |
 | Should `/v1/admin/users` support a `users-only` permission distinct from the three the SRS text names outright (moderation/finance/content)? | Stakeholder | No — added here as the fourth value so ADMIN-003's delegation story has an endpoint to delegate; confirm the label before Dev builds the sub-admin creation form |
 | MoMo/ZaloPay/bank-transfer: disabled-with-note vs clickable-fallback (payments/SRS.md §7) | Stakeholder | No — disabled-with-note implemented (3.6.4's `enabled:false`) |
+| Is the `/book/:id` package choice (Standard / Private group / With hotel pick-up) a real priced product variant, or cosmetic only? (§8.2) | Stakeholder | No — `POST /v1/bookings` ships with no package field/upcharge; the mock's `pack`-driven extra is dropped from the real checkout total when this story's backend lands, pending this answer |
 
 ## 10. Requirement ↔ endpoint traceability
 
