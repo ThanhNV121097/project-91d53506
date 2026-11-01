@@ -23,10 +23,18 @@ else wrote after the design shipped.
 |---|---|---|
 | Any caller (frontend) | Every page/component using `useCollection`/`useRecord` | Read a page of a collection, or one record by id, through the public API |
 
-This module has no write endpoints and no role distinctions of its own:
-every collection it serves is read-only here. Writes to these same tables
-belong to the module that owns that action (e.g. `suppliers` writes
-products, `admin` writes supplier/product status) and are specified there.
+This module has no write endpoints of its own — every collection it serves
+is read-only here. Writes to these same tables belong to the module that
+owns that action (e.g. `suppliers` writes products, `admin` writes
+supplier/product status) and are specified there. It does carry one role
+distinction on reads: nine collections — `audit`, `bookings`,
+`campaigns`, `complaints`, `notifications`, `payouts`, `settings`,
+`users`, `vouchers` — are private and require a signed-in caller; every
+page in the approved design that reads one of them is itself behind
+sign-in, or no page reads it at all. The remaining collections
+(`categories`, `departures`, `destinations`, `guides`, `products`,
+`reviews`, `suppliers`) stay public, unauthenticated reads, matching what
+the storefront already shows to every visitor today.
 
 ## 3. Scope
 
@@ -49,9 +57,10 @@ products, `admin` writes supplier/product status) and are specified there.
 
 - Any write to a collection (creating a product, confirming a booking,
   approving a supplier) — specified in the module that owns that action.
-- Authentication and permission checks on who may call the API — `auth`
-  module; this module's endpoints are public reads, matching what the
-  storefront already shows to every visitor today.
+- The authentication mechanism itself (login, session/token issuance) —
+  `auth` module. This module enforces the resulting sign-in requirement at
+  its own endpoints (DATA-002, DATA-003) for the nine private collections
+  listed there, but does not implement sign-in.
 - The inventory hold, seat decrement and booking state machine — `booking`
   module.
 
@@ -75,6 +84,11 @@ Behaviour:
 2. A seed migration inserts every record of every existing
    `src/data/<name>.json` file into its table, unchanged — no record is
    lost, renamed or re-priced.
+3. Nine collections — `audit`, `bookings`, `campaigns`, `complaints`,
+   `notifications`, `payouts`, `settings`, `users`, `vouchers` — are marked
+   private; the other seven (`categories`, `departures`, `destinations`,
+   `guides`, `products`, `reviews`, `suppliers`) stay public. This mapping
+   is what DATA-002 and DATA-003 enforce at the list and record endpoints.
 
 **Acceptance criteria**
 
@@ -87,7 +101,7 @@ Behaviour:
 
 | Case | Condition | Expected behaviour |
 |---|---|---|
-| No permission case | Schema/migration is a backend build step, not a request a role can make | Not applicable |
+| Permission/access-scoping | A caller with no valid session or token requests any endpoint for one of the nine private collections (`audit`, `bookings`, `campaigns`, `complaints`, `notifications`, `payouts`, `settings`, `users`, `vouchers`) | 401; a signed-in caller without the required role/ownership for that collection gets 403. These cases are specified and tested at the endpoint level, DATA-002 and DATA-003 |
 
 **Data touched** — every field of every collection named in
 `code/frontend/src/data/schema.json`, as that file defines them.
@@ -109,6 +123,11 @@ Behaviour:
    requested, and with the same field names the JSON file used.
 5. `page` beyond the last page returns an empty `items` array with the
    correct `total`, not an error.
+6. The public-read rule applies to every `/v1/<collection>` list endpoint
+   **except** the nine private collections named in DATA-001 (`audit`,
+   `bookings`, `campaigns`, `complaints`, `notifications`, `payouts`,
+   `settings`, `users`, `vouchers`), which require a signed-in caller and
+   return 401/403 as specified below instead of a list.
 
 **Acceptance criteria**
 
@@ -125,7 +144,9 @@ Behaviour:
 |---|---|---|
 | Unknown collection | The path names a collection not in `schema.json` | 404 response |
 | Unknown filter field | A query parameter does not match any field on that collection | Ignored; it does not error and does not filter |
-| No permission case | Every list endpoint is a public read | Not applicable |
+| Unauthenticated access | `<collection>` is one of the nine private collections (`audit`, `bookings`, `campaigns`, `complaints`, `notifications`, `payouts`, `settings`, `users`, `vouchers`) and the caller has no valid session or token | 401 |
+| Unauthorized access | `<collection>` is one of the nine private collections and the caller is signed in but lacks the role/ownership that collection requires | 403 |
+| Public collection | `<collection>` is any collection other than the nine listed above | No session required; list proceeds as a public read |
 
 **Data touched** — every field of the requested collection, returned as
 given in `schema.json` (same field names).
@@ -139,6 +160,11 @@ Behaviour:
 
 1. The endpoint returns the record matching `<id>` in `<collection>`.
 2. An id with no matching record returns 404.
+3. The public-read rule applies to every `/v1/<collection>/<id>` record
+   endpoint **except** the nine private collections named in DATA-001
+   (`audit`, `bookings`, `campaigns`, `complaints`, `notifications`,
+   `payouts`, `settings`, `users`, `vouchers`), which require a signed-in
+   caller and return 401/403 as specified below instead of the record.
 
 **Acceptance criteria**
 
@@ -152,7 +178,9 @@ Behaviour:
 | Case | Condition | Expected behaviour |
 |---|---|---|
 | Not found | Id does not exist in the collection | 404, matching DATA-003 AC-2 |
-| No permission case | Every record endpoint is a public read | Not applicable |
+| Unauthenticated access | `<collection>` is one of the nine private collections (`audit`, `bookings`, `campaigns`, `complaints`, `notifications`, `payouts`, `settings`, `users`, `vouchers`) and the caller has no valid session or token | 401 |
+| Unauthorized access | `<collection>` is one of the nine private collections and the caller is signed in but lacks the role/ownership that collection requires | 403 |
+| Public collection | `<collection>` is any collection other than the nine listed above | No session required; record read proceeds as a public read |
 
 **Data touched** — one record's worth of whatever fields that collection's
 schema defines.
@@ -221,6 +249,10 @@ screens use `useCollection`/`useRecord` against this API.
 - **Depends on:** `code/frontend/src/data/schema.json` as the single source
   of collection and field definitions; a schema change is a decision made
   elsewhere, not by this module.
+- **Depends on:** `auth` module, for the session/token this module checks to
+  enforce DATA-002/DATA-003's 401/403 cases on the nine private
+  collections (`audit`, `bookings`, `campaigns`, `complaints`,
+  `notifications`, `payouts`, `settings`, `users`, `vouchers`).
 - **Assumption:** no collection in `schema.json` needs a write endpoint
   from this module itself — every write belongs to the module that
   performs that action and is specified in that module's own SRS.
