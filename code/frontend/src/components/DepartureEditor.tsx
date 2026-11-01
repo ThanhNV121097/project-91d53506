@@ -1,5 +1,3 @@
-"use client";
-
 import { useState } from "react";
 import { Badge } from "./TableFilters";
 import Select from "./Select";
