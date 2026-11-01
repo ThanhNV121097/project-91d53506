@@ -4,22 +4,39 @@ import RequireRole from "../components/RequireRole";
 import DataTable from "../components/DataTable";
 import TableFilters, { SearchBox, Badge } from "../components/TableFilters";
 import Rating from "../components/Rating";
+import Select from "../components/Select";
 import { useCollection, type Row } from "../data";
 import { useTableQuery } from "../lib/table";
 import { usePageMeta } from "../seo";
 import { formatDate } from "../lib/format";
 import { SUPPLIER_NAV } from "../lib/nav";
+import { publishReply } from "../lib/mock/supplier-review-replies";
 
 export default function SupplierReviews() {
   usePageMeta("pages.supplierReviews.title");
   const t = useTableQuery({ size: 20 });
+  const [picked, setPicked] = useState("");
   const [reply, setReply] = useState("");
+  const [error, setError] = useState(false);
   const { items, total, pages, page, loading } = useCollection("reviews", {
     page: t.page, pageSize: t.size, sort: t.sort, q: t.q, search: ["product_name", "text"],
     where: { status: "published" },
   });
   const rated = items.map((r) => Number(r.rating) || 0).filter((n) => n > 0);
   const average = rated.length ? (rated.reduce((a, b) => a + b, 0) / rated.length).toFixed(1) : "";
+  const chosen = items.find((r) => r.id === picked) ?? items[0];
+
+  function submit() {
+    const text = reply.trim();
+    if (!text || !chosen) {
+      setError(true);
+      return;
+    }
+    setError(false);
+    publishReply(chosen.id, text);
+    setReply("");
+  }
+
   return (
     <RequireRole roles={["supplier"]}>
       <DashboardLayout title="Reviews" nav={SUPPLIER_NAV} brand="Nghệ An Departures">
@@ -41,11 +58,31 @@ export default function SupplierReviews() {
           empty={<p>No review yet. They appear here after a trip is completed.</p>}
         />
         </div>
-        <form className="grid gap-4 rounded-[var(--radius-sm)] border border-line bg-surface p-4 lg:grid-cols-[1fr_1fr]" onSubmit={(e) => e.preventDefault()}>
+        <form
+          className="grid gap-4 rounded-[var(--radius-sm)] border border-line bg-surface p-4 lg:grid-cols-[1fr_1fr]"
+          onSubmit={(e) => {
+            e.preventDefault();
+            submit();
+          }}
+        >
           <div className="flex min-w-0 flex-col gap-2">
-            <label htmlFor="reply" className="label text-ink-soft">Reply to a review</label>
+            <label htmlFor="reviewPicker" className="label text-ink-soft">Review to reply to</label>
+            <Select
+              id="reviewPicker"
+              aria-label="Review to reply to"
+              value={chosen?.id ?? ""}
+              onChange={setPicked}
+              options={items.map((r) => ({
+                value: r.id,
+                label: `${String(r.product_name)} · ${String(r.author) || "—"}${r.reply ? " (replied)" : ""}`,
+              }))}
+              placeholder="Choose a review"
+            />
+            <label htmlFor="reply" className="label mt-2 text-ink-soft">Reply to a review</label>
             <textarea id="reply" rows={5} value={reply} onChange={(e) => setReply(e.target.value)}
+              aria-invalid={error || undefined} aria-describedby={error ? "reply-error" : undefined}
               className="appearance-none rounded-[var(--radius-sm)] border border-field bg-surface px-3 py-2 text-sm text-ink" />
+            {error && <p id="reply-error" role="alert" className="text-sm text-ink">Write a reply before publishing.</p>}
             <button type="submit" className="self-start rounded-[var(--radius-sm)] bg-accent px-4 py-2 text-sm text-accent-ink">Publish reply</button>
           </div>
           <dl className="flex flex-col gap-3 border-t border-line pt-4 text-sm lg:border-l lg:border-t-0 lg:pl-6 lg:pt-0">
