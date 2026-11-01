@@ -2,7 +2,7 @@ import DashboardLayout from "../components/DashboardLayout";
 import RequireRole from "../components/RequireRole";
 import DataTable from "../components/DataTable";
 import TableFilters, { SearchBox, FilterSelect, DateRange, Badge } from "../components/TableFilters";
-import { useCollection, type Row } from "../data";
+import { useCollection, collections, setCollection, type Row } from "../data";
 import { useTableQuery } from "../lib/table";
 import { usePageMeta } from "../seo";
 import { formatPrice, formatDate } from "../lib/format";
@@ -13,6 +13,15 @@ const TONE: Record<string, "neutral" | "good" | "warn" | "bad"> = {
   Paid: "good", Confirmed: "good", Completed: "neutral",
   "Awaiting payment": "warn", Cancelled: "bad", Refunded: "bad",
 };
+
+/** Sets the booking to Refunded and resolves the complaint against it. */
+function refund(complaintId: string, bookingCode: string) {
+  const all = collections();
+  setCollection("bookings", (all.bookings ?? []).map((b) =>
+    b.code === bookingCode ? { ...b, status: "Refunded" } : b));
+  setCollection("complaints", (all.complaints ?? []).map((c) =>
+    c.id === complaintId ? { ...c, status: "Refunded" } : c));
+}
 
 export default function AdminBookings() {
   usePageMeta("pages.adminBookings.title");
@@ -60,7 +69,16 @@ export default function AdminBookings() {
           onPage={() => undefined} rowKey={(r) => r.id}
           caption="Complaints raised against bookings"
           empty={<p>No complaint is open.</p>}
-          actions={() => <button type="button" className="text-sm text-accent underline">Refund manually</button>}
+          actions={(r) => (
+            <button
+              type="button"
+              disabled={r.status === "Refunded"}
+              onClick={() => refund(String(r.id), String(r.booking_code))}
+              className="text-sm text-accent underline disabled:text-ink-soft disabled:no-underline"
+            >
+              {r.status === "Refunded" ? "Refunded" : "Refund manually"}
+            </button>
+          )}
         />
       </DashboardLayout>
     </RequireRole>
