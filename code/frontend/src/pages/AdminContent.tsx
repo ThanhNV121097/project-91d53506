@@ -16,7 +16,7 @@ export default function AdminContent() {
   const destinations = useCollection("destinations", { pageSize: 10 });
   const guides = useCollection("guides", { pageSize: 10 });
   return (
-    <RequireRole roles={["admin"]}>
+    <RequireRole roles={["admin"]} permission="content-only">
       <DashboardLayout title="Content & marketing" nav={ADMIN_NAV} brand="Nghệ An Departures"
         actions={<button type="button" className="rounded-[var(--radius-sm)] bg-accent px-4 py-2 text-sm text-accent-ink">New discount code</button>}>
         <div className="grid gap-3 lg:grid-cols-2">
