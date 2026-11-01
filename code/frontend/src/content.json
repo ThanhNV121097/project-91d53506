@@ -160,6 +160,7 @@
       "description": "Your booking history, each one's status, and how to ask for a cancellation or a refund.",
       "heading": "Your bookings",
       "issueLabel": "What do you need?",
+      "issueRequired": "Tell us what you need.",
       "refundCta": "Ask about a booking",
       "refundHeading": "Cancellations, changes and refunds",
       "refundSub": "Send us the booking code and what you need. The default refund window is still to be set, so we answer each request directly for now.",
