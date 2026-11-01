@@ -1,25 +1,29 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { T, useContent } from "../editable";
-import { useRecord } from "../data";
+import { useRecord, useCollection } from "../data";
 import { Picture } from "../picture";
 import Icon from "../components/Icon";
 import Select from "../components/Select";
 import { usePageMeta } from "../seo";
 import { formatPrice, formatDate } from "../lib/format";
 import { useSession } from "../lib/session";
-import { emptyDraft, writeDraft, PACKS, total, HOLD_MINUTES } from "../lib/mock/booking";
-import type { Trip } from "../lib/trips";
+import { emptyDraft, writeDraft, PACKS, total, HOLD_MINUTES, seatsRemaining, missingFields } from "../lib/mock/booking";
+import type { Trip, Departure } from "../lib/trips";
 
 export default function Book() {
   usePageMeta("pages.book.title", "pages.book.description");
   const { id } = useParams();
   const [params] = useSearchParams();
   const { item } = useRecord<Trip>("products", id);
+  const dates = useCollection<Departure>("departures", { where: { product: id ?? "" }, pageSize: 24 });
   const session = useSession();
   const navigate = useNavigate();
   const [draft, setDraft] = useState(() => emptyDraft(id ?? "", params.get("date") ?? ""));
   const [left, setLeft] = useState(HOLD_MINUTES * 60);
+  const [errors, setErrors] = useState<Record<string, boolean>>({});
+  const [seatsError, setSeatsError] = useState("");
+  const seatsErrorText = useContent("pages.book.notEnoughSeats");
   useEffect(() => {
     const t = window.setInterval(() => setLeft((s) => Math.max(0, s - 1)), 1000);
     return () => {
@@ -31,6 +35,7 @@ export default function Book() {
   if (!item) return <p className="mx-auto max-w-page px-[var(--gutter)] py-20 text-ink-soft"><T k="pages.trip.missing" /></p>;
   const date = draft.date || item.next_date;
   const sums = total(item.price, draft);
+  const remaining = seatsRemaining(dates.items, date, item.seats);
   return (
     <section className="mx-auto grid max-w-page gap-10 px-[var(--gutter)] py-10 lg:grid-cols-[1.4fr_1fr]">
       <div>
@@ -44,12 +49,21 @@ export default function Book() {
         <form
           onSubmit={(e) => {
             e.preventDefault();
+            const bad = missingFields(draft);
+            setErrors(bad);
+            if (Object.values(bad).some(Boolean)) return;
+            if (draft.adults + draft.children > remaining) {
+              setSeatsError(seatsErrorText);
+              return;
+            }
+            setSeatsError("");
             const next = { ...draft, date };
             writeDraft(next);
             navigate(`/checkout/${item.id}`);
           }}
           className="mt-8 flex flex-col gap-5"
         >
+          {seatsError && <p role="alert" className="text-sm text-ink">{seatsError}</p>}
           <div className="grid gap-4 sm:grid-cols-3">
             <label className="flex flex-col gap-1">
               <span className="label text-ink-soft"><T k="pages.book.date" /></span>
@@ -78,16 +92,21 @@ export default function Book() {
           <div className="grid gap-4 sm:grid-cols-2">
             <label className="flex flex-col gap-1">
               <span className="label text-ink-soft"><T k="pages.book.name" /></span>
-              <input id="name" required value={draft.name} onChange={(e) => setDraft({ ...draft, name: e.target.value })} className={field} />
+              <input id="name" required aria-invalid={errors.name} value={draft.name}
+                onChange={(e) => setDraft({ ...draft, name: e.target.value })} className={field} />
+              {errors.name && <span role="alert" className="text-xs text-ink"><T k="pages.book.nameError" /></span>}
             </label>
             <label className="flex flex-col gap-1">
               <span className="label text-ink-soft"><T k="pages.book.phone" /></span>
-              <input id="phone" required inputMode="tel" value={draft.phone} onChange={(e) => setDraft({ ...draft, phone: e.target.value })} className={`${field} fig`} />
+              <input id="phone" required aria-invalid={errors.phone} inputMode="tel" value={draft.phone}
+                onChange={(e) => setDraft({ ...draft, phone: e.target.value })} className={`${field} fig`} />
+              {errors.phone && <span role="alert" className="text-xs text-ink"><T k="pages.book.phoneError" /></span>}
             </label>
             <label className="flex flex-col gap-1">
               <span className="label text-ink-soft"><T k="pages.book.email" /></span>
-              <input id="email" type="email" required value={draft.email || session?.email || ""}
+              <input id="email" type="email" required aria-invalid={errors.email} value={draft.email || session?.email || ""}
                 onChange={(e) => setDraft({ ...draft, email: e.target.value })} className={field} />
+              {errors.email && <span role="alert" className="text-xs text-ink"><T k="pages.book.emailError" /></span>}
             </label>
             <label className="flex flex-col gap-1">
               <span className="label text-ink-soft"><T k="pages.book.note" /></span>
