@@ -1,200 +1,333 @@
-
 # Test cases — The site as designed
 
-Module: `site` | Story: `docs/site/stories/the-site-as-designed.md` | SRS: `docs/site/SRS.md`
+Module: `site`
+Story: `docs/site/stories/the-site-as-designed.md`
+SRS: `docs/site/SRS.md` (SITE-001 … SITE-006)
 
-Risk: medium — no payment or auth, but many content/empty-state/routing rules; proportionate depth, not payment-flow depth.
+Risk level: medium. No payment, auth or write path runs through this story —
+it is a read-only descriptive shell over existing mock data — but it is the
+visitor's entire first impression and every other module links into it
+(`/search?kind=`, `/tours/:id`, `/guides/:slug`), so wrong sort order, a
+missing not-found state or a broken link here breaks navigation platform-wide.
+Depth is weighted toward: correct ordering/limits on list rows, the two named
+"waiting on default" copy states, not-found states, and the header/footer/dock
+behaviour shared by every page. No role-gate cases exist — the SRS states
+every screen in this module is public, so there is no denial path to cover.
 
-## Home (SITE-001)
+---
+
+## SITE-001 — Home page
 
 **Scenario**: Featured row shows up to 4 approved products sorted by next departure date
-**Given**: `products.json` has approved products with varying `next_date`
-**When**: Visitor opens `/`
-**Then**: Featured row shows at most 4 cards, each a product with `status: "approved"`, ordered by `next_date` ascending, each with photo, name and mono price
+**Given**: The products collection has 4 or fewer `approved` products, each with a distinct next departure date
+**When**: The visitor opens `/`
+**Then**: The featured row shows every approved product, each with its photo, name and price, ordered by next departure date ascending
 **Traces**: SC-1 (SITE-001 AC-1)
 **Check**: render_url
 
-**Scenario**: Destination tile shows name, one line and "from" price
-**Given**: `destinations.json` has records (e.g. Cửa Lò, Kim Liên, Pù Mát, Thanh Chương)
-**When**: Visitor opens `/`
-**Then**: Each tile renders the destination's `name`, `line` and `from_price` formatted as a price
+**Scenario**: Featured row caps at 4 when more approved products exist
+**Given**: The products collection has 6 `approved` products with distinct next departure dates
+**When**: The visitor opens `/`
+**Then**: The featured row shows exactly 4 cards — the 4 with the soonest next departure date, in that order — and the other 2 do not appear
+**Traces**: SC-1 (SITE-001 AC-1)
+**Check**: render_url
+
+**Scenario**: Featured row renders with zero items when no product is approved
+**Given**: No product in the collection has `status` = `approved`
+**When**: The visitor opens `/`
+**Then**: The featured row renders with zero cards and no dedicated empty-state panel; the rest of the Home page renders normally
+**Traces**: SITE-001 (failure table: empty collection)
+**Check**: render_url
+
+**Scenario**: Destination tile shows name, line and from-price
+**Given**: The destinations collection has at least one record with a name, a description line and a "from" price
+**When**: The visitor opens `/`
+**Then**: That destination's tile shows its name, its one line of description and its "from" price
 **Traces**: SC-2 (SITE-001 AC-2)
 **Check**: render_url
 
-**Scenario**: Departures board lists up to 6 Open departures, date first, sorted by date
-**Given**: `departures.json` has rows with `state: "Open"` and some `"Blocked"` (e.g. d-08)
-**When**: Visitor opens `/`
-**Then**: Board lists at most 6 rows, all `state: "Open"`, sorted by `date` ascending, each row showing date first, then seats left and the price that day in mono figures
+**Scenario**: Destination grid renders with zero items when no destination exists
+**Given**: The destinations collection is empty
+**When**: The visitor opens `/`
+**Then**: The destination grid renders with zero tiles; no empty-state panel is shown
+**Traces**: SITE-001 (failure table: empty collection)
+**Check**: render_url
+
+**Scenario**: Next-departures board lists up to 6 open departures, date-first and sorted
+**Given**: The departures collection has 6 or fewer rows with `state` = `Open`, each with a distinct date
+**When**: The visitor opens `/`
+**Then**: The board lists every open departure, date column first, sorted by date ascending, each row showing seats left and the price for that day
 **Traces**: SC-3 (SITE-001 AC-3)
 **Check**: render_url
 
-**Scenario**: Clicking a featured product card navigates to its trip page
-**Given**: Home is open with a featured product card for `cua-lo-beach-2n1d`
-**When**: Visitor clicks that card
-**Then**: Browser navigates to `/tours/cua-lo-beach-2n1d`
-**Traces**: SC-4 (SITE-001 AC-4)
-**Check**: interact_page
-
-**Scenario**: Clicking a destination tile navigates to that destination's search filter URL
-**Given**: Home is open with the "Cửa Lò" destination tile
-**When**: Visitor clicks that tile
-**Then**: Browser navigates to `/search?where=C%E1%BB%ADa%20L%C3%B2` (the destination name URL-encoded)
-**Traces**: SC-4 (SITE-001 AC-4)
-**Check**: interact_page
-
-**Scenario**: Clicking a guide teaser navigates to that guide's own page
-**Given**: Home is open with a guide teaser for `cua-lo-in-july`
-**When**: Visitor clicks that teaser
-**Then**: Browser navigates to `/guides/cua-lo-in-july`
-**Traces**: SC-4 (SITE-001 AC-4)
-**Check**: interact_page
-
-**Scenario**: Empty collections render zero items, no dedicated empty-state panel
-**Given**: `products.json` has no approved products, `destinations.json` is empty, no departure has `state: "Open"`
-**When**: Visitor opens `/`
-**Then**: Featured row, destination grid and departures board each render with zero items and no empty-state panel/message
-**Traces**: SITE-001 Failure table ("Empty collection")
+**Scenario**: Next-departures board caps at 6 when more open departures exist
+**Given**: The departures collection has 9 rows with `state` = `Open`, each with a distinct date
+**When**: The visitor opens `/`
+**Then**: The board shows exactly 6 rows — the 6 with the soonest dates — sorted ascending
+**Traces**: SC-3 (SITE-001 AC-3)
 **Check**: render_url
 
-## Trip detail (SITE-002)
+**Scenario**: Next-departures board renders with zero rows when no departure is open
+**Given**: No row in the departures collection has `state` = `Open`
+**When**: The visitor opens `/`
+**Then**: The board renders with zero rows; no empty-state panel is shown
+**Traces**: SITE-001 (failure table: empty collection)
+**Check**: render_url
 
-**Scenario**: Trip detail renders all descriptive content for a resolving id
-**Given**: `products.json` has `cua-lo-beach-2n1d`
-**When**: Visitor opens `/tours/cua-lo-beach-2n1d`
-**Then**: Photo, name, kind/destination/duration label, next date, summary, itinerary list, includes, excludes, policy section and supplier block (name, kind, place, document status) all render from that record
+**Scenario**: Guide teaser row renders with zero items when no guide exists
+**Given**: The guides collection is empty
+**When**: The visitor opens `/`
+**Then**: The guide teaser row renders with zero teasers; no empty-state panel is shown
+**Traces**: SITE-001 (failure table: empty collection)
+**Check**: render_url
+
+**Scenario**: Clicking a featured product card opens that product's page
+**Given**: The Home page's featured row shows at least one approved product card
+**When**: The visitor clicks that card
+**Then**: The browser navigates to that product's own `/tours/:id` page
+**Traces**: SC-4 (SITE-001 AC-4)
+**Check**: interact_page
+
+**Scenario**: Clicking a destination tile opens that destination's search filter
+**Given**: The Home page's destination grid shows at least one tile
+**When**: The visitor clicks that tile
+**Then**: The browser navigates to `/search?kind=<id>` for that destination's id
+**Traces**: SC-4 (SITE-001 AC-4)
+**Check**: interact_page
+
+**Scenario**: Clicking a guide teaser opens that guide's own page
+**Given**: The Home page's guide teaser row shows at least one teaser
+**When**: The visitor clicks that teaser
+**Then**: The browser navigates to that guide's own `/guides/:slug` page
+**Traces**: SC-4 (SITE-001 AC-4)
+**Check**: interact_page
+
+---
+
+## SITE-002 — Trip detail page
+
+**Scenario**: Trip detail renders full content for a resolving product id
+**Given**: A product id in the `products` collection resolves to a record with photo, name, itinerary, includes, excludes, policy text and a supplier
+**When**: The visitor opens `/tours/:id` for that id
+**Then**: The photo, kind/destination/duration label, name, starting place, next departure date, summary, day-by-day itinerary, includes, excludes, policy text and supplier block all render from that record
 **Traces**: SC-5 (SITE-002 AC-1)
 **Check**: render_url
 
-**Scenario**: No policy text set shows the waiting-on-default line, never blank
-**Given**: A product record has `policy: ""`
-**When**: Visitor opens that product's `/tours/:id`
-**Then**: The policy section shows content.json's `pages.trip.policyEmpty` text ("This supplier has not set a policy yet, and the platform's default window is still to be decided."), and the section is not blank
+**Scenario**: Policy section shows waiting-on-default line when product has no policy text
+**Given**: A product record resolves but its `policy` field is empty
+**When**: The visitor opens `/tours/:id` for that id
+**Then**: The policy section shows the platform's waiting-on-default line, never a blank section
 **Traces**: SC-6 (SITE-002 AC-2)
 **Check**: render_url
 
-**Scenario**: Published reviews show rating, traveller, date, text and reply where present
-**Given**: `reviews.json` has a published review with non-empty `author`/`text` and a `reply`
-**When**: Visitor opens that product's `/tours/:id`
-**Then**: The review renders its star rating, traveller name, date and text, and the supplier's reply text where `reply` is non-empty
+**Scenario**: Reviews list shows rating, traveller, date, text and supplier reply
+**Given**: A product has at least one `published` review with a rating, traveller name, date, text and a supplier reply
+**When**: The visitor opens `/tours/:id` for that product
+**Then**: The review renders with its rating, traveller, date, text and the supplier's reply
 **Traces**: SC-7 (SITE-002 AC-3)
 **Check**: render_url
 
-**Scenario**: No published review with traveller name or text shows the waiting line, not an empty list
-**Given**: Product `cua-lo-beach-2n1d`'s published reviews (r-01, r-02) all have empty `author` and empty `text`
-**When**: Visitor opens `/tours/cua-lo-beach-2n1d`
-**Then**: The reviews section shows content.json's `pages.trip.reviewEmpty` text ("Waiting on the first review"), not an empty `<ul>`
+**Scenario**: Reviews list shows a review without a supplier reply
+**Given**: A product has a `published` review with no supplier reply set
+**When**: The visitor opens `/tours/:id` for that product
+**Then**: The review renders with its rating, traveller, date and text, and shows no reply block
+**Traces**: SC-7 (SITE-002 AC-3)
+**Check**: render_url
+
+**Scenario**: Reviews section shows waiting-on-first-review line when no published review qualifies
+**Given**: A product has no `published` review carrying a traveller name or text (none published, or published rows are empty of those fields)
+**When**: The visitor opens `/tours/:id` for that product
+**Then**: The reviews section shows the "waiting on the first review" line, not an empty list
 **Traces**: SC-8 (SITE-002 AC-4)
 **Check**: render_url
 
-**Scenario**: Unresolved product id shows not-found message
-**Given**: No product in `products.json` has id `does-not-exist`
-**When**: Visitor opens `/tours/does-not-exist`
-**Then**: The page body is replaced by content.json's `pages.trip.missing` text ("This trip is no longer listed. Browse the trips that are."), not a blank or broken layout
-**Traces**: SC-9 (SITE-002 AC-5); SITE-002 Failure table ("Not found")
+**Scenario**: Unpublished review is excluded from the reviews list
+**Given**: A product has a review with `status` other than `published`
+**When**: The visitor opens `/tours/:id` for that product
+**Then**: That review does not appear in the reviews list
+**Traces**: SITE-002 (data touched: reviews.status)
 **Check**: render_url
 
-## Departures board (SITE-003)
-
-**Scenario**: Full table lists departures sorted by date with seats/price in mono figures
-**Given**: `departures.json` has rows across several products
-**When**: Visitor opens `/departures`
-**Then**: Table rows are sorted by `date` ascending; the seats and price cells carry the `.fig` (mono) class
-**Traces**: SC-10 (SITE-003 AC-1)
+**Scenario**: Related trips list shows up to 4 other approved products
+**Given**: 5 other `approved` products exist besides the one being viewed
+**When**: The visitor opens `/tours/:id`
+**Then**: Up to 4 other approved products are listed as related trips
+**Traces**: SITE-002 (behaviour 6)
 **Check**: render_url
 
-**Scenario**: Picking a pricing-rule filter narrows the list and updates the count
-**Given**: `/departures` is open with rows of season `Standard`, `Weekend` and `Peak summer`
-**When**: Visitor selects "Weekend" in the season filter
-**Then**: Only rows with `season: "Weekend"` remain in the table, and the displayed count matches that filtered total
-**Traces**: SC-11 (SITE-003 AC-2)
-**Check**: interact_page
-
-**Scenario**: Show more appends the next page without losing rows already shown
-**Given**: More than 10 departures exist (pageSize is 10) and `/departures` shows the first page
-**When**: Visitor clicks "Show more"
-**Then**: The rows already on screen remain, and the next page's rows are appended below them
-**Traces**: SC-12 (SITE-003 AC-3)
-**Check**: interact_page
-
-**Scenario**: Loading line shows while the next page is being fetched
-**Given**: `/departures` is open and "Show more" has just been clicked
-**When**: The next page is loading
-**Then**: The design's "Loading…" line (content.json `pages.search.loading`) shows below the table
-**Traces**: SITE-003 Failure table ("Loading")
-**Check**: render_url
-
-## Guides (SITE-004)
-
-**Scenario**: Picking a category filters the guides list; "All" clears it
-**Given**: `guides.json` has guides in categories "Beaches", "Heritage" and "Nature" (more than one category)
-**When**: Visitor picks the "Nature" category chip
-**Then**: Only guides with `category: "Nature"` remain in the grid
-**Traces**: SC-13 (SITE-004 AC-1)
-**Check**: interact_page
-
-**Scenario**: "All" clears the category filter
-**Given**: The "Nature" category filter is active on `/guides`
-**When**: Visitor clicks "All"
-**Then**: Guides from every category are shown again
-**Traces**: SC-13 (SITE-004 AC-1)
-**Check**: interact_page
-
-**Scenario**: A guide slug that resolves renders photo, title, excerpt and body
-**Given**: `guides.json` has `cua-lo-in-july`
-**When**: Visitor opens `/guides/cua-lo-in-july`
-**Then**: The photo, title, excerpt and each body paragraph (split on blank lines) render
-**Traces**: SC-14 (SITE-004 AC-2)
-**Check**: render_url
-
-**Scenario**: A guide slug that does not resolve shows not-found message
-**Given**: No guide has slug `missing-guide`
-**When**: Visitor opens `/guides/missing-guide`
-**Then**: The page body is replaced by content.json's `pages.guide.missing` text ("This guide is no longer here."), not a blank or broken layout
-**Traces**: SC-15 (SITE-004 AC-3); SITE-004 Failure table ("Not found")
-**Check**: render_url
-
-## Header / Footer / ContactDock (SITE-005)
-
-**Scenario**: Wishlist icon shows saved count on every in-scope page
-**Given**: The visitor's wishlist (localStorage `nad:wishlist`) holds 2 saved trip ids
-**When**: Visitor opens `/`, `/tours/:id`, `/departures`, `/guides` and `/guides/:slug` in turn
-**Then**: The header's wishlist icon shows the badge "2" on each page
-**Traces**: SC-16 (SITE-005 AC-1)
-**Check**: render_url
-
-**Scenario**: Both contact numbers empty, dock renders nothing below 1024px
-**Given**: `content.json` has `contact.phone: ""` and `contact.zalo: ""`
-**When**: Visitor views any storefront page at a width below 1024px
-**Then**: No element with `data-contact-dock` attribute is in the DOM (the dock component returns null)
-**Traces**: SC-17 (SITE-005 AC-2)
-**Check**: render_url
-
-**Scenario**: Only phone set, only the call button shows below 1024px
-**Given**: `content.json` has `contact.phone` set to a non-empty number and `contact.zalo: ""`
-**When**: Visitor views any storefront page at a width below 1024px
-**Then**: The call button (`tel:` link, `aria-label` = `contact.dock.call`) renders inside `[data-contact-dock]`; no Zalo button renders
-**Traces**: SC-18 (SITE-005 AC-3)
-**Check**: render_url
-
-**Scenario**: Header, footer and dock are public — no role gate
-**Given**: Visitor is signed out
-**When**: Visitor opens any storefront page in this story's scope
-**Then**: Header, footer and (below 1024px, when a contact number is set) the dock render identically to a signed-in visitor; no redirect to sign-in occurs
-**Traces**: SITE-005 Failure table ("No permission case")
-**Check**: render_url
-
-## Per-page SEO metadata (SITE-006)
-
-**Scenario**: Each page sets its own document title and Open Graph tags
-**Given**: Home, Trip detail (`/tours/cua-lo-beach-2n1d`), Departures board, Guides list and a Guide page (`/guides/cua-lo-in-july`) each exist
-**When**: Visitor opens each page in turn
-**Then**: `document.title` and the `meta[property="og:title"]`/`meta[property="og:description"]` tags reflect that page's own `content.json` title/description keys (e.g. `pages.trip.title`/`pages.trip.description` for the trip page), and differ from the tags shown on any of the other four pages
-**Traces**: SC-19 (SITE-006 AC-1)
+**Scenario**: Trip detail shows not-found message for an id that does not resolve
+**Given**: No product in the collection has the id in the URL
+**When**: The visitor opens `/tours/:id` with that id
+**Then**: A not-found message ("this trip is no longer listed") replaces the page body instead of a blank or broken layout
+**Traces**: SC-9 (SITE-002 AC-5)
 **Check**: render_url
 
 ---
 
-## Ambiguities found (reported, not resolved)
+## SITE-003 — Departures board
 
-- SRS §7 records the cancellation-window default (48h) as a `booking`-module decision; this module only displays stored text or the waiting line, which the cases above test as written. No case here tests the 48h figure itself.
-- SITE-005 AC-1 says "the header's wishlist icon shows that count" without naming which pages; the story text says "on every page in this story's scope," so the case above checks all five in-scope routes rather than just Home.
+**Scenario**: Departures board lists all rows sorted by date with mono figures
+**Given**: Departures exist across several products with distinct dates
+**When**: The visitor opens `/departures`
+**Then**: The table lists date, trip, operator, pricing rule, seats left and price for each row, sorted by date ascending, with seats and price set in the `.fig` mono class
+**Traces**: SC-10 (SITE-003 AC-1)
+**Check**: render_url
+
+**Scenario**: Mono figure styling is actually applied to seats and price cells
+**Given**: The departures board has rendered with at least one row
+**When**: The seats-left and price cells of that row are measured
+**Then**: Their computed `font-family` matches the design's mono token (IBM Plex Mono) and `font-variant-numeric`/tabular figure styling applies
+**Traces**: SC-10 (SITE-003 AC-1)
+**Check**: measure_styles
+
+**Scenario**: Picking a pricing-rule filter narrows the list and updates the count
+**Given**: `/departures` lists rows with `season` values Standard, Weekend and Peak summer
+**When**: The visitor picks the "Weekend" filter
+**Then**: Only rows with `season` = Weekend remain, and the shown count updates to that number
+**Traces**: SC-11 (SITE-003 AC-2)
+**Check**: interact_page
+
+**Scenario**: Pricing-rule filter value must match exactly one season
+**Given**: The filter options are exactly Standard, Weekend and Peak summer
+**When**: The visitor selects "Peak summer"
+**Then**: Only rows whose `season` field is exactly `Peak summer` remain; no row with a different season value is shown
+**Traces**: SITE-003 (data touched: departures.season)
+**Check**: interact_page
+
+**Scenario**: "Show more" appends the next page without losing rows already shown
+**Given**: More departures exist than fit on the first page
+**When**: The visitor clicks "Show more"
+**Then**: The next page's rows are appended below the existing rows; all rows from the first page remain visible and in their original order
+**Traces**: SC-12 (SITE-003 AC-3)
+**Check**: interact_page
+
+**Scenario**: Loading line shows while the next page is being fetched
+**Given**: The visitor has clicked "Show more" and the next page's data has not yet arrived
+**When**: The next page is being fetched
+**Then**: The design's loading line ("Loading…") shows below the table
+**Traces**: SITE-003 (failure table: loading)
+**Check**: render_url
+
+---
+
+## SITE-004 — Guides list and a guide
+
+**Scenario**: Picking a category filters the guides list
+**Given**: Guides exist in more than one category
+**When**: The visitor picks one category
+**Then**: Only guides in that category remain in the list
+**Traces**: SC-13 (SITE-004 AC-1)
+**Check**: interact_page
+
+**Scenario**: "All" clears the category filter
+**Given**: The visitor has filtered `/guides` down to one category
+**When**: The visitor picks "All"
+**Then**: Guides from every category are shown again
+**Traces**: SC-13 (SITE-004 AC-1)
+**Check**: interact_page
+
+**Scenario**: "Show more" pages the guides list
+**Given**: More guides exist than fit on the first page of `/guides`
+**When**: The visitor clicks "Show more"
+**Then**: The next page's guide teasers are appended below the ones already shown
+**Traces**: SITE-004 (behaviour 1: paging)
+**Check**: interact_page
+
+**Scenario**: A resolving guide slug renders the full article
+**Given**: A guide in the `guides` collection has the slug in the URL
+**When**: The visitor opens `/guides/:slug` for that slug
+**Then**: The guide's photo, title, excerpt and body paragraphs render
+**Traces**: SC-14 (SITE-004 AC-2)
+**Check**: render_url
+
+**Scenario**: Guide page lists up to 3 other guides to read next
+**Given**: 4 or more other guides exist besides the one being viewed
+**When**: The visitor opens `/guides/:slug`
+**Then**: Up to 3 other guides are listed as "read next"
+**Traces**: SITE-004 (behaviour 2)
+**Check**: render_url
+
+**Scenario**: Guide page shows not-found message for a slug that does not resolve
+**Given**: No guide in the collection has the slug in the URL
+**When**: The visitor opens `/guides/:slug` with that slug
+**Then**: A not-found message ("this guide is no longer here") replaces the page body
+**Traces**: SC-15 (SITE-004 AC-3)
+**Check**: render_url
+
+---
+
+## SITE-005 — Header, footer and call/Zalo dock
+
+**Scenario**: Header wishlist icon shows the saved count
+**Given**: The visitor has saved 1 or more trips to the wishlist
+**When**: The visitor views any storefront page in this story's scope
+**Then**: The header's wishlist icon shows that saved count
+**Traces**: SC-16 (SITE-005 AC-1)
+**Check**: render_url
+
+**Scenario**: Call/Zalo dock renders nothing when neither number is set
+**Given**: `content.json` has `contact.phone` and `contact.zalo` both empty
+**When**: The visitor views the site below 1024px width
+**Then**: The call/Zalo dock renders no button at all
+**Traces**: SC-17 (SITE-005 AC-2)
+**Check**: render_url
+
+**Scenario**: Only the call button shows when only phone is set
+**Given**: `content.json` has `contact.phone` set and `contact.zalo` empty
+**When**: The visitor views the site below 1024px width
+**Then**: Only the call button renders in the dock; no Zalo button appears
+**Traces**: SC-18 (SITE-005 AC-3)
+**Check**: render_url
+
+**Scenario**: Both dock buttons show when both numbers are set
+**Given**: `content.json` has `contact.phone` and `contact.zalo` both set
+**When**: The visitor views the site below 1024px width
+**Then**: Both the call button and the Zalo button render in the dock
+**Traces**: SITE-005 (behaviour 2)
+**Check**: render_url
+
+**Scenario**: Header collapses to a drawer below 1024px
+**Given**: The visitor is on any storefront page
+**When**: The viewport width is set below 1024px
+**Then**: The header's nav links move into a drawer control rather than showing inline
+**Traces**: SITE-005 (non-functional: responsive)
+**Check**: render_url
+
+**Scenario**: Header and footer render on every page in this story's scope
+**Given**: The visitor is on Home, Trip detail, Departures board, Guides list or Guide
+**When**: The page loads
+**Then**: The sticky header (logo, nav links, search icon, wishlist icon, account icon, "Find a trip") and the footer (link columns, legal line, photo credits) both render
+**Traces**: SITE-005 (behaviour 1)
+**Check**: render_url
+
+---
+
+## SITE-006 — Per-page SEO metadata
+
+**Scenario**: Home page sets its own title and Open Graph tags
+**Given**: The visitor opens `/`
+**When**: The page finishes loading
+**Then**: `document.title` and the `og:title`/`og:description` meta tags match Home's own copy from `content.json`
+**Traces**: SC-19 (SITE-006 AC-1)
+**Check**: render_url
+
+**Scenario**: Trip detail page sets its own title and Open Graph tags, distinct from Home's
+**Given**: The visitor opens `/tours/:id` for a resolving id
+**When**: The page finishes loading
+**Then**: `document.title` and the `og:title`/`og:description` meta tags match that trip's own copy, not Home's or any other page's
+**Traces**: SC-19 (SITE-006 AC-1)
+**Check**: render_url
+
+**Scenario**: Departures board sets its own title and Open Graph tags
+**Given**: The visitor opens `/departures`
+**When**: The page finishes loading
+**Then**: `document.title` and the `og:title`/`og:description` meta tags match the Departures board's own copy
+**Traces**: SC-19 (SITE-006 AC-1)
+**Check**: render_url
+
+**Scenario**: Guides list and a guide page each set their own title and Open Graph tags
+**Given**: The visitor opens `/guides` and then `/guides/:slug` for a resolving slug
+**When**: Each page finishes loading
+**Then**: Each page's `document.title` and `og:title`/`og:description` meta tags match that page's own copy, and the two pages' values differ from each other
+**Traces**: SC-19 (SITE-006 AC-1)
+**Check**: render_url
