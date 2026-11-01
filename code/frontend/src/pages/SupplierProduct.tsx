@@ -71,6 +71,7 @@ export default function SupplierProduct() {
   }
 
   const canPause = status === "approved" || status === "suspended";
+  const canSubmit = status === "draft" || status === "pending" || status === "rejected";
 
   return (
     <RequireRole roles={["supplier"]}>
