@@ -49,6 +49,36 @@ function SettingField({ row, onSave }: { row: Row; onSave: (value: string) => bo
   );
 }
 
+function TextSetting({ id, label, row, onSave }: { id: string; label: string; row: Row; onSave: (value: string) => boolean }) {
+  const [value, setValue] = useState(String(row.value ?? ""));
+  const [error, setError] = useState(false);
+  function submit(e: FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    if (!onSave(value)) {
+      setError(true);
+      return;
+    }
+    setError(false);
+  }
+  return (
+    <form onSubmit={submit} className="flex flex-col gap-1">
+      <label htmlFor={id} className="label text-ink-soft">{label}</label>
+      <textarea
+        id={id}
+        rows={3}
+        value={value}
+        onChange={(e) => {
+          setValue(e.target.value);
+          setError(false);
+        }}
+        className={FIELD}
+      />
+      {error && <p role="alert" className="text-xs text-ink-soft">This field can't be saved empty.</p>}
+      <button type="submit" className="self-start rounded-[var(--radius-sm)] bg-accent px-6 py-2.5 text-sm text-accent-ink">Save</button>
+    </form>
+  );
+}
+
 export default function AdminSystem() {
   usePageMeta("pages.adminSystem.title");
   const t = useTableQuery({ size: 20, sort: "-at" });
