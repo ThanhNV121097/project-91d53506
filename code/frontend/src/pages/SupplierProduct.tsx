@@ -85,7 +85,9 @@ export default function SupplierProduct() {
               </button>
             )}
             <button type="button" onClick={saveDraft} className="rounded-[var(--radius-sm)] border border-field px-3 py-2 text-sm text-ink">Save draft</button>
-            <button type="button" data-testid="submit-product" onClick={submit} className="rounded-[var(--radius-sm)] bg-accent px-3 py-2 text-sm text-accent-ink">Submit for approval</button>
+            {canSubmit && (
+              <button type="button" data-testid="submit-product" onClick={submit} className="rounded-[var(--radius-sm)] bg-accent px-3 py-2 text-sm text-accent-ink">Submit for approval</button>
+            )}
           </span>
         }>
         {saved && (
