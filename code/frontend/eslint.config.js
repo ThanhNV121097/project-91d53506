@@ -82,6 +82,41 @@ const pictureRules = [
   },
 ];
 
+// THE WORDS ON A PAGE LIVE IN content.json.
+//
+// That is the Studio's whole editing contract: the owner clicks a word in the
+// frame and types, `<T k="…"/>` reads it back, and `PUT …/design/content`
+// commits it. A string written into the JSX is a word the owner cannot touch,
+// and nothing refused one.
+//
+// Measured on run 23: the storefront went through <T> properly, 176 times,
+// and the dashboards did not — 52 bare strings in JSX text and 52 more in
+// `title=` / `label=` props, every one of them on an Admin* or Supplier* page.
+// So the owner could fix a word on the pages their customers see and could not
+// touch a word on the nineteen pages they work in themselves. The design was
+// not careless; it had no reason to think those pages were different, and the
+// one thing that could have told it was a rule.
+//
+// Why PAGES and not components: a page is the owner's content, and a component
+// is chrome whose labels are structural — "Actions", "Previous", "Rows per
+// page", the scaffold's own. Pages are where all 104 of run 23's strings were,
+// and the scaffold's own Home.tsx already passes this rule, which is what
+// makes it a rule the shipped code keeps rather than a rule with an exemption
+// list.
+//
+// Interpolation and punctuation are untouched: {" · "}, a number, a record's
+// own field, {formatPrice(…)} — none of those is a word somebody wrote.
+const pageWords = [
+  {
+    selector: "JSXText[value=/[A-Za-z]{2,}/]",
+    message: "A word written into the page is a word the owner cannot edit: the Studio's Colours-and-words panel reads src/content.json, and <T k=\"…\"/> is how a page shows it. Put the text in content.json under this page's key and draw it with <T k=\"pages.<page>.<thing>\"/> (or useContent(\"…\") where you need the string itself). A record's own field is not copy — {trip.name} is fine.",
+  },
+  {
+    selector: "JSXAttribute[name.name=/^(title|label|placeholder)$/] > Literal[value=/[A-Za-z]{2,}/]",
+    message: "A label written into the page is a word the owner cannot edit: pass useContent(\"pages.<page>.<thing>\") instead, so the Studio can change it. aria-label and alt are accessibility, not copy, and are left alone.",
+  },
+];
+
 export default tseslint.config(
   { ignores: ["dist", "node_modules"] },
   {
@@ -89,7 +124,38 @@ export default tseslint.config(
     extends: [js.configs.recommended, ...tseslint.configs.recommended],
     plugins: { "react-hooks": reactHooks },
     rules: {
-      "@typescript-eslint/no-unused-vars": "error",
+      // A LEADING UNDERSCORE MEANS "DELIBERATELY UNUSED", AND THE RULE HAD TO
+      // BE TOLD.
+      //
+      // The rule is worth having: dead code is the thing reviewers used to
+      // argue about and a line number settles it. What it could not tell
+      // apart was dead code from a parameter that is unused ON PURPOSE —
+      // a mock standing in for a backend that does not exist yet, a handler
+      // matching a signature it does not need every argument of, a caught
+      // error nobody reports.
+      //
+      // Measured on run 23, story "Buyer & role sign-up and sign-in". Dev
+      // wrote the idiomatic thing:
+      //
+      //   export function requestOtp(_phone: string): void {
+      //
+      // and there is no correct fix available to it. Remove the parameter and
+      // the signature stops matching the real one and its callers; rename it
+      // and it is still unused; use it and there is nothing in a mock to use
+      // it for. check_build failed three times with that one line, nothing
+      // changed between them, the turn was stopped at the blocker, and the
+      // story FAILED. This is the complexity:12 story again — a rule that
+      // refuses the correct fix — and the escape here is the standard one the
+      // rule ships with, so "_" means what it means everywhere else.
+      //
+      // Nothing is weakened: a variable or parameter with a real name that
+      // nobody reads is still an error.
+      "@typescript-eslint/no-unused-vars": ["error", {
+        argsIgnorePattern: "^_",
+        varsIgnorePattern: "^_",
+        caughtErrorsIgnorePattern: "^_",
+        destructuredArrayIgnorePattern: "^_",
+      }],
       "@typescript-eslint/no-explicit-any": "error",
       "max-lines": ["error", { max: 300, skipBlankLines: true, skipComments: true }],
       // 20, measured — and it was 12, which refused the correct fix.
@@ -129,6 +195,15 @@ export default tseslint.config(
     files: ["src/components/**/*.{ts,tsx}", "src/pages/**/*.{ts,tsx}"],
     rules: {
       "no-restricted-syntax": ["error", effectBody, ...rawColour, ...pictureRules],
+    },
+  },
+  // And on a PAGE, the words themselves. See pageWords above: a later block's
+  // no-restricted-syntax replaces the earlier one's options, so everything the
+  // block above gives a page is repeated here.
+  {
+    files: ["src/pages/**/*.{ts,tsx}"],
+    rules: {
+      "no-restricted-syntax": ["error", effectBody, ...rawColour, ...pictureRules, ...pageWords],
     },
   },
   // Where products are drawn — cards, tiles, product, shop, catalogue and
