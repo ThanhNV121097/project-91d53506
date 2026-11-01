@@ -17,6 +17,10 @@ const API = ((site as { api?: string }).api ?? "").replace(/\/$/, "");
 
 export const canSend = KEY !== "" && API !== "";
 
+// This project's own backend (code/backend's cmd/api), never Agent Team
+// directly from the browser — the forwarding key now lives server-side.
+const apiBase = (import.meta.env.VITE_API_URL ?? "/api") as string;
+
 /** What a customer sends. `details` holds a booking's date, time, party size. */
 export interface Enquiry {
   name: string;
