@@ -43,6 +43,8 @@ export interface NavItem {
   badge?: number;
   /** Which roles see it. Everyone signed in when not given. */
   roles?: readonly string[];
+  /** The sub-admin permission section this item belongs to. No restriction when not given. */
+  permission?: string;
 }
 
 export interface NavGroup {
