@@ -75,9 +75,12 @@ export function patchDeparture(id: string, patch: Partial<Pick<Departure, "price
   const next = all.map((d) => {
     if (d.id !== id) return d;
     const capacity = patch.capacity ?? d.capacity;
-    const committed = d.capacity - d.seats;
+    // Blocking zeroes bookable seats; unblocking reopens the full capacity —
+    // this mock never tracks seats actually committed through checkout, so
+    // there is nothing else to restore them to. The real seat count comes
+    // back once booking writes land against this table.
     const state = patch.state ?? d.state;
-    const seats = state === "Blocked" ? 0 : capacity - committed;
+    const seats = state === "Blocked" ? 0 : patch.capacity !== undefined ? capacity - (d.capacity - d.seats) : capacity;
     return { ...d, ...patch, capacity, seats };
   });
   setCollection("departures", next as unknown as Row[]);
