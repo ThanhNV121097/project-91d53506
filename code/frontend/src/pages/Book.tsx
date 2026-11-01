@@ -44,21 +44,12 @@ export default function Book() {
         <form
           onSubmit={(e) => {
             e.preventDefault();
-            const bad = missingFields(draft);
-            setErrors(bad);
-            if (Object.values(bad).some(Boolean)) return;
-            if (draft.adults + draft.children > remaining) {
-              setSeatsError(seatsErrorText);
-              return;
-            }
-            setSeatsError("");
             const next = { ...draft, date };
             writeDraft(next);
             navigate(`/checkout/${item.id}`);
           }}
           className="mt-8 flex flex-col gap-5"
         >
-          {seatsError && <p role="alert" className="text-sm text-ink">{seatsError}</p>}
           <div className="grid gap-4 sm:grid-cols-3">
             <label className="flex flex-col gap-1">
               <span className="label text-ink-soft"><T k="pages.book.date" /></span>
