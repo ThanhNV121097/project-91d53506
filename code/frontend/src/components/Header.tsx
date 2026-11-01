@@ -11,6 +11,7 @@ import { useWishlist } from "../lib/mock/wishlist";
 export default function Header() {
   const links = useList<{ label: string; href: string }>("nav.links");
   const name = useContent("site.name");
+  const ctaHref = useContent("nav.cta.href") || "/search";
   const [open, setOpen] = useState(false);
   const session = useSession();
   const { ids } = useWishlist();
