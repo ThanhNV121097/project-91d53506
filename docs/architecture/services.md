@@ -1,117 +1,191 @@
-## 8.3 Migration plan — The site as designed (SITE-001 to SITE-006)
-
-No schema change, no new endpoint. This story (`docs/site/stories/the-site-as-designed.md`)
-ships Home, Trip detail, the Departures board, Guides/Guide and the shared
-header/footer/dock as a frontend-only slice reading the mock data already
-bundled in `code/frontend/src/data/` — its own story scope states "No
-backend stage applies to this story" and PR #23 confirms no mock module
-was added or needs swapping.
-
-Every entity SITE-001…006 touches already exists and already traces to
-these requirement ids from earlier design work: `products` (§3.5, Traces
-to … SITE-001, SITE-002), `departures` (§3.6, Traces to … SITE-001,
-SITE-003), `destinations` (§3.7, Traces to SITE-001), `categories`
-(§3.8, Traces to SITE-001), `guides` (§3.9, Traces to SITE-004),
-`reviews` (§3.10, Traces to SITE-002). The fields each acceptance
-criterion reads are already columns: `products.status`/`price`/`image`/
-`itinerary`/`includes`/`excludes`/`policy`/`confirmation` (SC-1, SC-5,
-SC-6), `departures.state`/`season`/`seats`/`price`/`date` (SC-3, SC-10,
-SC-11), `reviews.status`/`rating`/`author`/`reviewed_on`/`text`/`reply`
-(SC-7, SC-8), `guides.category`/`slug`/`title`/`excerpt`/`body` (SC-13,
-SC-14, SC-15). No column, index or constraint is missing for any SC in
-this story.
-
-Every read this story needs is already the `data` module's generic
-reader (§3.1.1 `GET /v1/{collection}`, §3.1.2 `GET /v1/{collection}/{id}`),
-already listed as serving SITE-001…006 in §10's traceability table
-("presentation only — maps to no endpoint of its own; reads `data`/
-`search` endpoints already listed"). This story adds nothing to that:
-once `Site data from the database` (DATA-001…004, plan item 2) lands,
-`Home.tsx`/`Trip.tsx`/`Departures.tsx`/`Guides.tsx`/`Guide.tsx` call
-`useCollection`/`useRecord` exactly as they do today against the mock,
-per DATA-004's "no component file changes" guarantee — this story's
-markup needs no edit either now or then.
-
-**Forward:** none to run. **Backward:** none to run. **Safety on a
-populated table:** not applicable — no DDL in this story.
-
----
-
-## 3.9.6 `PATCH /v1/admin/reviews/{id}` — Admin review moderation (ADMIN-002)
-
-> Note on this file's state: sections §2 (cross-cutting error catalog,
-> auth/permissions, pagination, validation boundary) and §3.1–§3.10 from
-> the original service design (PR #6) are not present in this file as
-> currently committed on `main` — only the tail-end migration-plan
-> sections from later self-merged story-design PRs survived. This section
-> is written to the contract every merged test case already cites
-> (`docs/admin/test-cases/admin-review-moderation.md`, "`§3.9.6`", from PR
-> #32) and the same error-code vocabulary used by every sibling admin
-> endpoint's test cases (`UNAUTHENTICATED`, `PERMISSION_DENIED`,
-> `NOT_FOUND`, `VALIDATION_FAILED`, `MALFORMED_REQUEST`, `INTERNAL`,
-> `UNAVAILABLE`) — it does not invent a second catalog. Restoring the
-> missing §2/§3.1–§3.10 body is a separate concern, outside this story.
+## 3.9.10 `GET /v1/admin/bookings` — List/search bookings (ADMIN-004)
 
 **Auth** — `admin` (full or sub-admin).
-**Permissions** — `full`, `moderation-only`. Any other `permissions` value
-(e.g. `finance-only`, `content-only`), and any non-admin role (`buyer`,
-`supplier`), is denied.
+**Permissions** — `full`, `finance-only`. Any other `permissions` value, and
+any non-admin role, is denied.
 
 **Request**
 
 ```
-PATCH /v1/admin/reviews/{id}
-{ "status": "hidden" | "published" }
+GET /v1/admin/bookings?code=&status=&date_from=&date_to=&limit=&cursor=
 ```
 
-No other field is accepted. `reported` is never a value this endpoint
-accepts on write — it is a state a review arrives in (flagged elsewhere),
-never one an admin sets through this call.
+Query parameters — exactly these, no others:
+
+| Param | Type | Notes |
+|---|---|---|
+| `code` | string | Case-insensitive match against `bookings.code`. The design's search box is labelled "Search by booking code" and sends only this — `product_name`/`supplier_name` are shown as columns but are not a separate search key for this endpoint (narrower than ADMIN-004's prose "searchable by code/product/supplier"; AC-1/AC-3 and the merged test cases only exercise exact/no-match by code, so this ships as code-only search and the SRS line is read as "found via its code" — no frontend change, the mock's search box never sent anything else). |
+| `status` | string | One of `bookings.status`'s enum values |
+| `date_from` | date (`YYYY-MM-DD`) | Inclusive lower bound on `bookings.created_at::date` |
+| `date_to` | date | Inclusive upper bound |
+| `limit` | integer, 1–100 | Default 20 |
+| `cursor` | string | Opaque, from a previous response's `next_cursor` |
 
 **Response** — `200`
 
 ```json
-{ "id": "...", "status": "hidden", "updated_at": "..." }
+{
+  "data": [
+    {
+      "id": "...",
+      "code": "NA-7X42K9",
+      "product_name": "...",
+      "supplier_name": "...",
+      "date": "2026-11-20",
+      "total": 1850000,
+      "status": "Paid",
+      "created_at": "..."
+    }
+  ],
+  "has_more": false,
+  "next_cursor": null
+}
+```
+
+`product_name` and `supplier_name` are read via a join through
+`departures.product_id → products.name` and `products.supplier_id →
+suppliers.name`; `date` is `departures.date` for the booking's
+`departure_id` (none of these three are columns on `bookings` itself —
+see erd.md §3.11 — this endpoint reads, never writes, the join).
+
+**Errors**
+
+| Status | `error.code` | When |
+|---|---|---|
+| 400 | `MALFORMED_REQUEST` | A query parameter outside the table above is present (e.g. `sort_by`) |
+| 401 | `UNAUTHENTICATED` | No valid session token |
+| 403 | `PERMISSION_DENIED` | Signed in, but not `admin`, or an `admin` whose `permissions` is neither `full` nor `finance-only` |
+| 422 | `VALIDATION_FAILED` | `limit` is present and >100 (never clamped) or ≤0 |
+| 500 | `INTERNAL` | The query fails for a reason other than a refused connection |
+| 503 | `UNAVAILABLE` | The database refuses the connection |
+
+No `404` — an empty result set is `200` with `data: []`, `has_more: false`
+(AC-3).
+
+---
+
+## 3.9.11 `GET /v1/admin/complaints` — List complaints raised against bookings (ADMIN-004)
+
+**Auth** — `admin` (full or sub-admin).
+**Permissions** — `full`, `finance-only`.
+
+**Request**
+
+```
+GET /v1/admin/complaints?limit=&cursor=
+```
+
+No filter by `status` — the design's complaints panel (`AdminBookings.tsx`)
+reads this list unfiltered (its "Refund manually" action already shows a
+disabled "Refunded" label for a resolved row instead of hiding it, so the
+list mixes `Open` and resolved rows by design, not by a missing filter).
+
+| Param | Type | Notes |
+|---|---|---|
+| `limit` | integer, 1–100 | Default 10, matching the design's `pageSize: 10` |
+| `cursor` | string | Opaque |
+
+**Response** — `200`
+
+```json
+{
+  "data": [
+    {
+      "id": "...",
+      "booking_code": "NA-7X42K9",
+      "customer": "...",
+      "issue": "...",
+      "opened_at": "...",
+      "refund_requested": 500000,
+      "status": "Open"
+    }
+  ],
+  "has_more": false,
+  "next_cursor": null
+}
+```
+
+`booking_code` is read via `complaints.booking_id → bookings.code` (erd.md
+§3.15 stores `booking_id`, not a denormalized code column — the mock's flat
+`booking_code` field becomes this join, no other frontend field changes).
+
+**Errors**
+
+| Status | `error.code` | When |
+|---|---|---|
+| 400 | `MALFORMED_REQUEST` | A query parameter outside `limit`/`cursor` is present |
+| 401 | `UNAUTHENTICATED` | No valid session token |
+| 403 | `PERMISSION_DENIED` | Signed in, but not `admin`, or an `admin` whose `permissions` is neither `full` nor `finance-only` |
+| 422 | `VALIDATION_FAILED` | `limit` present and >100 or ≤0 |
+| 500 | `INTERNAL` | The query fails for a reason other than a refused connection |
+| 503 | `UNAVAILABLE` | The database refuses the connection |
+
+---
+
+## 3.9.12 `POST /v1/admin/complaints/{id}/refund` — Process a manual refund (ADMIN-004)
+
+**Auth** — `admin` (full or sub-admin).
+**Permissions** — `full`, `finance-only`.
+
+**Request**
+
+```
+POST /v1/admin/complaints/{id}/refund
+```
+
+No request body. Any body field is rejected (the mock's `refund()` call
+takes no body either, per PR #74's `setCollection` calls).
+
+**Behaviour** — in one transaction: the `complaints` row with that `id`
+must have `status = 'Open'`; on success its `status` becomes `Refunded`,
+and the `bookings` row referenced by its `booking_id` has its `status` set
+to `Refunded` regardless of its current value (AC-2 does not require it to
+be `Paid` first — a dispute can be raised and resolved from any
+non-terminal booking state).
+
+**Response** — `200`
+
+```json
+{
+  "booking": { "id": "...", "status": "Refunded" },
+  "complaint": { "id": "...", "status": "Refunded" }
+}
 ```
 
 **Errors**
 
 | Status | `error.code` | When |
 |---|---|---|
-| 400 | `MALFORMED_REQUEST` | A field the request body does not define is present (e.g. `note`) |
+| 400 | `MALFORMED_REQUEST` | A body field is present (e.g. `amount`) |
 | 401 | `UNAUTHENTICATED` | No valid session token |
-| 403 | `PERMISSION_DENIED` | Signed in, but not `admin`, or an `admin` whose `permissions` is neither `full` nor `moderation-only` |
-| 404 | `NOT_FOUND` | No `reviews` row with that `id` |
-| 422 | `VALIDATION_FAILED` | `status` is absent, or is a value other than exactly `"hidden"` or `"published"` (including `"reported"` or any out-of-set string) |
+| 403 | `PERMISSION_DENIED` | Signed in, but not `admin`, or an `admin` whose `permissions` is neither `full` nor `finance-only` |
+| 404 | `NOT_FOUND` | No `complaints` row with that `id` |
+| 409 | `CONFLICT` | The complaint's `status` is not `'Open'` (already `Resolved`/`Refunded` — also covers two near-simultaneous refund attempts: the second finds it already resolved) |
 | 500 | `INTERNAL` | The update query fails for a reason other than a refused connection |
 | 503 | `UNAVAILABLE` | The database refuses the connection |
 
 **Notes**
 
-- Writes `reviews.status` only (erd.md §3.10 — already has the
-  `published`/`hidden`/`reported` `CHECK` and the `idx_reviews_status`
-  partial index this moderation queue already relies on; no ERD change
-  needed for this story).
-- `/tours/:id`'s review list already filters to `status = 'published'`
-  (SITE-002) — a row this endpoint sets to `hidden` drops off that list
-  on its next read, and one set back to `published` reappears, with no
-  separate cache or publish step.
-- Frontend mock (PR #70, `AdminModeration.tsx`'s `toggleReview`) computes
-  the next status client-side (`hidden` ↔ `published`, treating a
-  `reported` row the same as any non-`hidden` row — toggled to `hidden`)
-  and calls this endpoint with that value already decided. The shape
-  matches this contract exactly — no frontend change needed when the
-  backend lands; only the `setCollection` call becomes this `PATCH`.
+- Writes `bookings.status` and `complaints.status` only; both columns and
+  their `CHECK` constraints already exist (erd.md §3.11, §3.15) — no ERD
+  change for this story.
+- `idx_complaints_status` (partial `WHERE status = 'Open'`, erd.md §3.15)
+  and `idx_bookings_status_created_at` (erd.md §3.11) already serve this
+  endpoint's own read (`WHERE id = $1 AND status = 'Open'`, the conflict
+  check) and the list endpoint's status/date filter respectively — no new
+  index needed.
 
-## 8.4 Migration plan — Admin review moderation (ADMIN-002)
+## 8.5 Migration plan — Admin bookings search and refunds (ADMIN-004)
 
-No schema change. `reviews.status` and its `CHECK` (`ck_reviews_status`)
-and `idx_reviews_status` already exist from the base ERD (erd.md §3.10),
-written ahead of this story and already covering every value
-(`published`, `hidden`, `reported`) this endpoint reads or writes.
+No schema change. `bookings.status`, `complaints.status` and their
+`CHECK` constraints (`ck_bookings_status`, `ck_complaints_status`), plus
+`uq_bookings_code`, `idx_bookings_status_created_at` and
+`idx_complaints_status`, already exist from the base ERD (erd.md §3.11,
+§3.15), written ahead of this story and already covering every value and
+query this story's three endpoints need.
 
-No new table, column, index or constraint. One endpoint added: §3.9.6
-above.
+No new table, column, index or constraint. Three endpoints added: §3.9.10,
+§3.9.11, §3.9.12 above.
 
 **Forward:** none to run. **Backward:** none to run. **Safety on a
 populated table:** not applicable — no DDL in this story.
