@@ -1,8 +1,9 @@
+import { useState, type FormEvent } from "react";
 import DashboardLayout from "../components/DashboardLayout";
 import RequireRole from "../components/RequireRole";
 import DataTable from "../components/DataTable";
 import { Badge } from "../components/TableFilters";
-import { useCollection, type Row } from "../data";
+import { useCollection, setCollection, type Row } from "../data";
 import { useTableQuery } from "../lib/table";
 import { usePageMeta } from "../seo";
 import { formatDate } from "../lib/format";
@@ -10,38 +11,107 @@ import { ADMIN_NAV } from "../lib/nav";
 
 const FIELD = "w-full rounded-[var(--radius-sm)] border border-field bg-surface px-3 py-2 text-sm text-ink";
 
+/** Saves one settings row's value, rejecting empty, and returns whether it saved. */
+function saveSetting(rows: Row[], id: string, value: string): boolean {
+  if (!value.trim()) return false;
+  setCollection("settings", rows.map((r) => (r.id === id ? { ...r, value } : r)));
+  return true;
+}
+
+function SettingField({ row, onSave }: { row: Row; onSave: (value: string) => boolean }) {
+  const [value, setValue] = useState(String(row.value ?? ""));
+  const [error, setError] = useState(false);
+  function submit(e: FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    if (!onSave(value)) {
+      setError(true);
+      return;
+    }
+    setError(false);
+  }
+  return (
+    <form onSubmit={submit} className="mt-3 flex max-w-sm flex-col gap-1">
+      <div className="flex gap-2">
+        <input
+          aria-label={String(row.name)}
+          value={value}
+          onChange={(e) => {
+            setValue(e.target.value);
+            setError(false);
+          }}
+          placeholder="Not set"
+          className={FIELD}
+        />
+        <button type="submit" className="shrink-0 rounded-[var(--radius-sm)] bg-accent px-4 py-2 text-sm text-accent-ink">Save</button>
+      </div>
+      {error && <p role="alert" className="text-xs text-ink-soft">This field can't be saved empty.</p>}
+    </form>
+  );
+}
+
+function TextSetting({ id, label, row, onSave }: { id: string; label: string; row: Row; onSave: (value: string) => boolean }) {
+  const [value, setValue] = useState(String(row.value ?? ""));
+  const [error, setError] = useState(false);
+  function submit(e: FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    if (!onSave(value)) {
+      setError(true);
+      return;
+    }
+    setError(false);
+  }
+  return (
+    <form onSubmit={submit} className="flex flex-col gap-1">
+      <label htmlFor={id} className="label text-ink-soft">{label}</label>
+      <textarea
+        id={id}
+        rows={3}
+        value={value}
+        onChange={(e) => {
+          setValue(e.target.value);
+          setError(false);
+        }}
+        className={FIELD}
+      />
+      {error && <p role="alert" className="text-xs text-ink-soft">This field can't be saved empty.</p>}
+      <button type="submit" className="self-start rounded-[var(--radius-sm)] bg-accent px-6 py-2.5 text-sm text-accent-ink">Save</button>
+    </form>
+  );
+}
+
 export default function AdminSystem() {
   usePageMeta("pages.adminSystem.title");
   const t = useTableQuery({ size: 20, sort: "-at" });
   const audit = useCollection("audit", { page: t.page, pageSize: t.size, sort: t.sort });
   const notifications = useCollection("notifications", { pageSize: 10 });
   const settings = useCollection("settings", { pageSize: 10 });
+  const byId = (id: string) => settings.items.find((r) => r.id === id);
+  const platform = settings.items.filter((r) => r.id !== "terms" && r.id !== "confirmation-template");
+  const terms = byId("terms");
+  const template = byId("confirmation-template");
   return (
     <RequireRole roles={["admin"]}>
       <DashboardLayout title="System" nav={ADMIN_NAV} brand="Nghệ An Departures">
         <h2 className="text-base text-ink">Decisions waiting on you</h2>
         <ul className="flex flex-col gap-2">
-          {settings.items.map((s) => (
+          {platform.map((s) => (
             <li key={s.id} data-record={`settings:${s.id}`} className="rounded-[var(--radius-sm)] border border-line bg-surface p-4">
               <p className="text-sm text-ink">{String(s.name)}</p>
               <p className="mt-1 text-sm text-ink-soft">{String(s.note)}</p>
-              <input aria-label={String(s.name)} defaultValue={String(s.value)} placeholder="Not set" className={`${FIELD} mt-3 max-w-sm`} />
+              <SettingField row={s} onSave={(v) => saveSetting(settings.items, s.id, v)} />
             </li>
           ))}
         </ul>
 
         <h2 className="mt-4 text-base text-ink">Policies, terms and email templates</h2>
-        <form className="grid max-w-3xl gap-4 sm:grid-cols-2" onSubmit={(e) => e.preventDefault()}>
-          <label className="flex flex-col gap-1 sm:col-span-2">
-            <span className="label text-ink-soft">Terms and conditions</span>
-            <textarea id="terms" rows={3} className={FIELD} />
-          </label>
-          <label className="flex flex-col gap-1 sm:col-span-2">
-            <span className="label text-ink-soft">Booking confirmation email</span>
-            <textarea id="template" rows={3} className={FIELD} />
-          </label>
-          <button type="submit" className="self-start rounded-[var(--radius-sm)] bg-accent px-6 py-2.5 text-sm text-accent-ink sm:col-span-2">Save</button>
-        </form>
+        <div className="grid max-w-3xl gap-4 sm:grid-cols-2">
+          {terms && (
+            <TextSetting id="terms" label="Terms and conditions" row={terms} onSave={(v) => saveSetting(settings.items, "terms", v)} />
+          )}
+          {template && (
+            <TextSetting id="template" label="Booking confirmation email" row={template} onSave={(v) => saveSetting(settings.items, "confirmation-template", v)} />
+          )}
+        </div>
 
         <h2 className="mt-4 text-base text-ink">Notifications</h2>
         <DataTable<Row>
