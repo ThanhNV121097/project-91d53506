@@ -1354,6 +1354,46 @@ code lookup, and the `departure` join in the response) and relies on the
 run. Backward: none to run. Safety on a populated table: not applicable —
 no DDL in this story.
 
+## 8.2 Migration plan — Booking creation with inventory hold (BOOKING-001)
+
+No schema change. `bookings` (`erd.md` §3.11 — `status`, `held_until`,
+`adults`, `children`, `traveller_*`, `total`, `ck_bookings_party_positive`,
+`idx_bookings_status_held_until`) and `departures` (`erd.md` §3.6 —
+`seats`, `capacity`, `ck_departures_seats_bounds`, `state`) already exist
+from the base migration (`erd.md` §8, steps 3 and 5 — `0004_catalogue` and
+`0006_booking_flow`) and already carry every column, constraint and index
+this story's SC-1–SC-8 need: the atomic `UPDATE departures SET seats =
+seats - :n WHERE seats >= :n` (SC-2/SC-5/SC-6), `ck_departures_seats_bounds`
+as the database-level backstop against a negative or over-capacity value,
+`held_until` + `idx_bookings_status_held_until` for the hold-expiry sweep
+(SC-3/SC-4), and the `bookings`+`departures` write committing in one
+transaction (SC-1/SC-8). `POST /v1/bookings` (§3.5.1) and the hold-expiry
+sweep (§4) were already specified against this same schema and already
+satisfy every acceptance criterion in
+`docs/booking/stories/booking-creation-with-inventory-hold.md` without
+change. Forward: none to run. Backward: none to run. Safety on a
+populated table: not applicable — no DDL in this story.
+
+**Decision — package selection is not persisted.** The story's UI scope
+lists a package `Select` (Standard / Private group / With hotel pick-up)
+shown when a product has more than one. `code/frontend/src/lib/mock/
+booking.ts`'s `Draft.pack` adds a flat upcharge to the mock's `total`.
+BOOKING-001's own "Data touched" table (`docs/booking/SRS.md` §4.1) lists
+only `status`, `date`/`travellers`/`total`, `departures.seats` and
+`heldUntil` — it names no package column, and no requirement or
+acceptance criterion in that SRS exercises a stored package choice.
+`products` (`erd.md` §3.5) has one `price`, not a set of package rows, so
+there is nothing a `package_id` could reference yet. **Chosen:** `POST
+/v1/bookings` (§3.5.1) keeps no package field; `total` is `departure
+price × party size` exactly as already specified, with no package
+upcharge. **Frontend impact when this story's backend lands:** the
+package `Select` on `/book/:id` is cosmetic only — Dev drops the extra
+from the real total shown at checkout (`sums.extra` in `Book.tsx`/
+`Checkout.tsx`) or the stakeholder decides packages are a real priced
+product variant, which is a `products`-table change, not this story's.
+Recorded below as an open question rather than silently shipping a
+checkout total that disagrees with what the booking form showed.
+
 ## 9. Open questions
 
 | Question | Owner | Blocking |
