@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from "react";
-import { T } from "../editable";
+import { T, useContent } from "../editable";
 import Icon from "./Icon";
 import { createRequest, requestForBooking, type CancelRequest } from "../lib/mock/buyer-cancellation-and-refund-requests";
 
