@@ -1,5 +1,5 @@
 import { type ReactNode } from "react";
-import { allowed, useSession } from "../lib/session";
+import { allowed, hasPermission, useSession } from "../lib/session";
 
 /**
  * The one way an area of the site is kept to the roles it belongs to.
