@@ -82,17 +82,3 @@ export const PAYMENTS: { id: string; label: string }[] = [
   { id: "zalopay", label: "ZaloPay" },
   { id: "vietqr", label: "Bank transfer / VietQR" },
 ];
-
-/** Seats left for the picked date: the matching departure row, else the product's own `seats`. */
-export function seatsRemaining(
-  dates: readonly { date: string; seats: number }[],
-  date: string,
-  fallback: number,
-): number {
-  return dates.find((d) => d.date === date)?.seats ?? fallback;
-}
-
-/** Which required traveller fields are blank — the backend's own check, mirrored here (BOOKING-001 SC-7). */
-export function missingFields(draft: Pick<Draft, "name" | "phone" | "email">): Record<string, boolean> {
-  return { name: !draft.name.trim(), phone: !draft.phone.trim(), email: !draft.email.trim() };
-}
