@@ -1363,6 +1363,22 @@ code lookup, and the `departure` join in the response) and relies on the
 run. Backward: none to run. Safety on a populated table: not applicable —
 no DDL in this story.
 
+## 8.2 Migration plan — Search and filter trips by criteria (SEARCH-001)
+
+No schema change. `products` (incl. `idx_products_status`,
+`idx_products_destination_kind`) and `departures` (incl.
+`idx_departures_product_id_date`, `uq_departures_product_date`, the
+`state`/`seats`/`price` columns) already exist from the base migration
+(`docs/architecture/erd.md` §3.5–3.6, §8) and already carry every index
+this endpoint's query needs — `idx_products_destination_kind` for the
+no-date filters, `idx_departures_product_id_date` for the per-product,
+per-date availability join. This story only adds the `GET /v1/search`
+handler (§3.4.1) that joins the two tables the mock module
+(`src/lib/mock/search-and-filter-trips-by-criteria.ts`, PR #46) already
+joins client-side, and deletes that mock module once the handler ships.
+Forward: none to run. Backward: none to run. Safety on a populated table:
+not applicable — no DDL in this story.
+
 ## 9. Open questions
 
 | Question | Owner | Blocking |
