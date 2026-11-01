@@ -256,12 +256,21 @@ the same weight as the state-machine ones.
 
 ---
 
-**Scenario**: A storage/CDN write failure is rejected without a partial reference, and the form keeps its other fields
-**Given**: A signed-in Supplier on `/supplier/products/:id` with other fields filled in, and the media storage dependency arranged to refuse the write
-**When**: The Supplier uploads a valid product photo
-**Then**: The `POST /v1/media` call responds `503 UNAVAILABLE` with no `url` returned; on screen, an upload-failed message is shown and the other form fields the Supplier already entered are still present, not cleared
+**Scenario**: A storage/CDN write failure returns no partial reference
+**Given**: A signed-in Supplier; the media storage dependency arranged to refuse the write
+**When**: The Supplier calls `POST /v1/media` with a valid product photo
+**Then**: Response is `503 UNAVAILABLE`; no `url` is returned in the body
 **Traces**: Upstream failure (SUPPLIERS-006)
 **Check**: fetch_url
+
+---
+
+**Scenario**: A storage/CDN write failure shows an upload-failed message and keeps the form's other fields
+**Given**: A signed-in Supplier on `/supplier/products/:id` with the title and other fields already filled in, and the media storage dependency arranged to refuse the write
+**When**: The Supplier uploads a valid product photo through the page's upload control
+**Then**: An upload-failed message renders on screen; the title and the other fields the Supplier already entered are still present in their inputs, not cleared
+**Traces**: Upstream failure (SUPPLIERS-006)
+**Check**: interact_page
 
 ---
 
