@@ -588,3 +588,99 @@ its `SupplierProfile` shape and its `uploadDocument` stand-in match
 frontend change required when these handlers replace the mock; only the
 two functions' bodies change from a `localStorage` read/write to a real
 `fetch`.
+
+---
+
+## 3.10 `POST /v1/contact` — Deliver a contact submission (CONTACT-001)
+
+**Auth** — none. The endpoint is open to every visitor (`contact/SRS.md`
+§4.1 "Not applicable — no permission model").
+
+### 3.10.1 Request/response
+
+**Request**
+
+```json
+{ "name": "...", "contact": "...", "message": "...", "honeypot": "" }
+```
+
+| Field | Type | Required | Notes |
+|---|---|---|---|
+| `name` | string | yes | Non-blank after trim |
+| `contact` | string | yes | Non-blank after trim — a phone number or an email, not validated as either (the design's single `reply_to` input accepts both) |
+| `message` | string | no | May be blank or absent — SRS §4.1 behaviour 3 names only `name`/`contact` as required |
+| `honeypot` | string | no | Blank on a real visitor; the frontend's hidden `website` input maps to this field at the HTTP boundary — a bot that fills every field sends this non-blank |
+
+No other field is accepted.
+
+**Behaviour**
+
+1. Reject a non-JSON body or a field outside the table above with `400
+   MALFORMED_REQUEST` before looking at `honeypot` — a malformed request is
+   never partially processed.
+2. Reject a blank/absent `name` or `contact` with `422 VALIDATION_FAILED`
+   and a `details` array naming each blank field — checked before the
+   honeypot, so a bot that fills the honeypot but leaves `name` blank still
+   gets `422`, not the fake `202` (honeypot secrecy only covers a
+   *well-formed* submission).
+3. If `honeypot` is non-blank: do nothing further — no outbound call — and
+   return `202` (AC-2's "visitor still sees sent").
+4. Otherwise, forward `{ name, contact, message }` to the platform's
+   configured Agent Team inbox endpoint, server-side, using
+   `AGENT_TEAM_API_URL`/`AGENT_TEAM_KEY` (§8.7 below — the backend's own
+   copy of the same platform-level values `site.json`/`site.ts` already use
+   client-side; no new secret, per `contact/SRS.md` §7). The forward
+   failing (non-2xx or unreachable) returns `503`; it succeeding returns
+   `202`.
+
+**Response** — `202`, body `{}`, identical for a real send and a
+honeypot drop (contract rule the test cases AC-1/AC-2 fetch_url scenarios
+check byte-for-byte).
+
+**Errors**
+
+| Status | `error.code` | When |
+|---|---|---|
+| 400 | `MALFORMED_REQUEST` | Body is not valid JSON, or a field outside `name`/`contact`/`message`/`honeypot` is present |
+| 422 | `VALIDATION_FAILED` | `name` and/or `contact` is absent or blank after trim; `details` names each |
+| 500 | `INTERNAL` | An unexpected failure other than the forward being unreachable/rejected |
+| 503 | `UNAVAILABLE` | The Agent Team inbox endpoint rejects the forward or cannot be reached |
+
+No `401`/`403` — the endpoint has no auth. No `404` — there is no resource
+to look up.
+
+**Notes**
+
+- This is a proxy, not a store: nothing here writes to this project's own
+  database (`contact/SRS.md` "Data touched" — forwarded, not persisted).
+- Matches the merged test cases
+  (`docs/contact/test-cases/contact-message-form.md`) field-for-field
+  (`name`/`contact`/`message`/`honeypot`, the `202`/`400`/`422`/`503`
+  split) — those were written against this exact contract ahead of this
+  design step, so this section ratifies rather than invents the shape.
+- **Frontend change required**: today `ContactForm.tsx`/`src/site.ts`
+  call the Agent Team endpoint directly from the browser
+  (`sendEnquiry` → `fetch(`${API}/${KEY}/messages`)`), using the field
+  names `reply_to`/`website`. The BE story for this plan item rewires
+  `sendEnquiry` to call this backend's `POST /v1/contact` instead,
+  renaming `reply_to` → `contact` and `website` → `honeypot` at the call
+  site — the same camelCase/snake_case-style boundary rename every other
+  module in this file already does. `PageViews`' separate `/views` beacon
+  is untouched; it is not part of this story.
+
+## 8.7 Migration plan — Contact message form (CONTACT-001)
+
+No schema change. The submission is forwarded, never stored — no table,
+column, index or constraint is added for this story.
+
+One handler added: `POST /v1/contact` (§3.10.1). It depends on two
+environment values, `AGENT_TEAM_API_URL` and `AGENT_TEAM_KEY` — the
+backend's own copies of the same platform-level endpoint/key
+`code/frontend/src/site.json` already carries for the client-side call
+being replaced; add both to `code/backend/.env.example` alongside
+`DATABASE_URL`/`PORT` as runtime-injected, not stakeholder-supplied
+secrets (`contact/SRS.md` §7: "already configured at the platform level;
+no new secret requested here").
+
+**Forward:** none to run — no DDL. **Backward:** none to run.
+**Safety on a populated table:** not applicable, no DDL in this story.
