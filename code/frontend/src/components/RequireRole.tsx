@@ -30,14 +30,16 @@ import { allowed, hasPermission, useSession } from "../lib/session";
  * these checks on the server once the site is built — a gate in the browser
  * is a courtesy to the person, never a defence against them.
  */
-export default function RequireRole({ roles, children, fallback }: {
+export default function RequireRole({ roles, permission, children, fallback }: {
   roles: readonly string[];
+  /** The sub-admin permission section this page belongs to. No restriction when not given. */
+  permission?: string;
   children: ReactNode;
   /** What to show instead. The default says who the area belongs to. */
   fallback?: ReactNode;
 }) {
   const session = useSession();
-  if (allowed(session, roles)) return <>{children}</>;
+  if (allowed(session, roles) && hasPermission(session, permission)) return <>{children}</>;
   if (fallback !== undefined) return <>{fallback}</>;
   return (
     <div className="mx-auto flex max-w-page flex-col items-start gap-3 px-[var(--gutter)] py-16">
