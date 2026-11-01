@@ -45,7 +45,7 @@ export default function SignIn() {
       signIn(user.email, user.name, user.role);
       route(user.role);
     } catch (err) {
-      setError(err instanceof AuthError && err.code === "locked" ? useContent("pages.signin.errorLocked") : useContent("pages.signin.errorCredentials"));
+      setError(err instanceof AuthError && err.code === "locked" ? errorLocked : errorCredentials);
     }
   }
 
