@@ -41,6 +41,14 @@ export interface Session {
    * to open the page as somebody else and check it is refused.
    */
   role?: string;
+
+  /**
+   * The restricted set a sub-admin acts within — "moderation-only",
+   * "finance-only", "content-only" or "users-only" (the closed set
+   * `docs/architecture/services.md` §3.9.7 names). Absent on a plain admin
+   * (full access) and on every other role.
+   */
+  permissions?: string;
 }
 
 const KEY = "agentteam:session";
