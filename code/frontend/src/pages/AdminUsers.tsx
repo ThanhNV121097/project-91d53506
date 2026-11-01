@@ -30,7 +30,7 @@ export default function AdminUsers() {
   const [name, setName] = useState("");
   const [permissions, setPermissions] = useState<string>(PERMISSIONS[0].value);
 
-  const submit = (e: React.FormEvent) => {
+  const submit = (e: { preventDefault: () => void }) => {
     e.preventDefault();
     setCollection("users", [...(collections().users ?? []), newSubAdmin(name, email, permissions)]);
     setOpen(false);
