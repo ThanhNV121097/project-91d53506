@@ -3,21 +3,67 @@ import DashboardLayout from "../components/DashboardLayout";
 import RequireRole from "../components/RequireRole";
 import DataTable from "../components/DataTable";
 import TableFilters, { SearchBox, FilterSelect, Badge } from "../components/TableFilters";
-import { useCollection, type Row } from "../data";
+import { collections, setCollection, useCollection, type Row } from "../data";
 import { useTableQuery } from "../lib/table";
 import { usePageMeta } from "../seo";
 import { formatPrice, formatDate } from "../lib/format";
 import { ADMIN_NAV } from "../lib/nav";
 
+/** Which pending row the reason box below the tables now applies to. */
+interface Target {
+  kind: "supplier" | "product";
+  id: string;
+  name: string;
+}
+
 export default function AdminQueue() {
   usePageMeta("pages.adminQueue.title");
   const t = useTableQuery({ size: 20, sort: "name" });
   const [reason, setReason] = useState("");
+  const [error, setError] = useState("");
+  const [target, setTarget] = useState<Target | null>(null);
   const products = useCollection("products", {
     page: t.page, pageSize: t.size, sort: t.sort, q: t.q, search: ["name"],
     where: { status: t.list("status") },
   });
   const suppliers = useCollection("suppliers", { where: { verified: false }, pageSize: 10 });
+
+  function choose(next: Target) {
+    setTarget(next);
+    setError("");
+  }
+
+  function approveSupplier(id: string) {
+    const rows = collections().suppliers ?? [];
+    setCollection("suppliers", rows.map((r) => (r.id === id ? { ...r, verified: true, rejection_reason: "" } : r)));
+    if (target?.id === id) setTarget(null);
+  }
+
+  function approveProduct(id: string) {
+    const rows = collections().products ?? [];
+    setCollection("products", rows.map((r) => (r.id === id ? { ...r, status: "approved", rejection_reason: "" } : r)));
+    if (target?.id === id) setTarget(null);
+  }
+
+  function submitReject() {
+    if (!target) return;
+    const trimmed = reason.trim();
+    if (!trimmed) {
+      setError("Enter a reason.");
+      return;
+    }
+    if (target.kind === "supplier") {
+      const rows = collections().suppliers ?? [];
+      setCollection("suppliers", rows.map((r) => (r.id === target.id ? { ...r, rejection_reason: trimmed } : r)));
+    } else {
+      const rows = collections().products ?? [];
+      setCollection("products", rows.map((r) => (r.id === target.id ? { ...r, status: "rejected", rejection_reason: trimmed } : r)));
+    }
+    setTarget(null);
+    setReason("");
+    setError("");
+  }
+
   return (
     <RequireRole roles={["admin"]}>
       <DashboardLayout title="Approval queue" nav={ADMIN_NAV} brand="Nghệ An Departures">
@@ -27,8 +73,8 @@ export default function AdminQueue() {
             <li key={s.id} data-record={`suppliers:${s.id}`} className="flex flex-wrap items-center justify-between gap-3 rounded-[var(--radius-sm)] border border-line bg-surface px-4 py-3">
               <span className="text-sm text-ink">{String(s.name)} · <span className="text-ink-soft">{String(s.documents)}</span></span>
               <span className="flex gap-3">
-                <button type="button" className="text-sm text-accent underline">Approve</button>
-                <button type="button" className="text-sm text-ink underline">Reject</button>
+                <button type="button" onClick={() => approveSupplier(s.id)} className="text-sm text-accent underline">Approve</button>
+                <button type="button" onClick={() => choose({ kind: "supplier", id: s.id, name: String(s.name) })} className="text-sm text-ink underline">Reject</button>
               </span>
             </li>
           ))}
@@ -54,18 +100,23 @@ export default function AdminQueue() {
           loading={products.loading} rowKey={(r) => r.id}
           caption="Products waiting for a decision"
           empty={<p>Nothing is waiting for review.</p>}
-          actions={() => (
+          actions={(r) => (
             <span className="flex justify-end gap-3">
-              <button type="button" className="text-sm text-accent underline">Approve</button>
-              <button type="button" className="text-sm text-ink underline">Request edits</button>
+              <button type="button" onClick={() => approveProduct(r.id)} className="text-sm text-accent underline">Approve</button>
+              <button type="button" onClick={() => choose({ kind: "product", id: r.id, name: String(r.name) })} className="text-sm text-ink underline">Request edits</button>
             </span>
           )}
         />
-        <form className="flex max-w-[52ch] flex-col gap-2" onSubmit={(e) => e.preventDefault()}>
-          <label htmlFor="reason" className="label text-ink-soft">Reason for rejection</label>
+        <form className="flex max-w-[52ch] flex-col gap-2" onSubmit={(e) => { e.preventDefault(); submitReject(); }}>
+          <label htmlFor="reason" className="label text-ink-soft">
+            {target ? `Reason for rejecting “${target.name}”` : "Reason for rejection"}
+          </label>
           <textarea id="reason" rows={3} value={reason} onChange={(e) => setReason(e.target.value)}
+            aria-describedby={error ? "reason-error" : undefined}
             className="rounded-[var(--radius-sm)] border border-field bg-surface px-3 py-2 text-sm text-ink" />
-          <button type="submit" className="self-start rounded-[var(--radius-sm)] bg-accent px-4 py-2 text-sm text-accent-ink">Reject with this reason</button>
+          {error && <p id="reason-error" role="alert" className="text-sm text-ink">{error}</p>}
+          {!target && <p className="text-sm text-ink-soft">Choose "Reject" or "Request edits" on a row above first.</p>}
+          <button type="submit" disabled={!target} className="self-start rounded-[var(--radius-sm)] bg-accent px-4 py-2 text-sm text-accent-ink disabled:opacity-60">Reject with this reason</button>
         </form>
       </DashboardLayout>
     </RequireRole>
