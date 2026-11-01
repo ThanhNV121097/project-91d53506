@@ -123,6 +123,11 @@ Behaviour:
    requested, and with the same field names the JSON file used.
 5. `page` beyond the last page returns an empty `items` array with the
    correct `total`, not an error.
+6. The public-read rule applies to every `/v1/<collection>` list endpoint
+   **except** the nine private collections named in DATA-001 (`audit`,
+   `bookings`, `campaigns`, `complaints`, `notifications`, `payouts`,
+   `settings`, `users`, `vouchers`), which require a signed-in caller and
+   return 401/403 as specified below instead of a list.
 
 **Acceptance criteria**
 
@@ -139,7 +144,9 @@ Behaviour:
 |---|---|---|
 | Unknown collection | The path names a collection not in `schema.json` | 404 response |
 | Unknown filter field | A query parameter does not match any field on that collection | Ignored; it does not error and does not filter |
-| No permission case | Every list endpoint is a public read | Not applicable |
+| Unauthenticated access | `<collection>` is one of the nine private collections (`audit`, `bookings`, `campaigns`, `complaints`, `notifications`, `payouts`, `settings`, `users`, `vouchers`) and the caller has no valid session or token | 401 |
+| Unauthorized access | `<collection>` is one of the nine private collections and the caller is signed in but lacks the role/ownership that collection requires | 403 |
+| Public collection | `<collection>` is any collection other than the nine listed above | No session required; list proceeds as a public read |
 
 **Data touched** — every field of the requested collection, returned as
 given in `schema.json` (same field names).
