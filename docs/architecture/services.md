@@ -531,14 +531,43 @@ looked up by `id`.
 **Path parameters** — `id_or_code`: a uuid is treated as `id`, anything
 else as `code`.
 
+**Behaviour (BOOKING-003 extension)** — a lookup by `code` renders the
+full confirmation **only** when `status IN ('Confirmed','Completed')`
+(SC-1/AC-1). A code that matches no row, or matches a row whose status is
+still `Awaiting Payment`/`Paid`/`Cancelled`/`Refunded`, answers identically
+with `404 NOT_FOUND` (SC-2 AC-2, SC-4/Behaviour-1) — the endpoint never
+invents a QR-ready payload for an unconfirmed booking, and existence of a
+not-yet-confirmed booking is not distinguishable from no match at all. A
+lookup by `id` (buyer's own account use) is not gated by status — a buyer
+may read their own booking at any status, matching ACCOUNT-001.
+
 **Success response** — `200` — `{ "id", "code", "status", "total",
-"adults", "children", "traveller_name", "departure": {...}, "payment" }`.
+"adults", "children", "traveller_name", "payment", "departure": { "id",
+"date", "product_id", "product_name" } }`. The `departure` object is a
+join (`departures` → `products.name`), not a stored column — it carries
+exactly the fields BOOKING-003's confirmation screen needs (trip name,
+date); `product_id` is included for a future link-through, not currently
+rendered.
+
+**Frontend note** — `code/frontend/src/pages/Confirmed.tsx` currently reads
+flat `booking.product_name`, `booking.date` and `booking.travellers` off
+the reused `bookings.json` mock shape (`lib/trips.ts`'s `Booking`
+interface). Those flat fields do not exist on this contract's response.
+When this story's backend lands, `Confirmed.tsx` and the `Booking` type it
+uses change to: `booking.departure.product_name` (was `product_name`),
+`booking.departure.date` (was `date`), and `booking.adults +
+booking.children` (was the flat `travellers` count) — the mock's flatter
+shape was convenient for the UI step but was never reviewed as the API
+contract, and this project's existing `account`/booking design already
+nests trip/date under `departure`, so this story matches that instead of
+carrying the mock's shape forward as a second, divergent one.
 
 **Errors**
 
 | Code | HTTP | Trigger |
 |---|---|---|
-| `NOT_FOUND` | 404 | no match, **or** (when looked up by `id`) the booking belongs to another buyer — same code either way, so existence is never leaked (BOOKING-003 AC-2, ACCOUNT-001 AC-3) |
+| `NOT_FOUND` | 404 | no match by `id` or `code`; (by `id`) the booking belongs to another buyer; or (by `code`) the match exists but its `status` is not `Confirmed`/`Completed` — all three answer identically so existence is never leaked (BOOKING-003 AC-2/Behaviour-1, ACCOUNT-001 AC-3) |
+| `MALFORMED_REQUEST` | 400 | request body carries a field this contract does not define (§2.5 — this endpoint takes no body) |
 
 #### 3.5.3 `POST /v1/bookings/{id}/voucher`
 
