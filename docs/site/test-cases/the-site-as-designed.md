@@ -169,14 +169,14 @@ every screen in this module is public, so there is no denial path to cover.
 **Scenario**: Departures board lists all rows sorted by date with mono figures
 **Given**: Departures exist across several products with distinct dates
 **When**: The visitor opens `/departures`
-**Then**: The table lists date, trip, operator, pricing rule, seats left and price for each row, sorted by date ascending, with seats and price set in the `.fig` mono class
+**Then**: The table lists date, trip, operator, pricing rule, seats left and price for each row, sorted by date ascending, with the seats-left and price cells set in the design's mono figure style
 **Traces**: SC-10 (SITE-003 AC-1)
 **Check**: render_url
 
 **Scenario**: Mono figure styling is actually applied to seats and price cells
 **Given**: The departures board has rendered with at least one row
-**When**: The seats-left and price cells of that row are measured
-**Then**: Their computed `font-family` matches the design's mono token (IBM Plex Mono) and `font-variant-numeric`/tabular figure styling applies
+**When**: The last two cells (seats left, price) of the first data row — e.g. `table tbody tr:first-child td:nth-last-child(2)` and `:last-child` — are measured
+**Then**: Their computed `font-family` matches the design's mono token (IBM Plex Mono) and tabular/monospaced figure styling applies
 **Traces**: SC-10 (SITE-003 AC-1)
 **Check**: measure_styles
 
