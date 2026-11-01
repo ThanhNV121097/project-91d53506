@@ -28,14 +28,18 @@ export const SUPPLIERS = [
   { id: "vinh-transfers", name: "Vinh Airport Transfers" },
 ] as const;
 
+/** Every row here represents a period that has already been reconciled —
+ * `appliedRate` is the rate frozen at that moment, Pending or Paid alike.
+ * Only a *new* reconciliation run (not modelled by this mock) would read
+ * the live `globalRate`/override; these rows never do. */
 export const PAYOUTS: PayoutRow[] = [
-  { id: "po-01", period: "2026-10-01", supplierId: "cua-lo-stays", supplierName: "Cửa Lò Beach Stays", gross: 9515000, status: "Pending", paidOn: "" },
-  { id: "po-02", period: "2026-10-01", supplierId: "pu-mat-boat", supplierName: "Pù Mát Boat & Jeep", gross: 6600000, status: "Pending", paidOn: "" },
-  { id: "po-03", period: "2026-10-01", supplierId: "tea-walks", supplierName: "Thanh Chương Tea Walks", gross: 1600000, status: "Pending", paidOn: "" },
-  { id: "po-04", period: "2026-10-01", supplierId: "kim-lien-guides", supplierName: "Kim Liên Heritage Guides", gross: 4200000, status: "Pending", paidOn: "" },
-  { id: "po-05", period: "2026-10-01", supplierId: "ban-nua", supplierName: "Bản Nưa Homestay", gross: 1960000, status: "Pending", paidOn: "" },
-  { id: "po-06", period: "2026-09-01", supplierId: "cua-lo-stays", supplierName: "Cửa Lò Beach Stays", gross: 7250000, status: "Paid", paidOn: "2026-09-05" },
-  { id: "po-07", period: "2026-09-01", supplierId: "vinh-transfers", supplierName: "Vinh Airport Transfers", gross: 1520000, status: "Paid", paidOn: "2026-09-05" },
+  { id: "po-01", period: "2026-10-01", supplierId: "cua-lo-stays", supplierName: "Cửa Lò Beach Stays", gross: 9515000, status: "Pending", paidOn: "", appliedRate: 10 },
+  { id: "po-02", period: "2026-10-01", supplierId: "pu-mat-boat", supplierName: "Pù Mát Boat & Jeep", gross: 6600000, status: "Pending", paidOn: "", appliedRate: 10 },
+  { id: "po-03", period: "2026-10-01", supplierId: "tea-walks", supplierName: "Thanh Chương Tea Walks", gross: 1600000, status: "Pending", paidOn: "", appliedRate: 10 },
+  { id: "po-04", period: "2026-10-01", supplierId: "kim-lien-guides", supplierName: "Kim Liên Heritage Guides", gross: 4200000, status: "Pending", paidOn: "", appliedRate: 10 },
+  { id: "po-05", period: "2026-10-01", supplierId: "ban-nua", supplierName: "Bản Nưa Homestay", gross: 1960000, status: "Pending", paidOn: "", appliedRate: 10 },
+  { id: "po-06", period: "2026-09-01", supplierId: "cua-lo-stays", supplierName: "Cửa Lò Beach Stays", gross: 7250000, status: "Paid", paidOn: "2026-09-05", appliedRate: 8 },
+  { id: "po-07", period: "2026-09-01", supplierId: "vinh-transfers", supplierName: "Vinh Airport Transfers", gross: 1520000, status: "Paid", paidOn: "2026-09-05", appliedRate: 8 },
 ];
 
 /** gross split at `rate` percent commission. */
