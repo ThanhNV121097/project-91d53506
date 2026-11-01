@@ -1,6 +1,203 @@
 
 ---
 
+## 3.8.6 `POST /v1/supplier/products/{id}/departures` — Add a departure (SUPPLIERS-004)
+
+**Auth** — `supplier`. Writes only a departure under a `products` row
+owned by the caller (`products.supplier_id = (SELECT id FROM suppliers
+WHERE user_id = caller.id)`) — never another supplier's product
+(SUPPLIERS-004 failure table "Not permitted").
+
+**Request**
+
+```json
+{ "date": "2026-12-24", "capacity": 20, "season": "Peak summer", "price": 2500000 }
+```
+
+`date` and `capacity` are required. `season` and `price` are optional —
+omitted or `null` means standard pricing on that date (the Buyer-facing
+price is then `products.price`, per erd.md §3.6's nullable convention).
+No other field is accepted — in particular never `seats` (always starts
+equal to `capacity`) or `state` (always starts `'Open'`); both are
+derived/defaulted, never client-set on create.
+
+**Behaviour**
+
+1. `capacity` must be a positive integer (`ck_departures_capacity_positive`
+   mirrors this at the database); a non-positive value is `422` before the
+   insert is attempted (SUPPLIERS-004 AC "capacity is zero or negative").
+2. A single ownership-scoped insert:
+
+```sql
+INSERT INTO departures (product_id, date, capacity, seats, price, season, state)
+SELECT $1, $2, $3, $3, $4, $5, 'Open'
+FROM products WHERE id = $1 AND supplier_id = $caller_supplier_id
+RETURNING *
+```
+
+   Zero rows inserted because the `FROM products WHERE ...` matched
+   nothing (product does not exist, or exists but is not owned by the
+   caller) collapses to one `404` — the same ownership-vs-not-found
+   pattern as SUPPLIERS-006B (§3.8.12 below).
+3. A unique violation on `uq_departures_product_date` (a departure already
+   exists for this product on this date) is `409 CONFLICT`, not a second
+   row and not a silent merge.
+
+**Response** — `201`, header `Location: /v1/supplier/departures/{id}`,
+body = the created row:
+
+```json
+{
+  "id": "...", "product_id": "...", "date": "2026-12-24",
+  "capacity": 20, "seats": 20, "price": 2500000, "season": "Peak summer",
+  "state": "Open", "created_at": "...", "updated_at": "..."
+}
+```
+
+**Errors**
+
+| Status | `error.code` | When |
+|---|---|---|
+| 400 | `MALFORMED_REQUEST` | A field the request body does not define is present (e.g. `seats`, `state`) |
+| 401 | `UNAUTHENTICATED` | No valid session token |
+| 403 | `PERMISSION_DENIED` | Signed in, but not role `supplier` |
+| 404 | `NOT_FOUND` | No `products` row with that `id`, or it is not owned by the caller |
+| 409 | `CONFLICT` | A `departures` row already exists for this product on this `date` (`uq_departures_product_date`) |
+| 422 | `VALIDATION_FAILED` | `date` or `capacity` missing, or `capacity` ≤ 0 |
+| 500 | `INTERNAL` | The insert fails for a reason other than a refused connection |
+| 503 | `UNAVAILABLE` | The database refuses the connection |
+
+---
+
+## 3.8.7 `PATCH /v1/supplier/departures/{id}` — Edit a departure's capacity, price, season or state (SUPPLIERS-004)
+
+**Auth** — `supplier`. Writes only a departure whose product belongs to
+the caller (same ownership rule as §3.8.6).
+
+**Request** — any subset of:
+
+```json
+{ "capacity": 8, "price": 2200000, "season": "Weekend", "state": "Blocked" }
+```
+
+No other field is accepted — in particular `seats` is always rejected
+outright, present or not, because it is booking-module-derived
+(SUPPLIERS-004.4; BOOKING-001 is the only writer of `seats`). `state`, if
+present, must be `Open` or `Blocked` — any other value is `400`, not a
+silently-ignored write.
+
+**Behaviour**
+
+1. Lock and read the row, scoped by ownership:
+
+```sql
+SELECT d.* FROM departures d
+JOIN products p ON p.id = d.product_id
+WHERE d.id = $1 AND p.supplier_id = $caller_supplier_id
+FOR UPDATE
+```
+
+   Zero rows (departure does not exist, or its product is not owned by
+   the caller) → `404`, collapsing both cases the same way §3.8.6 does.
+2. Reject the whole request with `400 MALFORMED_REQUEST` before any write
+   if: a field outside `capacity`/`price`/`season`/`state` is present
+   (including `seats`), or `state` is present and not one of
+   `Open`/`Blocked`.
+3. If `capacity` is present: let `committed = current.capacity -
+   current.seats` (seats already held/booked against this row, per
+   erd.md §3.6 `ck_departures_seats_bounds`). If the new `capacity` <
+   `committed`, reject with `422 VALIDATION_FAILED` naming `committed` as
+   the minimum — capacity is never silently capped (SUPPLIERS-004
+   failure table "Boundary"). Otherwise the new `seats` is recomputed as
+   `new_capacity - committed`, in the same update, so `seats` keeps
+   reflecting "remaining" under the new ceiling without a second query.
+4. Any of `price`/`season`/`state` given replaces that column's value
+   as-is (including explicit `null` for `price`/`season`, meaning "back
+   to standard pricing" — matches the create endpoint's own nullable
+   convention, not a different rule for update).
+5. Single update, only the given fields touched:
+
+```sql
+UPDATE departures SET
+  capacity = COALESCE($capacity, capacity),
+  seats    = CASE WHEN $capacity IS NOT NULL
+                   THEN $capacity - ($old_capacity - $old_seats)
+                   ELSE seats END,
+  price    = CASE WHEN $price_given  THEN $price  ELSE price  END,
+  season   = CASE WHEN $season_given THEN $season ELSE season END,
+  state    = COALESCE($state, state),
+  updated_at = now()
+WHERE id = $1
+RETURNING *
+```
+
+**Response** — `200`, body = the updated row, same shape as §3.8.6's
+create response.
+
+**Errors**
+
+| Status | `error.code` | When |
+|---|---|---|
+| 400 | `MALFORMED_REQUEST` | A field the request body does not define is present (e.g. `seats`), or `state` is present and not `Open`/`Blocked` |
+| 401 | `UNAUTHENTICATED` | No valid session token |
+| 403 | `PERMISSION_DENIED` | Signed in, but not role `supplier` |
+| 404 | `NOT_FOUND` | No `departures` row with that `id`, or its product is not owned by the caller |
+| 422 | `VALIDATION_FAILED` | `capacity` is present and below the number of seats already committed (`capacity - seats` on the current row) |
+| 500 | `INTERNAL` | The update query fails for a reason other than a refused connection |
+| 503 | `UNAVAILABLE` | The database refuses the connection |
+
+**Notes (both endpoints)**
+
+- No story plan or mock module exists for this item — same situation as
+  SUPPLIERS-006B. The approved design's `DepartureEditor.tsx`
+  (`/supplier/products/:id`) renders the departures table read-only
+  today (no add-row form, no per-row edit control, no block/unblock
+  toggle); it is built against the generic `useCollection<Departure>`
+  reader (DATA-002), never against a mock written for this story. The
+  shapes above are designed straight from `docs/suppliers/SRS.md` §4.3
+  and the already-written `docs/suppliers/test-cases/supplier-calendar-
+  and-seasonal-pricing.md`, which already names these two exact routes
+  and request/response shapes — carried forward because that file,
+  unlike a frontend mock, was written against this contract's own
+  conventions from the start, not guessed at.
+- **Frontend change required** when this backend lands: `SupplierProduct.tsx`
+  /`DepartureEditor.tsx` need an "Add departure" form (date, capacity,
+  optional season/price) calling §3.8.6, and a per-row action (edit
+  season/price, block/unblock) calling §3.8.7 — none of that UI exists
+  in the current merged frontend, so this is new frontend work in the
+  BE story, not a mock-to-API swap of existing controls.
+- Why `committed` is computed as `capacity - seats` rather than stored
+  separately: no other requirement needs a standalone "seats booked"
+  column, and deriving it from the two columns BOOKING-001 already
+  maintains avoids a second source of truth that could drift from them.
+- Deliberate difference from a plain "patch whatever is given": `seats`
+  is rejected rather than silently ignored when present, because an
+  accepted-but-ignored write on a money-and-capacity field is exactly the
+  kind of bug a caller cannot detect from a `200` response — matching the
+  project-wide `MALFORMED_REQUEST` convention for an undefined field
+  rather than treating a *defined-but-forbidden* field more leniently.
+
+## 8.9 Migration plan — Supplier calendar and seasonal pricing (SUPPLIERS-004)
+
+No schema change. `departures` (erd.md §3.6) already carries every column
+these endpoints read or write — `product_id`, `date`, `capacity`, `seats`,
+`price`, `season`, `state` — with `ck_departures_capacity_positive`,
+`ck_departures_seats_bounds`, `ck_departures_state` and
+`uq_departures_product_date` already enforcing the invariants both
+endpoints rely on (positive capacity, `0 ≤ seats ≤ capacity`, state in
+`Open`/`Blocked`, one row per product per date) and `idx_departures_
+product_id_date` already serving §3.8.6/§3.8.7's lookups. `products.
+supplier_id` and `idx_products_supplier_id` (erd.md §3.5), used by the
+ownership subquery/join above, are likewise already there. All of this
+landed in the base ERD migration (`0004_catalogue`), ahead of this story.
+
+Two endpoints added: §3.8.6, §3.8.7 above.
+
+**Forward:** none to run — no DDL. **Backward:** none to run.
+**Safety on a populated table:** not applicable, no DDL in this story.
+
+---
+
 ## 3.8.12 `POST /v1/supplier/reviews/{id}/reply` — Reply to a guest review (SUPPLIERS-006B)
 
 **Auth** — `supplier`. Writes only a review whose `product_id` belongs to
