@@ -3,7 +3,7 @@ import RequireRole from "../components/RequireRole";
 import DataTable from "../components/DataTable";
 import TableFilters, { SearchBox, FilterSelect, DateRange, Badge } from "../components/TableFilters";
 import Icon from "../components/Icon";
-import { useCollection } from "../data";
+import { useCollection, collections, setCollection } from "../data";
 import { useTableQuery } from "../lib/table";
 import { usePageMeta } from "../seo";
 import { formatPrice, formatDate } from "../lib/format";
@@ -15,6 +15,12 @@ const TONE: Record<string, "neutral" | "good" | "warn" | "bad"> = {
   "Awaiting payment": "warn", Cancelled: "bad", Refunded: "bad",
 };
 
+/** Writes one booking's status into the mock store, in place of the real PATCH. */
+function setStatus(id: string, status: string) {
+  const rows = collections().bookings ?? [];
+  setCollection("bookings", rows.map((r) => (r.id === id ? { ...r, status } : r)));
+}
+
 export default function SupplierBookings() {
   usePageMeta("pages.supplierBookings.title");
   const t = useTableQuery({ size: 20, sort: "date" });
@@ -22,6 +28,7 @@ export default function SupplierBookings() {
     page: t.page, pageSize: t.size, sort: t.sort, q: t.q, search: ["code", "product_name"],
     where: { status: t.list("status"), date: t.range("date") },
   });
+  const single = t.get("date_from") && t.get("date_from") === t.get("date_to") ? t.get("date_from") : "";
   return (
     <RequireRole roles={["supplier"]}>
       <DashboardLayout title="Bookings" nav={SUPPLIER_NAV} brand="Nghệ An Departures"
@@ -53,11 +60,34 @@ export default function SupplierBookings() {
           empty={<p>No booking matches these filters.</p>}
           actions={(r) => (
             <span className="flex justify-end gap-3">
-              {r.status === "Paid" && <button type="button" className="text-sm text-accent underline">Confirm</button>}
+              {r.status === "Paid" && !r.confirmation && (
+                <>
+                  <button type="button" onClick={() => setStatus(r.id, "Confirmed")} className="text-sm text-accent underline">Confirm</button>
+                  <button type="button" onClick={() => setStatus(r.id, "Cancelled")} className="text-sm text-ink underline">Reject</button>
+                </>
+              )}
               <button type="button" className="flex items-center gap-1 text-sm text-ink underline"><Icon name="qr" size={14} />Check in</button>
             </span>
           )}
         />
+
+        <h2 className="mt-4 text-base text-ink">Passenger list</h2>
+        {single ? (
+          <DataTable<Booking>
+            columns={[
+              { key: "code", label: "Code", render: (r) => <span className="fig">{r.code}</span> },
+              { key: "product_name", label: "Product" },
+              { key: "travellers", label: "Travellers", align: "right", render: (r) => <span className="fig">{r.travellers}</span> },
+              { key: "status", label: "Status", render: (r) => <Badge tone={TONE[r.status] ?? "neutral"}>{r.status}</Badge> },
+            ]}
+            rows={items} total={total} page={1} pages={1} size={items.length} onPage={() => undefined}
+            rowKey={(r) => r.id}
+            caption={`Everyone travelling on ${single}`}
+            empty={<p>No booking lands on this date.</p>}
+          />
+        ) : (
+          <p className="text-sm text-ink-soft">Set the travel-date filter to the same date on both ends to see exactly who is travelling that day.</p>
+        )}
       </DashboardLayout>
     </RequireRole>
   );
