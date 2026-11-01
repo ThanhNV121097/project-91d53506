@@ -1,4 +1,4 @@
-# SRS — Data
+# SRS — data
 
 Module: `data`
 Design: [View the approved design](http://localhost:9400)
@@ -6,210 +6,231 @@ Design system: `design/design-system.md`
 
 ## 1. Purpose
 
-The `data` module moves every record the design shows out of the static JSON
-files in `code/frontend/src/data/` into the project's database, and serves
-them through a paged, filterable REST API. Every other module reads and
-writes through this API instead of a JSON file. Without it the site cannot
-survive a restart, cannot have two visitors see the same booking, and cannot
-be written to by any backend story.
+The `data` module moves every record collection the storefront and
+dashboards read — audit, bookings, campaigns, categories, complaints,
+departures, destinations, guides, notifications, payouts, products,
+reviews, settings, suppliers, users, vouchers — out of the static JSON
+files in `code/frontend/src/data/` and into the project's database, served
+through a paged, filterable API. Every other module's screens are built
+against `useCollection`/`useRecord` already; this module is what makes
+those hooks real instead of reading a bundled file, without changing a
+single component. Without it, the site can never show a record anyone
+else wrote after the design shipped.
 
 ## 2. Actors
 
 | Actor | Who they are | What they may do in this module |
 |---|---|---|
-| Any caller (frontend) | The site's own frontend code | List and read records of any collection, paged and filtered |
-| Backend modules (auth, booking, payments, suppliers, admin, …) | Other server-side modules | Write to the tables this module creates, through their own endpoints — this module itself exposes read-only `GET` routes |
+| Any caller (frontend) | Every page/component using `useCollection`/`useRecord` | Read a page of a collection, or one record by id, through the public API |
 
-This module has no end-user-facing permission model of its own: it is
-infrastructure. Write access and its permission rules belong to the module
-that owns each write (e.g. a booking's row is written by `booking`, a
-product's by `suppliers`).
+This module has no write endpoints and no role distinctions of its own:
+every collection it serves is read-only here. Writes to these same tables
+belong to the module that owns that action (e.g. `suppliers` writes
+products, `admin` writes supplier/product status) and are specified there.
 
 ## 3. Scope
 
-**In scope** — the one function specified below:
+**In scope** — the function specified below, by its plan title:
 
 - Site data from the database
 
-**In scope**, concretely:
+**In scope, concretely:**
+- One PostgreSQL table per `schema.json` collection, one migration creating
+  them, one seed migration inserting every record from every
+  `src/data/<name>.json` file exactly as it stands today.
+- `GET /v1/<collection>?page=&limit=&<field>=<value>` and
+  `GET /v1/<collection>/<id>`, as specified in the plan item.
+- Rewriting `code/frontend/src/data/index.ts` to call this API instead of
+  reading the bundled JSON files, keeping every export's name and return
+  shape unchanged.
+- Deleting every JSON data file except `schema.json` once the API is live.
 
-- One PostgreSQL table per collection named in `code/frontend/src/data/schema.json`:
-  `audit, bookings, campaigns, categories, complaints, departures,
-  destinations, guides, notifications, payouts, products, reviews, settings,
-  suppliers, users, vouchers`.
-- A migration creating those tables, and a seed migration inserting every
-  record from every `src/data/<name>.json` file exactly as it stands today.
-- `GET /v1/<collection>` and `GET /v1/<collection>/<id>`.
-- The rewrite of `code/frontend/src/data/index.ts` to call that API instead
-  of reading the JSON files, keeping every existing export's name and return
-  shape.
-- Deleting every file in `src/data/` except `schema.json` once the rewrite is
-  verified against the running API.
+**Out of scope** — a reader would expect these here; they live elsewhere:
 
-**Out of scope** — a reader would expect these here, and they live elsewhere:
-
-- `POST`, `PUT`, `PATCH`, `DELETE` routes on any collection — each belongs to
-  the module that owns that write (e.g. creating a booking is `booking`'s
-  `POST /v1/bookings`, approving a product is `admin`'s own endpoint).
-- The `POST /v1/media` upload endpoint for photos/documents — built by the
-  `suppliers` module (Supplier product create/edit/approval).
-- Authentication and session issuance — `auth` module.
-- Real-time seat-hold decrement logic — `booking` module (this module stores
-  the `departures.seats` column it reads and writes).
+- Any write to a collection (creating a product, confirming a booking,
+  approving a supplier) — specified in the module that owns that action.
+- Authentication and permission checks on who may call the API — `auth`
+  module; this module's endpoints are public reads, matching what the
+  storefront already shows to every visitor today.
+- The inventory hold, seat decrement and booking state machine — `booking`
+  module.
 
 ## 4. Functional requirements
 
 ### 4.1 Site data from the database
 
-**Requirement DATA-001 — One table per collection, seeded from the JSON**
+**Requirement DATA-001 — Collection storage**
 
-*As a* backend module, *I want to* read and write collection records in
-PostgreSQL instead of a JSON file, *so that* data survives restarts and is
-shared across every server process.
+*As the* platform, *I want* every record collection stored in the
+database rather than a bundled file, *so that* a write by any other module
+is visible to every reader without a new deployment.
 
 Behaviour:
 
-1. A migration creates one table per collection in `schema.json`, one column
-   per schema field: `text` and `longtext` → `text`; `number` → `numeric`;
-   `price` → `numeric` (currency is fixed per schema, not stored per row);
-   `image` and `url` → `text`; `list` → `text[]`; `bool` → `boolean`;
-   `ref:<collection>` → a foreign key column referencing that table's `id`.
-   `id` is the table's primary key, type `text`. `_source` becomes a column
-   named `source`.
-2. A seed migration inserts every record from every `src/data/<name>.json`
-   file into its table, preserving every field's value exactly — no record is
-   dropped, renamed or re-priced in the move.
-3. Running the migrations twice does not duplicate rows (the seed migration
-   is idempotent on `id`).
+1. A migration creates one table per collection in `schema.json`, one
+   column per schema field, typed per the plan item's mapping (price →
+   numeric; image/url → text; list → text[]; `ref:<collection>` → a
+   foreign key to that table's `id`; bool → boolean; the record's `id` is
+   the table's text primary key; `_source` becomes a `source` column).
+2. A seed migration inserts every record of every existing
+   `src/data/<name>.json` file into its table, unchanged — no record is
+   lost, renamed or re-priced.
 
 **Acceptance criteria**
 
 | # | Given | When | Then |
 |---|---|---|---|
-| AC-1 | `src/data/products.json` has N records | The seed migration runs | The `products` table has exactly N rows, each matching its JSON record field for field |
-| AC-2 | A field is typed `ref:suppliers` in `schema.json` | The migration creates that column | It is a foreign key to `suppliers.id` |
-| AC-3 | The seed migration is run a second time | — | No row count changes; no error |
+| AC-1 | The migrations have run | — | Every collection named in `schema.json` has a matching table with one column per schema field |
+| AC-2 | A record existed in `src/data/<name>.json` before migration | The seed migration runs | That exact record (same id, same field values) exists in the matching table |
 
 **Failure, boundary and permission behaviour**
 
 | Case | Condition | Expected behaviour |
 |---|---|---|
-| Boundary | A JSON record has an empty list field (`[]`) | The corresponding `text[]` column stores an empty array, not `NULL` |
-| Upstream failure | The database is unreachable when a migration runs | The migration fails loudly (non-zero exit, logged error); it never leaves the schema half-created |
+| No permission case | Schema/migration is a backend build step, not a request a role can make | Not applicable |
 
-**Data touched** — every collection named in `schema.json`, field-for-field as that file defines them.
+**Data touched** — every field of every collection named in
+`code/frontend/src/data/schema.json`, as that file defines them.
 
----
+**Requirement DATA-002 — List endpoint**
 
-**Requirement DATA-002 — Paged, filterable read API**
-
-*As a* caller, *I want to* list a collection's records a page at a time,
-filtered by any of its own fields, *so that* a catalogue or a dashboard table
-shows exactly the records it asked for.
+*As a* caller, *I want to* `GET /v1/<collection>?page=&limit=&<field>=<value>`,
+*so that* I can read one page of a collection, optionally filtered by any
+of its own fields, in the seed's stable order.
 
 Behaviour:
 
-1. `GET /v1/<collection>?page=1&limit=12&<field>=<value>` returns
-   `{"items": [...], "total": n, "page": p, "limit": l}`. `<field>=<value>`
-   filters on an exact match of any field the collection's schema defines;
-   repeating a field or passing a comma-separated value is "any of"; `total`
-   counts every match, not just the page returned.
-2. Records are returned in a stable order (the seed's insertion order) unless
-   a `sort` parameter is given.
-3. `limit` is capped at 100 regardless of what is requested.
-4. `GET /v1/<collection>/<id>` returns that one record with the same field
-   names the JSON file used, or 404 when no record with that id exists.
-5. The edge strips the `/api` prefix: the browser calls
-   `/api/v1/<collection>`, this server serves `/v1/<collection>`.
+1. The endpoint returns `{"items": [...], "total": n, "page": p, "limit": l}`.
+2. Any schema field may be given as a query parameter to filter by exact
+   match; filters not given are not applied.
+3. `limit` is capped at 100; when not given, the field's own sensible
+   default (matching what the frontend already requests, e.g. 12) applies.
+4. Records are returned in the seed's insertion order when no sort is
+   requested, and with the same field names the JSON file used.
+5. `page` beyond the last page returns an empty `items` array with the
+   correct `total`, not an error.
 
 **Acceptance criteria**
 
 | # | Given | When | Then |
 |---|---|---|---|
-| AC-1 | A collection has 37 matching records and `limit=12` | `GET /v1/<collection>?page=2&limit=12` | `items` has 12 records (items 13–24), `total` is 37 |
-| AC-2 | `limit=500` is requested | The same endpoint is called | At most 100 records are returned |
-| AC-3 | A record with id `x` exists | `GET /v1/<collection>/x` | 200, the record, with its original field names |
-| AC-4 | No record with id `x` exists | `GET /v1/<collection>/x` | 404 |
-| AC-5 | `?status=approved&status=pending` is passed | `GET /v1/products` | Only records with `status` in `{approved, pending}` are returned |
+| AC-1 | A collection has 25 records | `GET /v1/<collection>?page=1&limit=12` | `items` has 12 records, `total` is 25, `page` is 1, `limit` is 12 |
+| AC-2 | A collection has a field `status` | `GET /v1/<collection>?status=approved` | `items` contains only records whose `status` equals `approved` |
+| AC-3 | A client requests `limit=500` | — | The server returns at most 100 items per page |
+| AC-4 | A collection has 25 records, 12 per page | `GET /v1/<collection>?page=5&limit=12` | `items` is `[]` and `total` is 25 |
 
 **Failure, boundary and permission behaviour**
 
 | Case | Condition | Expected behaviour |
 |---|---|---|
-| Invalid input | `page` or `limit` is non-numeric or negative | The request falls back to `page=1`, the default `limit`; it does not 500 |
-| Not found | Collection name does not exist in `schema.json` | 404, not a 500 or an empty 200 |
-| Not found | Record id does not exist | 404 (AC-4) |
+| Unknown collection | The path names a collection not in `schema.json` | 404 response |
+| Unknown filter field | A query parameter does not match any field on that collection | Ignored; it does not error and does not filter |
+| No permission case | Every list endpoint is a public read | Not applicable |
 
-**Data touched** — read-only across every table created by DATA-001.
+**Data touched** — every field of the requested collection, returned as
+given in `schema.json` (same field names).
 
----
+**Requirement DATA-003 — Record endpoint**
 
-**Requirement DATA-003 — Frontend reads the API, mock files are deleted**
-
-*As a* frontend page, *I want to* keep calling `useCollection`/`useRecord`
-exactly as today, *so that* no component changes when the backend lands.
+*As a* caller, *I want to* `GET /v1/<collection>/<id>`, *so that* I can
+read one record by its id.
 
 Behaviour:
 
-1. `code/frontend/src/data/index.ts` is rewritten to call the API at
-   `import.meta.env.VITE_API_URL ?? "/api"` instead of reading the bundled
-   JSON files, while keeping every existing export's name, signature and
-   return shape (`useCollection`, `useRecord`, `schema`, `Row`, `Field`,
-   `Collection`, `Query`, `Source`).
-2. `useCollection` fetches page by page: the first page loads on mount;
-   `loadMore()` fetches and appends the next page. It exposes real `loading`
-   and `error` states reflecting the in-flight request.
-3. `useRecord` fetches the one record by id and exposes the same `loading`/`error` shape.
-4. `schema.json` is kept; every other file in `src/data/` is deleted once the
-   API is live and the frontend no longer imports them.
-5. No component outside `src/data/index.ts` changes — paging and lazy
-   loading were designed against this exact contract.
+1. The endpoint returns the record matching `<id>` in `<collection>`.
+2. An id with no matching record returns 404.
 
 **Acceptance criteria**
 
 | # | Given | When | Then |
 |---|---|---|---|
-| AC-1 | The API is reachable | A page calls `useCollection("products", {...})` | The hook's return shape (`items`, `total`, `pages`, `page`, `hasMore`, `loading`, `error`, `loadMore`) is unchanged from the mock version |
-| AC-2 | A request is in flight | A component reads `loading` | It is `true` until the response resolves |
-| AC-3 | The API call fails (network error, 5xx) | A component reads `error` | It is a non-null `Error`, not a thrown exception that crashes the page |
-| AC-4 | The rewrite is committed | `src/data/` is inspected | Only `index.ts` and `schema.json` remain |
+| AC-1 | A record with id `cua-lo-beach-2n1d` exists in `products` | `GET /v1/products/cua-lo-beach-2n1d` | The record is returned with every field `schema.json` defines for `products` |
+| AC-2 | No record with that id exists | `GET /v1/products/does-not-exist` | 404 response |
 
 **Failure, boundary and permission behaviour**
 
 | Case | Condition | Expected behaviour |
 |---|---|---|
-| Upstream failure | The API is unreachable | `useCollection`/`useRecord` set `error`, `items`/`item` stay empty/undefined; no exception escapes the hook |
-| Not applicable | — | A loading or error state for this hook has no visual design of its own beyond what each consuming page already draws (per that page's own SRS) |
+| Not found | Id does not exist in the collection | 404, matching DATA-003 AC-2 |
+| No permission case | Every record endpoint is a public read | Not applicable |
 
-**Data touched** — none directly; this requirement is the client of DATA-002's API.
+**Data touched** — one record's worth of whatever fields that collection's
+schema defines.
+
+**Requirement DATA-004 — Frontend reads the API**
+
+*As a* component already built against `useCollection`/`useRecord`, *I
+want* those hooks to fetch from the API instead of a bundled file, with no
+change to my own code, *so that* every screen already built keeps working
+once the backend lands.
+
+Behaviour:
+
+1. `src/data/index.ts` is rewritten to call `GET <base>/v1/<name>?...` and
+   `GET <base>/v1/<name>/<id>`, where `base` is
+   `import.meta.env.VITE_API_URL ?? "/api"`.
+2. Every export's name and return shape is unchanged: `useCollection`
+   returns `{ items, total, pages, page, hasMore, loading, error, loadMore }`;
+   `useRecord` returns `{ item, loading, error }`; `schema` and the `Row`/
+   `Field`/`Collection` types are unchanged.
+3. `useCollection` fetches the first page on mount; `loadMore()` fetches
+   and appends the next page. Both expose real `loading` and `error`
+   states driven by the request's outcome, not the mock's fixed `false`/
+   `null`.
+4. `schema.json` is kept; every other file in `src/data/` is deleted once
+   the API is live.
+
+**Acceptance criteria**
+
+| # | Given | When | Then |
+|---|---|---|---|
+| AC-1 | A component calls `useCollection("products", {...})` | The request is in flight | `loading` is `true` and `items` is the page(s) already loaded |
+| AC-2 | The API request fails (network error, 5xx) | — | `error` is set to an `Error`, `loading` becomes `false`, and the page's own error UI (where one exists) is reached |
+| AC-3 | A component calls `loadMore()` | The next page resolves | `items` holds the previous items plus the new page, not a replacement |
+| AC-4 | Any existing component imports `useCollection`, `useRecord`, `schema` or a type from `src/data` | The rewrite ships | The import still resolves to the same name and the same shape; no component file changes |
+
+**Failure, boundary and permission behaviour**
+
+| Case | Condition | Expected behaviour |
+|---|---|---|
+| Upstream failure | The API is unreachable or returns an error status | `error` is populated and `loading` is `false`; no component is specified here to retry automatically, since no such control exists in the design today |
+| No permission case | The hooks themselves hold no role logic | Not applicable |
+
+**Data touched** — none beyond what DATA-002/DATA-003 already define; this
+requirement is about the client call, not new fields.
 
 ## 5. Screens
 
-This module has no screen of its own — it is the data layer every screen in
-`site` and every backend module reads through. No row is added here.
+This module has no screen of its own: it is the data layer every other
+module's screens read through. See each module's own §5 for how its
+screens use `useCollection`/`useRecord` against this API.
 
 | Screen | Section in the design | Functions it serves | States that must exist |
 |---|---|---|---|
-| — | — | — | Not applicable: this module has no screen; see each consuming module's SRS §5 |
+| — | — | — | Not applicable: this module ships no screen; it is consumed by every other module's existing screens unchanged |
 
 ## 6. Non-functional requirements
 
 | Area | Requirement |
 |---|---|
-| Performance | `GET /v1/<collection>` responds within 1s at a page size of 100, cold cache, on the project's seeded dataset |
-| Data integrity | No record from any `src/data/<name>.json` file is lost, renamed, or has a value changed during the migration |
+| Performance | `GET /v1/<collection>` responds within 1s at cold cache, for a collection under 1,000 rows and a result page of 100 or fewer records |
+| Data integrity | The seed migration must reproduce every record in every current `src/data/*.json` file losslessly — same id, same values, same field names |
 
 ## 7. Dependencies and assumptions
 
-- **Depends on:** nothing upstream; every other backend module depends on this one for its storage.
-- **Assumption:** every collection's schema in `code/frontend/src/data/schema.json` is final as of this SRS; a later field addition to a collection is a revision to this document and its migration.
+- **Depends on:** `code/frontend/src/data/schema.json` as the single source
+  of collection and field definitions; a schema change is a decision made
+  elsewhere, not by this module.
+- **Assumption:** no collection in `schema.json` needs a write endpoint
+  from this module itself — every write belongs to the module that
+  performs that action and is specified in that module's own SRS.
 
 | Open question | Proposed default | Who decides |
 |---|---|---|
-| — | — | None open for this module |
+| Should `GET /v1/<collection>` support free-text search (`q`) and ranges, as `src/data/index.ts`'s `Query` type already allows for the mock? | Yes, matching the mock's existing `q`/`search`/range filter shapes, since several screens (search box, date range) already call them against the mock and must keep working once the mock is replaced | TL (architecture detail; this SRS requires exact-match filtering as the floor, and existing component behaviour sets the ceiling) |
 
 ## 8. Traceability
 
 | Plan item | Requirement ids | Test cases |
 |---|---|---|
-| Site data from the database | DATA-001, DATA-002, DATA-003 | `test-cases/site-data-from-the-database.md` |
+| Site data from the database | DATA-001, DATA-002, DATA-003, DATA-004 | `test-cases/site-data-from-the-database.md` |
