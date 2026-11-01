@@ -249,6 +249,10 @@ screens use `useCollection`/`useRecord` against this API.
 - **Depends on:** `code/frontend/src/data/schema.json` as the single source
   of collection and field definitions; a schema change is a decision made
   elsewhere, not by this module.
+- **Depends on:** `auth` module, for the session/token this module checks to
+  enforce DATA-002/DATA-003's 401/403 cases on the nine private
+  collections (`audit`, `bookings`, `campaigns`, `complaints`,
+  `notifications`, `payouts`, `settings`, `users`, `vouchers`).
 - **Assumption:** no collection in `schema.json` needs a write endpoint
   from this module itself — every write belongs to the module that
   performs that action and is specified in that module's own SRS.
