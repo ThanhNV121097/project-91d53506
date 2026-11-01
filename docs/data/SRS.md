@@ -131,7 +131,10 @@ Behaviour:
 |---|---|---|
 | Unknown collection | The path names a collection not in `schema.json` | 404 response |
 | Unknown filter field | A query parameter does not match any field on that collection | Ignored; it does not error and does not filter |
-| No permission case | Every list endpoint is a public read | Not applicable |
+| Unauthenticated request to a private collection | Collection is one of `bookings`, `payouts`, `users`, `complaints`, `vouchers`, `notifications`, `settings`, `campaigns`, `audit`, and the caller has no session | 401 response |
+| Authenticated non-admin request to a private collection | Caller is signed in but not an admin | `items` is filtered in the database query to only that caller's own rows; no other caller's rows are returned |
+| Authenticated admin request to a private collection | Caller is signed in as admin | `items` is unfiltered by ownership — every row in the collection |
+| Public collection request | Collection is one of `categories`, `departures`, `destinations`, `guides`, `products`, `reviews`, `suppliers` | Public read, no authentication required, matching DATA-002's existing behaviour |
 
 **Data touched** — every field of the requested collection, returned as
 given in `schema.json` (same field names).
