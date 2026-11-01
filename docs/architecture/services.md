@@ -466,7 +466,16 @@ when a date is given.
 `departures` row for that `date` with `state = 'Open'` and
 `seats >= people` (SEARCH-001 AC-1–AC-3); `total` reflects the filtered
 set, never the unfiltered product count (AC-4's own wording, enforced by
-counting after the join, not before it).
+counting after the join, not before it). The price used against `max` in
+this case is `COALESCE(departures.price, products.price)` — the matching
+departure's own override when it has one, the product's base price
+otherwise — matching `erd.md` §3.6's documented null semantics
+(`departures.price IS NULL` means "use the product's base price", not
+zero); this clarifies SEARCH-001 AC-4's "the matching departure's
+date-specific price" for the one case (`departures.price IS NULL` on a
+standard-priced date) the SRS text does not spell out a number for.
+`uq_departures_product_date` (erd.md §3.6) guarantees at most one matching
+row per product/date, so this lookup is never ambiguous.
 
 ### 3.5 `booking` module
 
@@ -1353,6 +1362,22 @@ code lookup, and the `departure` join in the response) and relies on the
 ...)` on the `Awaiting Payment` → `Confirmed` transition. Forward: none to
 run. Backward: none to run. Safety on a populated table: not applicable —
 no DDL in this story.
+
+## 8.2 Migration plan — Search and filter trips by criteria (SEARCH-001)
+
+No schema change. `products` (incl. `idx_products_status`,
+`idx_products_destination_kind`) and `departures` (incl.
+`idx_departures_product_id_date`, `uq_departures_product_date`, the
+`state`/`seats`/`price` columns) already exist from the base migration
+(`docs/architecture/erd.md` §3.5–3.6, §8) and already carry every index
+this endpoint's query needs — `idx_products_destination_kind` for the
+no-date filters, `idx_departures_product_id_date` for the per-product,
+per-date availability join. This story only adds the `GET /v1/search`
+handler (§3.4.1) that joins the two tables the mock module
+(`src/lib/mock/search-and-filter-trips-by-criteria.ts`, PR #46) already
+joins client-side, and deletes that mock module once the handler ships.
+Forward: none to run. Backward: none to run. Safety on a populated table:
+not applicable — no DDL in this story.
 
 ## 9. Open questions
 
