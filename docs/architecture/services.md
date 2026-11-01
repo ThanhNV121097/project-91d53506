@@ -466,7 +466,16 @@ when a date is given.
 `departures` row for that `date` with `state = 'Open'` and
 `seats >= people` (SEARCH-001 AC-1–AC-3); `total` reflects the filtered
 set, never the unfiltered product count (AC-4's own wording, enforced by
-counting after the join, not before it).
+counting after the join, not before it). The price used against `max` in
+this case is `COALESCE(departures.price, products.price)` — the matching
+departure's own override when it has one, the product's base price
+otherwise — matching `erd.md` §3.6's documented null semantics
+(`departures.price IS NULL` means "use the product's base price", not
+zero); this clarifies SEARCH-001 AC-4's "the matching departure's
+date-specific price" for the one case (`departures.price IS NULL` on a
+standard-priced date) the SRS text does not spell out a number for.
+`uq_departures_product_date` (erd.md §3.6) guarantees at most one matching
+row per product/date, so this lookup is never ambiguous.
 
 ### 3.5 `booking` module
 
