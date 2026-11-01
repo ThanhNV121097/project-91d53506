@@ -160,6 +160,11 @@ Behaviour:
 
 1. The endpoint returns the record matching `<id>` in `<collection>`.
 2. An id with no matching record returns 404.
+3. The public-read rule applies to every `/v1/<collection>/<id>` record
+   endpoint **except** the nine private collections named in DATA-001
+   (`audit`, `bookings`, `campaigns`, `complaints`, `notifications`,
+   `payouts`, `settings`, `users`, `vouchers`), which require a signed-in
+   caller and return 401/403 as specified below instead of the record.
 
 **Acceptance criteria**
 
@@ -173,7 +178,9 @@ Behaviour:
 | Case | Condition | Expected behaviour |
 |---|---|---|
 | Not found | Id does not exist in the collection | 404, matching DATA-003 AC-2 |
-| No permission case | Every record endpoint is a public read | Not applicable |
+| Unauthenticated access | `<collection>` is one of the nine private collections (`audit`, `bookings`, `campaigns`, `complaints`, `notifications`, `payouts`, `settings`, `users`, `vouchers`) and the caller has no valid session or token | 401 |
+| Unauthorized access | `<collection>` is one of the nine private collections and the caller is signed in but lacks the role/ownership that collection requires | 403 |
+| Public collection | `<collection>` is any collection other than the nine listed above | No session required; record read proceeds as a public read |
 
 **Data touched** — one record's worth of whatever fields that collection's
 schema defines.
