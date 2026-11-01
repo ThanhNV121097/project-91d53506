@@ -83,13 +83,15 @@ function nameFrom(email: string): string {
 function parse(raw: string | null): Session | null {
   if (!raw) return null;
   try {
-    const v = JSON.parse(raw) as { email?: unknown; name?: unknown; role?: unknown } | null;
+    const v = JSON.parse(raw) as { email?: unknown; name?: unknown; role?: unknown; permissions?: unknown } | null;
     const email = typeof v?.email === "string" ? v.email.trim() : "";
     if (!email) return null;
     const name = typeof v?.name === "string" ? v.name.trim() : "";
     const session: Session = { email, name: name || nameFrom(email) };
     const role = typeof v?.role === "string" ? v.role.trim().toLowerCase() : "";
     if (role) session.role = role;
+    const permissions = typeof v?.permissions === "string" ? v.permissions.trim().toLowerCase() : "";
+    if (permissions) session.permissions = permissions;
     return session;
   } catch {
     return null;
