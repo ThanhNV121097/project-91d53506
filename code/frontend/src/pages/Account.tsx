@@ -8,6 +8,7 @@ import { formatPrice, formatDate } from "../lib/format";
 import { useSession, signOut } from "../lib/session";
 import { useDemo } from "../lib/demo";
 import type { Booking } from "../lib/trips";
+import CancelRefundRequest from "../components/CancelRefundRequest";
 
 export default function Account() {
   usePageMeta("pages.account.title", "pages.account.description");
@@ -48,9 +49,9 @@ export default function Account() {
             <div className="flex shrink-0 flex-col items-start gap-2 sm:items-end">
               <span className="flex items-center gap-1 text-sm text-ink"><Icon name="info" size={14} />{b.status}</span>
               <span className="fig text-base">{formatPrice(b.total)}</span>
-              <div className="flex gap-2">
+              <div className="flex flex-col items-start gap-2 sm:items-end">
                 <Link to={`/booking/${b.code}`} className="text-xs text-ink underline hover:text-accent"><T k="pages.account.view" /></Link>
-                <Link to="/contact" className="text-xs text-ink underline hover:text-accent"><T k="pages.account.cancel" /></Link>
+                <CancelRefundRequest bookingCode={b.code} />
               </div>
             </div>
           </li>
