@@ -4,6 +4,9 @@ import Icon from "./Icon";
 import { formatPrice, formatDate } from "../lib/format";
 import { useWishlist } from "../lib/mock/wishlist";
 
+/** Where to send a signed-out visitor who tries the wishlist toggle: AUTH-004. */
+const SIGNIN = "/signin";
+
 /** The booking panel beside a trip: the price for the chosen date, and the action. */
 export default function TripBooking({ id, date, price, seats, confirmation }: {
   id: string;
