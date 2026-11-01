@@ -1379,6 +1379,36 @@ joins client-side, and deletes that mock module once the handler ships.
 Forward: none to run. Backward: none to run. Safety on a populated table:
 not applicable — no DDL in this story.
 
+## 8.3 Migration plan — Supplier registration and verification (SUPPLIERS-001, SUPPLIERS-006)
+
+No new schema. `suppliers` (incl. `bank_name`, `bank_account_number`,
+`bank_account_holder`, `documents`, `verified`, `rejection_reason`, and the
+`uq_suppliers_user_id` index) already exists from `0003_suppliers.up.sql`
+(`docs/architecture/erd.md` §3.4, §8, step 2) — created before this
+story's handlers are written, in the same group as `users`. This story
+only adds the `GET /v1/supplier/profile`, `PATCH /v1/supplier/profile`
+(§3.8.1, §3.8.2) and `POST /v1/media` (§3.8.13) handlers, and deletes the
+UI PR's mock module (`code/frontend/src/lib/mock/supplier-registration-and-verification.ts`,
+PR #56) once they ship. Reviewed against that mock: its `SupplierProfile`
+shape (`name`, `documents`, `verified`, `rejectionReason`, `bankName`,
+`bankAccountNumber`, `bankAccountHolder`) maps one-to-one onto the
+`suppliers` row already in the ERD (`rejectionReason` → `rejection_reason`,
+the rest unchanged) — no frontend field is renamed, and the mock's
+`uploadDocument` already names the same `POST /v1/media` contract §3.8.13
+defines, response `{ url }`. One addition beyond the mock, required by
+`admin`'s approval queue (ADMIN-001) and not visible in this story's own
+screen: `place` and `kind` are also writable through `PATCH
+/v1/supplier/profile`, per SUPPLIERS-001's own "Data touched" table in
+`docs/suppliers/SRS.md` §4.1, even though `SupplierAccount.tsx` does not
+render them yet — any later screen change to add those fields calls the
+same endpoint, no new one needed. Media storage credentials
+(`MEDIA_STORAGE_CLOUD_NAME`, `MEDIA_STORAGE_API_KEY`,
+`MEDIA_STORAGE_API_SECRET`, §5) are required before `POST /v1/media` can
+be implemented for real; until then Dev may stub the storage client
+behind the same interface and the contract shape here does not change
+either way. Forward: none to run. Backward: none to run. Safety on a
+populated table: not applicable — no DDL in this story.
+
 ## 9. Open questions
 
 | Question | Owner | Blocking |
