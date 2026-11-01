@@ -29,6 +29,12 @@ export default function SupplierBookings() {
     where: { status: t.list("status"), date: t.range("date") },
   });
   const single = t.get("date_from") && t.get("date_from") === t.get("date_to") ? t.get("date_from") : "";
+  // Independent of the status filter and the search box above: "everyone travelling
+  // that day" means every booking on the date, whatever else is selected in the table.
+  const passengers = useCollection<Booking>("bookings", {
+    pageSize: 1000,
+    where: { date: single || undefined },
+  });
   return (
     <RequireRole roles={["supplier"]}>
       <DashboardLayout title="Bookings" nav={SUPPLIER_NAV} brand="Nghệ An Departures"
