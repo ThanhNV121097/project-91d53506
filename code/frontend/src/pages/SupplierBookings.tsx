@@ -86,10 +86,11 @@ export default function SupplierBookings() {
               { key: "travellers", label: "Travellers", align: "right", render: (r) => <span className="fig">{r.travellers}</span> },
               { key: "status", label: "Status", render: (r) => <Badge tone={TONE[r.status] ?? "neutral"}>{r.status}</Badge> },
             ]}
-            rows={items} total={total} page={1} pages={1} size={items.length} onPage={() => undefined}
+            rows={passengers.items} total={passengers.total} page={1} pages={1} size={passengers.items.length} onPage={() => undefined}
             rowKey={(r) => r.id}
             caption={`Everyone travelling on ${single}`}
             empty={<p>No booking lands on this date.</p>}
+            loading={passengers.loading}
           />
         ) : (
           <p className="text-sm text-ink-soft">Set the travel-date filter to the same date on both ends to see exactly who is travelling that day.</p>
