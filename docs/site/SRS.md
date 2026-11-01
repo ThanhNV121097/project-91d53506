@@ -1,4 +1,4 @@
-# SRS — Site
+# SRS — site
 
 Module: `site`
 Design: [View the approved design](http://localhost:9400)
@@ -6,357 +6,300 @@ Design system: `design/design-system.md`
 
 ## 1. Purpose
 
-The `site` module is the storefront and dashboard shell the owner approved in
-the design phase: every page in `design/pages.json`, built with the copy in
-`content.json` and the tokens in `theme.css`, reading records through the
-mock data layer (`code/frontend/src/data`). It is what a visitor or a signed-in
-operator sees before any of the backend stories (auth, booking, payments,
-search, suppliers, admin, notifications, contact) replace a page's mock
-behaviour with a real one. Without it there is no site to attach a backend to.
+The `site` module is the storefront's informational shell: the Home page, the
+Trip detail page's descriptive content (photos, itinerary, inclusions,
+policy, supplier block, reviews list), the Departures board, the Guides
+list and a guide's own page, and the parts every page shares — header, nav,
+footer, the call/Zalo dock and each page's SEO metadata. It is what a
+visitor reads before they act; the acting parts (search, booking, payment,
+account, sign-in) are their own modules. Without it Nghệ An Departures has
+no public face: nothing to show a destination, a departure or a guide, and
+no way back to the storefront from anywhere inside it.
 
 ## 2. Actors
 
 | Actor | Who they are | What they may do in this module |
 |---|---|---|
-| Visitor | Not signed in | Browse every public storefront page: Home, Search, Trip, Departures, Guides, Guide, Contact, Sign in, Register |
-| Buyer | Signed-in traveller (mock session) | Everything a visitor may do, plus open Account, Wishlist, Book and Checkout screens (their data wiring is other modules') |
-| Supplier | Signed-in operator (mock session) | Open the Supplier dashboard shell and its pages |
-| Admin | Signed-in operator (mock session) | Open the Admin dashboard shell and its pages |
+| Visitor | Anyone, signed in or not | Browse Home, a trip's descriptive content, Departures, Guides and a guide; use the header, footer and call/Zalo dock from any page |
 
-Permission is enforced today by `RequireRole` against the mock session in
-`lib/session.ts` — a design-time gate, not a security boundary. The `auth`
-module's SRS covers the real, server-checked version.
+This module draws no page behind a role gate; every screen here is public.
 
 ## 3. Scope
 
-**In scope** — the one function specified below:
+**In scope** — the function specified below, by its plan title:
 
 - The site as designed
 
-**Out of scope** — a reader opening any of these pages would expect them, and
-they are named here so they are not required twice:
+**Out of scope** — a reader would expect these here; they live elsewhere:
 
-- Real authentication, OTP and Google sign-in on `/signin` and `/register` — `auth` module.
-- Booking creation, the 15-minute hold, and checkout payment logic — `booking` and `payments` modules.
-- Search results filtered against real seat availability — `search` module.
-- Supplier registration/verification, product approval workflow, calendar and seasonal pricing, booking/passenger management, payouts — `suppliers` module.
-- Admin approval queue, moderation, user management, finance, content management, system settings and audit log — `admin` module.
-- Records served from a database instead of the JSON files in `src/data/` — `data` module.
-- Sending the contact form, booking confirmation notices — `contact` and `notifications` modules.
-- Buyer account's own booking list and wishlist persistence logic — `account` module.
+- The search row's own results page and its filters — `search` module.
+- Picking a date, adults/children and paying for a trip — `booking` and
+  `payments` modules.
+- Saving a trip to a wishlist — `account` module.
+- Sending the contact form — `contact` module.
+- The record data itself (products, destinations, departures, guides,
+  reviews) being served from a database rather than the JSON files in
+  `src/data/` — `data` module.
+- Supplier and admin dashboard screens — `suppliers` and `admin` modules.
 
 ## 4. Functional requirements
 
 ### 4.1 The site as designed
 
-**Requirement SITE-001 — Global shell on every page**
+**Requirement SITE-001 — Home page**
 
-*As a* visitor, *I want to* see the same header, footer and mobile navigation
-on every page, *so that* I can always get back to search, my account or
-contact.
+*As a* visitor, *I want to* see featured trips, destinations, product
+categories and the next open departures on arrival, *so that* I can find
+something to book without searching first.
 
 Behaviour:
 
-1. On every storefront page the sticky header shows the site name, primary
-   nav links, and icon buttons for search, wishlist and account (`Header.tsx`).
-2. Below 1024px the header shows a menu toggle; opening it shows a full-screen
-   drawer (`MobileMenu`) that locks body scroll and closes on `Escape` or an
-   outside tap.
-3. Below 1024px, on a storefront page only, a fixed two-button call/Zalo dock
-   (`ContactDock`) appears bottom-right, showing only the buttons for which a
-   number is configured in `content.json`, and nothing when neither is set.
-4. Every storefront page ends with the footer (`Footer.tsx`).
-5. The dashboard shell (Supplier and Admin areas) never shows the storefront
-   header, footer or contact dock — it uses `DashboardLayout` instead (see SITE-007).
+1. The Home page shows, in the order drawn in `Home.tsx`: the search row,
+   a hero image with headline, a row of featured products (approved status,
+   sorted by next departure date, 4 cards), a row of category chips linking
+   to `/search?kind=<id>`, a grid of destination tiles with their "from"
+   price, the next-departures board (6 open rows), a row of guide teasers,
+   and the supplier sign-up call to action.
+2. Each featured product card, destination tile and guide teaser links to
+   its own detail page.
 
 **Acceptance criteria**
 
 | # | Given | When | Then |
 |---|---|---|---|
-| AC-1 | Any storefront page, viewport ≥1024px | The page loads | Header, footer render; no menu toggle is shown |
-| AC-2 | Any storefront page, viewport <1024px | The visitor taps the menu toggle | The full-screen drawer opens, body scroll is locked |
-| AC-3 | The drawer is open | The visitor presses `Escape` or taps outside it | The drawer closes |
-| AC-4 | `content.json` has no phone and no Zalo number configured | A storefront page loads at <1024px | `ContactDock` renders nothing |
+| AC-1 | The products collection has approved products | The visitor opens `/` | The featured row shows up to 4 approved products sorted by next departure date, each with its photo, name and price |
+| AC-2 | The destinations collection has records | The visitor opens `/` | Each destination tile shows its name, one line and its "from" price |
+| AC-3 | The departures collection has rows in state `Open` | The visitor opens `/` | The departures board lists up to 6 of them, date first, sorted by date, with seats left and the price that day |
+| AC-4 | The visitor clicks a featured product, a destination tile or a guide teaser | — | They are taken to that product's, that destination's search filter, or that guide's own page |
 
 **Failure, boundary and permission behaviour**
 
 | Case | Condition | Expected behaviour |
 |---|---|---|
-| — | — | Not applicable: the shell has one layout per breakpoint in the approved design, no error or loading state of its own |
-
-**Data touched** — none; this requirement renders `content.json` values only.
-
----
-
-**Requirement SITE-002 — Homepage content blocks**
-
-*As a* visitor, *I want to* see featured tours, destinations, categories, the
-departure board and guides on the homepage, *so that* I can find something to
-book without searching first.
-
-Behaviour:
-
-1. The homepage shows, in order: the search row, a full-bleed hero with
-   headline, a row of up to 4 featured products (`status: approved`, sorted by
-   `next_date`), the product-type category pills, up to 4 destination tiles,
-   up to 6 open departures in the board list, up to 3 guides, and the supplier
-   call-to-action linking to `/register`.
-2. Each featured product card shows its photo, name, price and seats-left in
-   `.fig` (IBM Plex Mono, tabular), per the design system §1.3/§2.5.
-3. The count beside "see all" reads the total number of approved products,
-   not just the 4 shown.
-
-**Acceptance criteria**
-
-| # | Given | When | Then |
-|---|---|---|---|
-| AC-1 | 4 or more approved products exist | The homepage loads | Exactly 4 featured product cards render, each with photo, name, price and seats-left |
-| AC-2 | Fewer than 4 open departures exist | The homepage loads | The board lists exactly as many rows as there are open departures, no placeholder rows |
-| AC-3 | A destination record has no `image` | The homepage loads | `Picture`'s empty-state block renders in its place (design system §2.7) |
-
-**Failure, boundary and permission behaviour**
-
-| Case | Condition | Expected behaviour |
-|---|---|---|
-| Boundary | Zero approved products exist | The featured grid renders with zero cards and the "see all" count reads 0; the page does not crash |
+| No permission case | Home has no role gate | Not applicable: this screen is public to every visitor |
+| Empty collection | No approved products, destinations, open departures or guides exist | Each row renders with zero items; the design draws no dedicated empty-state panel for Home's rows, so none is added here |
 
 **Data touched**
 
 | Field | Type | Required | Rule |
 |---|---|---|---|
-| products.status | text | yes | Only `approved` records appear as featured |
-| departures.state | text | yes | Only `Open` records appear on the board |
+| products.status | text | yes | Only `approved` products appear in the featured row |
+| departures.state | text | yes | Only `Open` departures appear on the board |
 
----
+### 4.2 The site as designed — Trip detail (descriptive content)
 
-**Requirement SITE-003 — Search page layout and map**
+**Requirement SITE-002 — Trip detail page**
 
-*As a* visitor, *I want to* see the filter row, result grid and a map of
-product locations on `/search`, *so that* I can narrow by type, duration and
-sort, and see where things are.
+*As a* visitor, *I want to* read a trip's photos, description, day-by-day
+itinerary, inclusions/exclusions, cancellation policy, operating supplier
+and past reviews, *so that* I can decide whether to book it before I start
+the booking flow.
 
 Behaviour:
 
-1. `/search` shows the search row, a type/duration/sort filter row, a result
-   count, a 2–4 column card grid, a "show more" control when more pages
-   exist, and a map section with pins placed by each product's `map_x`/`map_y`
-   percentage position over an SVG outline.
-2. A map pin links to that product's Trip page and shows its price.
-3. This module ships the page and its controls wired to the mock data layer
-   exactly as `useCollection` behaves today; replacing that behaviour with
-   real seat-availability filtering is the `search` module's job (SEARCH-xxx).
+1. `/tours/:id` shows the product's photo, kind/destination/duration label,
+   name, starting place, next departure date and summary.
+2. It lists the day-by-day itinerary, what is included and what is not.
+3. It shows the product's own cancellation policy text, or the platform's
+   waiting-on-default line when the supplier has not set one (§7).
+4. It shows the operating supplier's name, kind, place and document status
+   line.
+5. It lists published reviews for the product, each with rating, traveller
+   name, date and the supplier's reply where one exists.
+6. It lists up to 4 other approved products as related trips.
 
 **Acceptance criteria**
 
 | # | Given | When | Then |
 |---|---|---|---|
-| AC-1 | At least one product has `map_x`/`map_y` set | `/search` loads | A pin renders at that position showing the product's price |
-| AC-2 | A filter is changed (type, duration or sort) | The result set changes | The grid and the count update without a full page reload |
-| AC-3 | No product matches the current filters | `/search` loads | The "no results" message renders instead of an empty grid |
+| AC-1 | A product id resolves to a record | The visitor opens `/tours/:id` | Photo, name, itinerary, includes, excludes, policy and supplier block all render from that record |
+| AC-2 | The product has no `policy` text set | The visitor opens `/tours/:id` | The policy section shows the waiting-on-default line, never a blank section |
+| AC-3 | The product has published reviews | The visitor opens `/tours/:id` | Each review shows its rating, traveller, date, text and the supplier's reply if any |
+| AC-4 | The product has no published review with a traveller name or text | The visitor opens `/tours/:id` | The reviews section shows the "waiting on the first review" line, not an empty list |
+| AC-5 | The product id does not resolve to a record | The visitor opens `/tours/:id` | A not-found message replaces the page body |
 
 **Failure, boundary and permission behaviour**
 
 | Case | Condition | Expected behaviour |
 |---|---|---|
-| Not applicable | — | Real seat-based filtering and its failure behaviour are specified in `docs/search/SRS.md` |
+| Not found | The id in the URL matches no product | The page shows the "this trip is no longer listed" message instead of a blank or broken layout |
+| No permission case | The page is public | Not applicable: no role gate applies |
 
-**Data touched** — `products`, `categories`, as described in `schema.json`.
+**Data touched**
 
----
+| Field | Type | Required | Rule |
+|---|---|---|---|
+| products.policy | longtext | no | Shown verbatim; the waiting-on-default line is UI copy, not a stored value |
+| reviews.status | text | yes | Only `published` reviews appear on the trip page |
 
-**Requirement SITE-004 — Trip detail page**
+### 4.3 The site as designed — Departures board
 
-*As a* visitor, *I want to* see a product's photos, itinerary,
-inclusions/exclusions, calendar, policy, supplier info and reviews on one
-page, *so that* I can decide whether to book it.
+**Requirement SITE-003 — Departures board**
+
+*As a* visitor, *I want to* see every open departure date across the
+platform, filterable by pricing rule, *so that* I can find a date that
+suits me without opening a specific trip first.
 
 Behaviour:
 
-1. `/tours/:id` shows the hero photo, name, destination/kind/duration label,
-   next-departure date, summary, a numbered day-by-day itinerary, two columns
-   for "included"/"not included", a calendar of departure dates (`TripDates`),
-   the cancellation policy text (or a placeholder when empty), the supplier's
-   name/kind/place/documents, a reviews list (`TripReviews`), a sticky booking
-   panel (`TripBooking`) with price/date/seats/book button/wishlist toggle,
-   and up to 4 related products.
-2. A departure date in the calendar that is not `Open` is shown disabled with
-   its state appended to its pricing-rule label.
-3. An unknown product id shows the "missing" message instead of the page.
+1. `/departures` lists every departure in a table: date, trip, operator,
+   pricing rule, seats left and the price that day, sorted by date.
+2. A pricing-rule filter (Standard / Weekend / Peak summer) narrows the
+   list; "Show more" loads further pages.
 
 **Acceptance criteria**
 
 | # | Given | When | Then |
 |---|---|---|---|
-| AC-1 | A product has an itinerary of N lines | The Trip page loads | Exactly N numbered itinerary rows render |
-| AC-2 | A departure's `state` is not `Open` | The calendar renders that date | The date button is disabled and shows its state alongside the pricing rule |
-| AC-3 | No review has an author or text written | The Trip page loads | The reviews section shows the "waiting for your first review" message, not an empty list |
-| AC-4 | `id` does not match any product | `/tours/:id` loads | The "missing" message renders; nothing else on the page does |
+| AC-1 | Departures exist across several products | The visitor opens `/departures` | They are listed sorted by date, with seats and price in mono figures |
+| AC-2 | The visitor picks a pricing rule | — | Only departures with that `season` value remain, and the count updates |
+| AC-3 | More departures exist than the first page | — | "Show more" appends the next page without losing the ones already shown |
 
 **Failure, boundary and permission behaviour**
 
 | Case | Condition | Expected behaviour |
 |---|---|---|
-| Not found | Product id does not exist | The "missing" text renders (AC-4); no partial page |
+| Loading | The next page is being fetched | The design's loading line ("Loading…") shows below the table |
+| No permission case | The page is public | Not applicable: no role gate applies |
 
-**Data touched** — `products`, `departures`, `reviews`, `suppliers`, per `schema.json`.
+**Data touched**
 
----
+| Field | Type | Required | Rule |
+|---|---|---|---|
+| departures.season | text | yes | Filter value must match exactly one of Standard / Weekend / Peak summer |
 
-**Requirement SITE-005 — Departures board and Guides pages**
+### 4.4 The site as designed — Guides
 
-*As a* visitor, *I want to* see every open departure in one table, and browse
-guides by category, *so that* I can compare dates across products or read
-about a place before booking.
+**Requirement SITE-004 — Guides list and a guide**
+
+*As a* visitor, *I want to* read travel guides about Nghệ An, filterable by
+category, and open one to read its full text, *so that* I can plan a trip
+and the site is found for its content as well as its bookings.
 
 Behaviour:
 
-1. `/departures` shows a sortable-by-season table of every open/closed
-   departure with date, trip, operator, pricing rule, seats (highlighted
-   accent when ≤4) and price, with a "show more" control.
-2. `/guides` shows category filter pills (derived from the guides present),
-   a result count, a card grid and a "show more" control.
-3. `/guides/:slug` shows the guide's photo, title, standfirst, body split into
-   paragraphs, and a "more guides" list excluding itself. An unknown slug
-   shows the "missing" message.
+1. `/guides` lists guide teasers (photo, category, date, title, excerpt),
+   filterable by category, with "Show more" paging.
+2. `/guides/:slug` shows the full guide and up to 3 other guides to read
+   next.
 
 **Acceptance criteria**
 
 | # | Given | When | Then |
 |---|---|---|---|
-| AC-1 | A departure has 4 or fewer seats left | `/departures` renders that row | The seats figure is set in the accent colour |
-| AC-2 | A category pill is selected | The guides grid re-filters | Only guides of that category show, and the pill reads as active |
-| AC-3 | `slug` does not match any guide | `/guides/:slug` loads | The "missing" message renders |
+| AC-1 | Guides exist in more than one category | The visitor picks a category | Only guides in that category remain, and "All" clears the filter |
+| AC-2 | A guide slug resolves | The visitor opens `/guides/:slug` | The guide's photo, title, excerpt and body paragraphs render |
+| AC-3 | A guide slug does not resolve | The visitor opens `/guides/:slug` | A not-found message replaces the page body |
 
 **Failure, boundary and permission behaviour**
 
 | Case | Condition | Expected behaviour |
 |---|---|---|
-| Not found | Guide slug does not exist | The "missing" text renders (AC-3) |
+| Not found | The slug matches no guide | The "this guide is no longer here" message is shown |
+| No permission case | The page is public | Not applicable: no role gate applies |
 
-**Data touched** — `departures`, `guides`, per `schema.json`.
+**Data touched**
 
----
+| Field | Type | Required | Rule |
+|---|---|---|---|
+| guides.category | text | yes | Used as the filter's exact-match value |
 
-**Requirement SITE-006 — Sign in, register, account and wishlist shells**
+### 4.5 The site as designed — Global shell and SEO
 
-*As a* visitor or signed-in Buyer, *I want to* see the sign-in, register,
-account and wishlist pages laid out and populated from mock data, *so that*
-the design is complete even before real authentication exists.
+**Requirement SITE-005 — Header, footer and call/Zalo dock**
+
+*As a* visitor, *I want to* reach search, wishlist, my account, the main
+nav links and a way to call or message, from every storefront page, *so
+that* I never lose my way back into the site.
 
 Behaviour:
 
-1. `/signin` shows the email field, an OTP field, a role selector, the submit
-   button and a Google button, plus a "why create an account" panel. Submitting
-   signs in via the mock session (`lib/session.ts`) and routes by role.
-2. `/register` shows name/email/phone, a role selector, and — only when the
-   role is "supplier" — licence/agency file inputs and a bank field.
-3. `/account` shows the signed-in visitor's bookings (from the mock
-   `bookings` collection) or, when nobody is signed in, a "signed out"
-   message with a sign-in link.
-4. `/wishlist` shows saved products or an empty-state message with a link to
-   `/search`.
-5. Real credential checking, OTP verification and Google OAuth are the `auth`
-   module's job; this requirement covers only that the screens render and the
-   mock sign-in/out flow works.
+1. Every storefront page shows the sticky header (logo, nav links, search
+   icon, wishlist icon with its saved count, account icon, "Find a trip")
+   and the footer (link columns, contact details shown only when set,
+   legal line, photo credits).
+2. Below 1024px width, a call button and a Zalo button float at the
+   bottom-right, each shown only when its number is set in `content.json`;
+   with neither set, the dock shows nothing.
 
 **Acceptance criteria**
 
 | # | Given | When | Then |
 |---|---|---|---|
-| AC-1 | The role selector is set to "supplier" on `/register` | The form renders | Licence, agency and bank fields appear; they do not appear for "buyer" |
-| AC-2 | Nobody is signed in | `/account` loads | The "signed out" message and sign-in link render, not a booking list |
-| AC-3 | The wishlist has zero saved products | `/wishlist` loads | The empty-state message and "browse" link render |
+| AC-1 | The visitor has saved 1+ trips to the wishlist | — | The header's wishlist icon shows that count |
+| AC-2 | `contact.phone` and `contact.zalo` are both empty | The visitor views the site below 1024px | The call/Zalo dock renders nothing |
+| AC-3 | Only `contact.phone` is set | The visitor views the site below 1024px | Only the call button shows |
 
 **Failure, boundary and permission behaviour**
 
 | Case | Condition | Expected behaviour |
 |---|---|---|
-| Not applicable | — | Credential failure, OTP rejection and session persistence are specified in `docs/auth/SRS.md` |
+| No permission case | Header/footer/dock are public on every page | Not applicable: no role gate applies |
 
-**Data touched** — `bookings`, per `schema.json`; the mock session object (`email`, `name`, `role`).
+**Requirement SITE-006 — Per-page SEO metadata**
 
----
-
-**Requirement SITE-007 — Dashboard shell for Supplier and Admin**
-
-*As a* Supplier or Admin, *I want to* see a left-nav dashboard shell on every
-one of my pages, *so that* I always know where I am and what I can reach.
+*As a* search engine or a link preview, *I want to* read a page-specific
+title, description and Open Graph tags, *so that* a shared link and a
+search result describe the right page.
 
 Behaviour:
 
-1. Every Supplier and Admin page renders inside `DashboardLayout`: a
-   permanent left nav ≥1024px (a full-screen drawer below it), grouped nav
-   links with an optional badge count, a header with the page title and any
-   page actions, and the content area.
-2. `RequireRole` gates every one of these pages to its listed role(s); a
-   visitor without that role sees the "you do not have access" message
-   naming who the area is for and the visitor's own role or sign-in state.
-3. Pages present as static UI by this module, with mock data from
-   `src/data/*.json` reached through `useCollection`/`useRecord`:
-   Supplier Overview/Products/Edit product/Bookings/Reviews/Profile & payouts;
-   Admin Overview/Approval queue/Users & roles/All bookings/Finance/Review
-   moderation/Content & marketing/System.
-4. Every form control, button and table on these pages (commission input,
-   reject-reason textarea, "approve"/"reject" buttons, DataTable sort/page
-   controls) renders and is operable, with its state kept in the component —
-   persisting what is typed or clicked to a backend is each page's owning
-   module (`suppliers`, `admin`).
+1. Every storefront page calls `usePageMeta` with its own title and
+   description keys; the document title and `og:title`/`og:description`
+   meta tags update to match.
 
 **Acceptance criteria**
 
 | # | Given | When | Then |
 |---|---|---|---|
-| AC-1 | A visitor with no session opens `/supplier/products` | The page loads | `RequireRole`'s denial message renders, naming "suppliers" |
-| AC-2 | A Buyer session opens `/admin/queue` | The page loads | The denial message renders, naming "admins" and the visitor's own role, "buyer" |
-| AC-3 | A Supplier session opens `/supplier` | The page loads | `DashboardLayout` renders with the Supplier nav groups, and `RequireRole` allows it |
-| AC-4 | Viewport <1024px on any dashboard page | The visitor opens the nav drawer | The full-screen drawer shows the same nav groups as the permanent sidebar |
+| AC-1 | The visitor opens any storefront page | — | `document.title` and the `og:title`/`og:description` meta tags reflect that page's own copy, not another page's |
 
 **Failure, boundary and permission behaviour**
 
 | Case | Condition | Expected behaviour |
 |---|---|---|
-| Not permitted | Signed-in role is not in the page's `roles` list | `RequireRole` denial message renders (AC-1, AC-2); the page's content never renders |
-| Not permitted | Nobody is signed in | Same denial message, since `allowed()` always refuses an absent session |
+| — | — | Not applicable: metadata has no failure state a visitor can trigger |
 
-**Data touched** — every collection in `schema.json`, read-only through the mock data layer; see the `suppliers` and `admin` module SRS files for what each page writes once backed.
+**Data touched** — none; SEO metadata is read from `content.json`, not a
+database record.
 
 ## 5. Screens
 
 | Screen | Section in the design | Functions it serves | States that must exist |
 |---|---|---|---|
-| Home (`/`) | Home | SITE-002 | default |
-| Search (`/search`) | Search trips | SITE-003 | default, empty (no results), loading (show more) |
-| Trip (`/tours/:id`) | Trip | SITE-004 | default, not-found |
-| Departures (`/departures`) | Departures | SITE-005 | default, loading (show more) |
-| Guides (`/guides`), Guide (`/guides/:slug`) | Guides | SITE-005 | default, not-found (guide) |
-| Sign in (`/signin`), Register (`/register`) | Sign in, Register | SITE-006 | default |
-| My bookings (`/account`) | My bookings | SITE-006 | default, signed-out, empty (no bookings — list renders with 0 rows) |
-| Wishlist (`/wishlist`) | Wishlist | SITE-006 | default, empty |
-| Supplier Overview/Products/Edit product/Bookings/Reviews/Profile & payouts | Supplier dashboard | SITE-007 | default, denied |
-| Admin Overview/Approval queue/Users & roles/All bookings/Finance/Review moderation/Content & marketing/System | Admin dashboard | SITE-007 | default, denied |
-| Contact (`/contact`) | Contact | — (see `contact` module) | default |
+| Home | `Home.tsx` | SITE-001 | default |
+| Trip detail | `Trip.tsx` | SITE-002 | default, not-found |
+| Departures board | `Departures.tsx` | SITE-003 | default, loading |
+| Guides list | `Guides.tsx` | SITE-004 | default |
+| Guide | `Guide.tsx` | SITE-004 | default, not-found |
+| Header / Footer / ContactDock | `components/Header.tsx`, `Footer.tsx`, `ContactDock.tsx` | SITE-005 | default |
 
 ## 6. Non-functional requirements
 
 | Area | Requirement |
 |---|---|
-| Responsive | Every page works at 320px and up with no horizontal page scroll; layout breakpoints at `sm` (640px) and `lg` (1024px) per design system §1.5 |
-| Accessibility | Keyboard reachable, labelled inputs, contrast ≥4.5:1 per design system §1.1 contrast audit; `prefers-reduced-motion: reduce` disables the Reveal animation and image hover zoom |
-| Localisation | Copy is in Vietnamese (`vi-VN`); prices via `formatPrice`, dates via `formatDate`; every price/seat/date/duration figure uses `.fig` (IBM Plex Mono, tabular) |
-| Performance | Hero and above-the-fold images load eagerly (`loading="eager"`); below-the-fold images load lazily |
+| Accessibility | Keyboard reachable, labelled icons via `aria-label`, contrast per `design/design-system.md` §1.1 |
+| Responsive | Works at 320px and up; header collapses to a drawer below 1024px per the design system |
+| Localisation | Copy is in the site's own words (Vietnamese place names, English UI strings as authored in `content.json`); dates and prices formatted for `vi-VN` |
+| SEO | Every storefront page sets its own `<title>` and Open Graph tags; a sitemap and server-side rendering for product pages are deferred (§7) |
 
 ## 7. Dependencies and assumptions
 
-- **Depends on:** `data` module, for the mock-to-API swap of `src/data/index.ts`'s underlying records (this module ships against the mock layer as it exists today).
-- **Depends on:** `auth` module, for real credential/session behaviour behind the sign-in and dashboard gates this module renders.
-- **Assumption:** the content and screen list in this document is the approved design as committed in `code/frontend/src` and `design/pages.json` on the date of this SRS. If a later design change adds or removes a page, this file is revised alongside it.
+- **Depends on:** `data` module, for the product, destination, departure
+  and guide records this module reads.
+- **Depends on:** `search` module's results page, which this module links
+  to from category chips, destination tiles and the header's search icon.
+- **Assumption:** the cancellation-policy default window (48 hours before
+  departure, per `decision.cancellation_window`) is a `booking`-module
+  decision; this module only displays whatever text the product record
+  carries or the waiting-on-default line when it is empty.
 
 | Open question | Proposed default | Who decides |
 |---|---|---|
-| — | — | None open for this module |
+| Does a product page need server-side rendering (SSR) for search engines, beyond the client-rendered SPA already built? | No for MVP — the SPA ships with per-page `<title>`/meta tags and a sitemap is added once traffic is measured; SSR is deferred past MVP | Stakeholder |
 
 ## 8. Traceability
 
 | Plan item | Requirement ids | Test cases |
 |---|---|---|
-| The site as designed | SITE-001, SITE-002, SITE-003, SITE-004, SITE-005, SITE-006, SITE-007 | `test-cases/the-site-as-designed.md` |
+| The site as designed | SITE-001, SITE-002, SITE-003, SITE-004, SITE-005, SITE-006 | `test-cases/the-site-as-designed.md` |
