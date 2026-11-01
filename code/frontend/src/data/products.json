@@ -268,5 +268,30 @@
     "map_y": 76,
     "_source": "assumed",
     "_picture": "stand-in"
+  },
+  {
+    "id": "cua-lo-rejected-sample",
+    "name": "Cửa Lò floating market tour",
+    "kind": "tour",
+    "destination": "Cửa Lò",
+    "duration": "1 day",
+    "price": 780000,
+    "seats": 0,
+    "next_date": "2026-11-20",
+    "image": "/images/p-family-beach.jpg",
+    "summary": "A day on the water market with a local boat crew, resubmitted after its first set of photos were rejected.",
+    "itinerary": ["07:00 leave the pier, the floating market until noon, back by 14:00."],
+    "includes": ["Boat", "Life jacket", "Market snacks"],
+    "excludes": ["Transport to the pier"],
+    "policy": "",
+    "confirmation": "",
+    "supplier": "cua-lo-stays",
+    "status": "rejected",
+    "rejection_reason": "Photos too dark",
+    "place": "Cửa Lò, Nghệ An",
+    "map_x": 81,
+    "map_y": 74,
+    "_source": "assumed",
+    "_picture": "stand-in"
   }
 ]
