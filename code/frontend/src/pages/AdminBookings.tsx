@@ -2,7 +2,7 @@ import DashboardLayout from "../components/DashboardLayout";
 import RequireRole from "../components/RequireRole";
 import DataTable from "../components/DataTable";
 import TableFilters, { SearchBox, FilterSelect, DateRange, Badge } from "../components/TableFilters";
-import { useCollection, type Row } from "../data";
+import { useCollection, collections, setCollection, type Row } from "../data";
 import { useTableQuery } from "../lib/table";
 import { usePageMeta } from "../seo";
 import { formatPrice, formatDate } from "../lib/format";
