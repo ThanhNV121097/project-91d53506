@@ -24,7 +24,7 @@ export default function AdminQueue() {
   const [target, setTarget] = useState<Target | null>(null);
   const products = useCollection("products", {
     page: t.page, pageSize: t.size, sort: t.sort, q: t.q, search: ["name"],
-    where: { status: t.list("status") || "pending" },
+    where: { status: t.list("status") },
   });
   const suppliers = useCollection("suppliers", { where: { verified: false }, pageSize: 10 });
 
