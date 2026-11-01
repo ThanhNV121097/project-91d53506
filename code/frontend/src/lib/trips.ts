@@ -17,6 +17,8 @@ export interface Trip {
   confirmation: string;
   supplier: string;
   status: string;
+  /** Set only while status is "rejected" (SUPPLIERS-002 AC-5); shown to the owning supplier. */
+  rejection_reason?: string;
   place: string;
   map_x: number;
   map_y: number;
