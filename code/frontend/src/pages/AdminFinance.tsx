@@ -33,6 +33,12 @@ export default function AdminFinance() {
 
   const rateFor = (supplierId: string) => overrides[supplierId] ?? globalRate;
 
+  /** The rate that applies to a payout row's own figures: the rate frozen
+   * at reconciliation time for an already-reconciled row, never the live
+   * global/override rate — a later commission change must not alter a
+   * period already reconciled (ADMIN-005 AC-4). */
+  const appliedRateFor = (row: PayoutRow) => row.appliedRate ?? Number(rateFor(row.supplierId)) || 0;
+
   function save(e: React.FormEvent) {
     e.preventDefault();
     const err = rateError(rateInput);
