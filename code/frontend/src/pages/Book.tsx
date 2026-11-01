@@ -31,7 +31,6 @@ export default function Book() {
   if (!item) return <p className="mx-auto max-w-page px-[var(--gutter)] py-20 text-ink-soft"><T k="pages.trip.missing" /></p>;
   const date = draft.date || item.next_date;
   const sums = total(item.price, draft);
-  const remaining = seatsRemaining(dates.items, date, item.seats);
   return (
     <section className="mx-auto grid max-w-page gap-10 px-[var(--gutter)] py-10 lg:grid-cols-[1.4fr_1fr]">
       <div>
