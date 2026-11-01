@@ -237,6 +237,7 @@
       "eyebrow": "Paid and confirmed",
       "heading": "You are booked. Show this code on the day.",
       "more": "Book something else",
+      "notFound": "We can't find a booking with that code. Check the link in your email or Zalo message, or sign in to see your bookings.",
       "paid": "Paid",
       "qrNote": "The supplier scans this at check-in. It is also in your email and your Zalo message.",
       "sent": "We have sent the code to your email and your Zalo. It is in your bookings too.",

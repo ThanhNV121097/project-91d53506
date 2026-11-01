@@ -1,25 +1,25 @@
 import { Link, useParams } from "react-router-dom";
 import { T } from "../editable";
-import { useRecord } from "../data";
+import { useCollection } from "../data";
 import Icon from "../components/Icon";
 import QrCode from "../components/QrCode";
 import { usePageMeta } from "../seo";
 import { formatPrice, formatDate } from "../lib/format";
-import { readDraft, emptyDraft, total } from "../lib/mock/booking";
-import type { Trip } from "../lib/trips";
+import type { Booking } from "../lib/trips";
 
-/** A booking being looked at with nothing booked yet reads as this one. */
-const EXAMPLE = "cua-lo-beach-2n1d";
+/** The confirmation layout and QR render for these statuses only (BOOKING-003 Behaviour-1). */
+const CONFIRMED: ReadonlySet<string> = new Set(["Confirmed", "Completed"]);
 
 export default function Confirmed() {
   usePageMeta("pages.confirmed.title", "pages.confirmed.description");
   const { code } = useParams();
-  const draft = readDraft() ?? emptyDraft(EXAMPLE, "2026-11-14");
-  const { item } = useRecord<Trip>("products", draft.productId || EXAMPLE);
-  const price = item ? item.price : 0;
-  const sums = total(price, draft);
-  const date = draft.date || (item ? item.next_date : "");
-  const shown = code || draft.code || "NA-7X42K9";
+  const { items } = useCollection<Booking>("bookings", { where: { code: code ?? "" }, pageSize: 1 });
+  const booking = items[0];
+
+  if (!booking || !CONFIRMED.has(booking.status)) {
+    return <p className="mx-auto max-w-page px-[var(--gutter)] py-20 text-ink-soft"><T k="pages.confirmed.notFound" /></p>;
+  }
+
   return (
     <section className="mx-auto max-w-page px-[var(--gutter)] py-14">
       <p className="label flex items-center gap-2 text-accent"><Icon name="done" size={16} /><T k="pages.confirmed.eyebrow" /></p>
@@ -27,31 +27,31 @@ export default function Confirmed() {
       <div className="mt-8 grid gap-8 lg:grid-cols-[1fr_1.2fr]">
         <div className="rounded-[var(--radius-sm)] border border-line bg-surface p-6">
           <p className="label text-ink-soft"><T k="pages.confirmed.code" /></p>
-          <p className="fig mt-1 text-[length:var(--size-h1)] leading-none text-ink" data-testid="booking-code">{shown}</p>
-          <div className="mt-6"><QrCode code={shown} /></div>
+          <p className="fig mt-1 text-[length:var(--size-h1)] leading-none text-ink" data-testid="booking-code">{booking.code}</p>
+          <div className="mt-6"><QrCode code={booking.code} /></div>
           <T k="pages.confirmed.qrNote" as="p" className="mt-4 max-w-[36ch] text-xs text-ink-soft" />
         </div>
         <div>
           <dl className="flex flex-col gap-3 border-t border-line pt-4 text-sm">
             <div className="flex justify-between gap-4">
               <dt className="text-ink-soft"><T k="pages.confirmed.trip" /></dt>
-              <dd className="text-right text-ink">{item ? item.name : ""}</dd>
+              <dd className="text-right text-ink">{booking.product_name}</dd>
             </div>
             <div className="flex justify-between gap-4 border-t border-line pt-3">
               <dt className="text-ink-soft"><T k="pages.book.date" /></dt>
-              <dd className="fig">{formatDate(date)}</dd>
+              <dd className="fig">{formatDate(booking.date)}</dd>
             </div>
             <div className="flex justify-between gap-4 border-t border-line pt-3">
               <dt className="text-ink-soft"><T k="pages.checkout.people" /></dt>
-              <dd className="fig">{draft.adults + draft.children}</dd>
+              <dd className="fig">{booking.travellers}</dd>
             </div>
             <div className="flex justify-between gap-4 border-t border-line pt-3">
               <dt className="text-ink-soft"><T k="pages.checkout.paidWith" /></dt>
-              <dd className="text-ink">{draft.payment}</dd>
+              <dd className="text-ink">{booking.payment}</dd>
             </div>
             <div className="flex justify-between gap-4 border-t border-line pt-3">
               <dt><T k="pages.confirmed.paid" /></dt>
-              <dd className="fig text-[length:var(--size-price)] leading-none">{formatPrice(sums.due)}</dd>
+              <dd className="fig text-[length:var(--size-price)] leading-none">{formatPrice(booking.total)}</dd>
             </div>
           </dl>
           <T k="pages.confirmed.sent" as="p" className="mt-6 max-w-[48ch] text-sm text-ink-soft" />
