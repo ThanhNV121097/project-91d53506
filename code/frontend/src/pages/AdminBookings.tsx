@@ -14,6 +14,15 @@ const TONE: Record<string, "neutral" | "good" | "warn" | "bad"> = {
   "Awaiting payment": "warn", Cancelled: "bad", Refunded: "bad",
 };
 
+/** Sets the booking to Refunded and resolves the complaint against it. */
+function refund(complaintId: string, bookingCode: string) {
+  const all = collections();
+  setCollection("bookings", (all.bookings ?? []).map((b) =>
+    b.code === bookingCode ? { ...b, status: "Refunded" } : b));
+  setCollection("complaints", (all.complaints ?? []).map((c) =>
+    c.id === complaintId ? { ...c, status: "Refunded" } : c));
+}
+
 export default function AdminBookings() {
   usePageMeta("pages.adminBookings.title");
   const t = useTableQuery({ size: 20, sort: "-created" });
