@@ -50,7 +50,13 @@ products, `admin` writes supplier/product status) and are specified there.
 - Any write to a collection (creating a product, confirming a booking,
   approving a supplier) — specified in the module that owns that action.
 - Authentication and permission checks on who may call the API — `auth`
-  module; this module's endpoints are public reads, matching what the
+  module; within this module, nine collections (`bookings`, `payouts`,
+  `users`, `complaints`, `vouchers`, `notifications`, `settings`,
+  `campaigns`, `audit`) require a signed-in caller and return only rows
+  that caller may see — an admin sees every row, anyone else sees only
+  their own records, filtered in the database query — while the remaining
+  seven collections (`categories`, `departures`, `destinations`, `guides`,
+  `products`, `reviews`, `suppliers`) stay public reads, matching what the
   storefront already shows to every visitor today.
 - The inventory hold, seat decrement and booking state machine — `booking`
   module.
@@ -125,7 +131,10 @@ Behaviour:
 |---|---|---|
 | Unknown collection | The path names a collection not in `schema.json` | 404 response |
 | Unknown filter field | A query parameter does not match any field on that collection | Ignored; it does not error and does not filter |
-| No permission case | Every list endpoint is a public read | Not applicable |
+| Unauthenticated request to a private collection | Collection is one of `bookings`, `payouts`, `users`, `complaints`, `vouchers`, `notifications`, `settings`, `campaigns`, `audit`, and the caller has no session | 401 response |
+| Authenticated non-admin request to a private collection | Caller is signed in but not an admin | `items` is filtered in the database query to only that caller's own rows; no other caller's rows are returned |
+| Authenticated admin request to a private collection | Caller is signed in as admin | `items` is unfiltered by ownership — every row in the collection |
+| Public collection request | Collection is one of `categories`, `departures`, `destinations`, `guides`, `products`, `reviews`, `suppliers` | Public read, no authentication required, matching DATA-002's existing behaviour |
 
 **Data touched** — every field of the requested collection, returned as
 given in `schema.json` (same field names).
@@ -152,7 +161,10 @@ Behaviour:
 | Case | Condition | Expected behaviour |
 |---|---|---|
 | Not found | Id does not exist in the collection | 404, matching DATA-003 AC-2 |
-| No permission case | Every record endpoint is a public read | Not applicable |
+| Unauthenticated request to a private collection | Collection is one of `bookings`, `payouts`, `users`, `complaints`, `vouchers`, `notifications`, `settings`, `campaigns`, `audit`, and the caller has no session | 401 response |
+| Authenticated non-admin request to a record they don't own | Caller is signed in but not an admin, and the record is not their own | 403 or 404 response |
+| Authenticated admin request | Caller is signed in as admin | Any record in the collection is returned |
+| Public collection request | Collection is one of `categories`, `departures`, `destinations`, `guides`, `products`, `reviews`, `suppliers` | Public read, no authentication required, matching DATA-003's existing behaviour |
 
 **Data touched** — one record's worth of whatever fields that collection's
 schema defines.
