@@ -78,21 +78,16 @@ export default function Book() {
           <div className="grid gap-4 sm:grid-cols-2">
             <label className="flex flex-col gap-1">
               <span className="label text-ink-soft"><T k="pages.book.name" /></span>
-              <input id="name" required aria-invalid={errors.name} value={draft.name}
-                onChange={(e) => setDraft({ ...draft, name: e.target.value })} className={field} />
-              {errors.name && <span role="alert" className="text-xs text-ink"><T k="pages.book.nameError" /></span>}
+              <input id="name" required value={draft.name} onChange={(e) => setDraft({ ...draft, name: e.target.value })} className={field} />
             </label>
             <label className="flex flex-col gap-1">
               <span className="label text-ink-soft"><T k="pages.book.phone" /></span>
-              <input id="phone" required aria-invalid={errors.phone} inputMode="tel" value={draft.phone}
-                onChange={(e) => setDraft({ ...draft, phone: e.target.value })} className={`${field} fig`} />
-              {errors.phone && <span role="alert" className="text-xs text-ink"><T k="pages.book.phoneError" /></span>}
+              <input id="phone" required inputMode="tel" value={draft.phone} onChange={(e) => setDraft({ ...draft, phone: e.target.value })} className={`${field} fig`} />
             </label>
             <label className="flex flex-col gap-1">
               <span className="label text-ink-soft"><T k="pages.book.email" /></span>
-              <input id="email" type="email" required aria-invalid={errors.email} value={draft.email || session?.email || ""}
+              <input id="email" type="email" required value={draft.email || session?.email || ""}
                 onChange={(e) => setDraft({ ...draft, email: e.target.value })} className={field} />
-              {errors.email && <span role="alert" className="text-xs text-ink"><T k="pages.book.emailError" /></span>}
             </label>
             <label className="flex flex-col gap-1">
               <span className="label text-ink-soft"><T k="pages.book.note" /></span>
