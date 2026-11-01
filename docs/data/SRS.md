@@ -84,6 +84,11 @@ Behaviour:
 2. A seed migration inserts every record of every existing
    `src/data/<name>.json` file into its table, unchanged — no record is
    lost, renamed or re-priced.
+3. Nine collections — `audit`, `bookings`, `campaigns`, `complaints`,
+   `notifications`, `payouts`, `settings`, `users`, `vouchers` — are marked
+   private; the other seven (`categories`, `departures`, `destinations`,
+   `guides`, `products`, `reviews`, `suppliers`) stay public. This mapping
+   is what DATA-002 and DATA-003 enforce at the list and record endpoints.
 
 **Acceptance criteria**
 
@@ -96,7 +101,7 @@ Behaviour:
 
 | Case | Condition | Expected behaviour |
 |---|---|---|
-| No permission case | Schema/migration is a backend build step, not a request a role can make | Not applicable |
+| Permission/access-scoping | A caller with no valid session or token requests any endpoint for one of the nine private collections (`audit`, `bookings`, `campaigns`, `complaints`, `notifications`, `payouts`, `settings`, `users`, `vouchers`) | 401; a signed-in caller without the required role/ownership for that collection gets 403. These cases are specified and tested at the endpoint level, DATA-002 and DATA-003 |
 
 **Data touched** — every field of every collection named in
 `code/frontend/src/data/schema.json`, as that file defines them.
