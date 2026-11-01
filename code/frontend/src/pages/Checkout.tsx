@@ -63,13 +63,7 @@ export default function Checkout() {
           <p className="text-xs text-ink-soft">{voucherNote}</p>
         </div>
 
-        <button type="button" data-testid="pay-now" disabled={paying}
-          onClick={() => {
-            setPaying(true);
-            const code = newCode();
-            writeDraft({ ...draft, date, code });
-            navigate(`/booking/${code}`);
-          }}
+        <button type="button" data-testid="pay-now" disabled={paying} onClick={() => void payNow()}
           className="mt-10 rounded-[var(--radius-sm)] bg-accent px-8 py-3 text-sm text-accent-ink hover:opacity-90 disabled:opacity-60">
           <T k={paying ? "pages.checkout.paying" : "pages.checkout.payNow"} />
         </button>
