@@ -23,7 +23,7 @@ export default function AdminBookings() {
   });
   const complaints = useCollection("complaints", { pageSize: 10 });
   return (
-    <RequireRole roles={["admin"]}>
+    <RequireRole roles={["admin"]} permission="finance-only">
       <DashboardLayout title="Bookings & disputes" nav={ADMIN_NAV} brand="Nghệ An Departures">
         <TableFilters onClear={t.filtering ? t.clear : undefined}>
           <SearchBox value={t.q} onChange={t.setQ} placeholder="Search by booking code" />
