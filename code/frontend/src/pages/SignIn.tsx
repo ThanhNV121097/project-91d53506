@@ -20,6 +20,10 @@ export default function SignIn() {
   const [error, setError] = useState("");
   const roleLabel = useContent("pages.signin.role");
   const roles = useList("pages.signin.roles");
+  const errorLocked = useContent("pages.signin.errorLocked");
+  const errorCredentials = useContent("pages.signin.errorCredentials");
+  const otpError = useContent("pages.signin.otpError");
+  const googleError = useContent("pages.signin.googleError");
   const navigate = useNavigate();
   const field = "w-full rounded-[var(--radius-sm)] border border-field bg-surface px-3 py-2 text-sm text-ink";
 
