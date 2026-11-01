@@ -6,6 +6,12 @@ Source: `docs/account/SRS.md`, `docs/admin/SRS.md`, `docs/auth/SRS.md`,
 `docs/notifications/SRS.md`, `docs/payments/SRS.md`, `docs/search/SRS.md`,
 `docs/site/SRS.md`, `docs/suppliers/SRS.md`, `docs/architecture/erd.md`
 
+**Recovery note (2026-11-01):** this file was found on `main` truncated to
+only §8.3 (a prior self-merge appears to have overwritten it instead of
+appending). Sections 1–8.2, 9 and 10 below are restored verbatim from the
+last known-good commit (`590b66c9dd7e8f66abb84cf61188c04e2fb11371`) before
+this story's own §8.4 is added.
+
 ## 1. Service map
 
 ```mermaid
@@ -165,7 +171,6 @@ business-logic code trusts its inputs and never re-validates defensively.
 | `POST /v1/payments/vnpay/ipn` | VNPay's own `vnp_TxnRef` + `vnp_TransactionNo`, matched against `payments.gateway_transaction_id` (PAYMENTS-001 AC-4) | — | A second callback for an already-`succeeded`/`failed` row is accepted (200) and changes nothing |
 | `POST /v1/bookings/{id}/voucher` | None — BOOKING-002.4/AC-5 is enforced by `vouchers.used` incrementing at most once per booking, checked via a `booking_id` the server already holds, not a client-supplied key | — | — |
 | `POST /v1/media` | None — each call stores a new file; a retry after a network failure may store a second file, which the calling form simply replaces its reference to | — | — |
-
 
 ## 3. Endpoints
 
@@ -466,7 +471,16 @@ when a date is given.
 `departures` row for that `date` with `state = 'Open'` and
 `seats >= people` (SEARCH-001 AC-1–AC-3); `total` reflects the filtered
 set, never the unfiltered product count (AC-4's own wording, enforced by
-counting after the join, not before it).
+counting after the join, not before it). The price used against `max` in
+this case is `COALESCE(departures.price, products.price)` — the matching
+departure's own override when it has one, the product's base price
+otherwise — matching `erd.md` §3.6's documented null semantics
+(`departures.price IS NULL` means "use the product's base price", not
+zero); this clarifies SEARCH-001 AC-4's "the matching departure's
+date-specific price" for the one case (`departures.price IS NULL` on a
+standard-priced date) the SRS text does not spell out a number for.
+`uq_departures_product_date` (erd.md §3.6) guarantees at most one matching
+row per product/date, so this lookup is never ambiguous.
 
 ### 3.5 `booking` module
 
@@ -1354,45 +1368,122 @@ code lookup, and the `departure` join in the response) and relies on the
 run. Backward: none to run. Safety on a populated table: not applicable —
 no DDL in this story.
 
-## 8.2 Migration plan — Booking creation with inventory hold (BOOKING-001)
+## 8.2 Migration plan — Search and filter trips by criteria (SEARCH-001)
+
+No schema change. `products` (incl. `idx_products_status`,
+`idx_products_destination_kind`) and `departures` (incl.
+`idx_departures_product_id_date`, `uq_departures_product_date`, the
+`state`/`seats`/`price` columns) already exist from the base migration
+(`docs/architecture/erd.md` §3.5–3.6, §8) and already carry every index
+this endpoint's query needs — `idx_products_destination_kind` for the
+no-date filters, `idx_departures_product_id_date` for the per-product,
+per-date availability join. This story only adds the `GET /v1/search`
+handler (§3.4.1) that joins the two tables the mock module
+(`src/lib/mock/search-and-filter-trips-by-criteria.ts`, PR #46) already
+joins client-side, and deletes that mock module once the handler ships.
+Forward: none to run. Backward: none to run. Safety on a populated table:
+not applicable — no DDL in this story.
+
+## 8.3 Migration plan — The site as designed (SITE-001 to SITE-006)
+
+No schema change, no new endpoint. This story (`docs/site/stories/the-site-as-designed.md`)
+ships Home, Trip detail, the Departures board, Guides/Guide and the shared
+header/footer/dock as a frontend-only slice reading the mock data already
+bundled in `code/frontend/src/data/` — its own story scope states "No
+backend stage applies to this story" and PR #23 confirms no mock module
+was added or needs swapping.
+
+Every entity SITE-001…006 touches already exists and already traces to
+these requirement ids from earlier design work: `products` (§3.5, Traces
+to … SITE-001, SITE-002), `departures` (§3.6, Traces to … SITE-001,
+SITE-003), `destinations` (§3.7, Traces to SITE-001), `categories`
+(§3.8, Traces to SITE-001), `guides` (§3.9, Traces to SITE-004),
+`reviews` (§3.10, Traces to SITE-002). The fields each acceptance
+criterion reads are already columns: `products.status`/`price`/`image`/
+`itinerary`/`includes`/`excludes`/`policy`/`confirmation` (SC-1, SC-5,
+SC-6), `departures.state`/`season`/`seats`/`price`/`date` (SC-3, SC-10,
+SC-11), `reviews.status`/`rating`/`author`/`reviewed_on`/`text`/`reply`
+(SC-7, SC-8), `guides.category`/`slug`/`title`/`excerpt`/`body` (SC-13,
+SC-14, SC-15). No column, index or constraint is missing for any SC in
+this story.
+
+Every read this story needs is already the `data` module's generic
+reader (§3.1.1 `GET /v1/{collection}`, §3.1.2 `GET /v1/{collection}/{id}`),
+already listed as serving SITE-001…006 in §10's traceability table
+("presentation only — maps to no endpoint of its own; reads `data`/
+`search` endpoints already listed"). This story adds nothing to that:
+once `Site data from the database` (DATA-001…004, plan item 2) lands,
+`Home.tsx`/`Trip.tsx`/`Departures.tsx`/`Guides.tsx`/`Guide.tsx` call
+`useCollection`/`useRecord` exactly as they do today against the mock,
+per DATA-004's "no component file changes" guarantee — this story's
+markup needs no edit either now or then.
+
+**Forward:** none to run. **Backward:** none to run. **Safety on a
+populated table:** not applicable — no DDL in this story.
+
+## 8.4 Migration plan — Booking creation with inventory hold (BOOKING-001)
 
 No schema change. `bookings` (`erd.md` §3.11 — `status`, `held_until`,
-`adults`, `children`, `traveller_*`, `total`, `ck_bookings_party_positive`,
-`idx_bookings_status_held_until`) and `departures` (`erd.md` §3.6 —
-`seats`, `capacity`, `ck_departures_seats_bounds`, `state`) already exist
-from the base migration (`erd.md` §8, steps 3 and 5 — `0004_catalogue` and
-`0006_booking_flow`) and already carry every column, constraint and index
-this story's SC-1–SC-8 need: the atomic `UPDATE departures SET seats =
-seats - :n WHERE seats >= :n` (SC-2/SC-5/SC-6), `ck_departures_seats_bounds`
-as the database-level backstop against a negative or over-capacity value,
-`held_until` + `idx_bookings_status_held_until` for the hold-expiry sweep
-(SC-3/SC-4), and the `bookings`+`departures` write committing in one
-transaction (SC-1/SC-8). `POST /v1/bookings` (§3.5.1) and the hold-expiry
-sweep (§4) were already specified against this same schema and already
-satisfy every acceptance criterion in
-`docs/booking/stories/booking-creation-with-inventory-hold.md` without
-change. Forward: none to run. Backward: none to run. Safety on a
-populated table: not applicable — no DDL in this story.
+`adults`, `children`, `traveller_name`/`_phone`/`_email`/`_note`, `total`,
+`ck_bookings_party_positive`, `idx_bookings_status_held_until`) and
+`departures` (`erd.md` §3.6 — `seats`, `capacity`, `state`,
+`ck_departures_seats_bounds`) already exist from the base migration
+(`erd.md` §8, steps 3 and 5 — `0004_catalogue` and `0006_booking_flow`)
+and already carry every column, constraint and index this story's SC-1
+through SC-8 need:
 
-**Decision — package selection is not persisted.** The story's UI scope
-lists a package `Select` (Standard / Private group / With hotel pick-up)
-shown when a product has more than one. `code/frontend/src/lib/mock/
-booking.ts`'s `Draft.pack` adds a flat upcharge to the mock's `total`.
-BOOKING-001's own "Data touched" table (`docs/booking/SRS.md` §4.1) lists
+- SC-1/SC-6 (create within/exactly at remaining capacity) — the atomic
+  `UPDATE departures SET seats = seats - :n WHERE id = :id AND seats >=
+  :n` (§3.5.1's Notes), with `ck_departures_seats_bounds` as the
+  database-level backstop against a negative or over-capacity value.
+- SC-2/SC-5 (reject over-capacity, exactly one winner under concurrency)
+  — the same single-statement `UPDATE ... WHERE seats >= :n` is the
+  locking primitive: Postgres serializes concurrent updates to the same
+  row, so a 0-row result (someone else's update already consumed the
+  seats) maps to `409 CONFLICT` with no separate application-level lock
+  needed.
+- SC-3/SC-4 (hold expiry, hold left alone within window) —
+  `bookings.held_until` plus `idx_bookings_status_held_until` (partial
+  `WHERE status = 'Awaiting Payment'`) serve both the 60s sweep (§4) and
+  the lazy check-on-read in `GET /v1/bookings/{id_or_code}` (§3.5.2).
+- SC-7 (missing traveller field) — `traveller_name`/`_phone`/`_email`
+  are `NOT NULL` columns; the handler's own `422 VALIDATION_FAILED` (per
+  §3.5.1's error table) runs before any write, so no partial row is ever
+  attempted.
+- SC-8 (mid-transaction failure leaves nothing applied) — the seat
+  decrement and the `bookings` insert run in one database transaction
+  (§3.5.1's Notes, "never one without the other"); a failure before
+  `COMMIT` rolls back both statements together, which is what the
+  transaction boundary is for, not a new mechanism.
+
+`POST /v1/bookings` (§3.5.1) and the hold-expiry sweep (§4) were already
+specified against this same schema during the project-wide service-design
+pass, ahead of this story, and already satisfy every acceptance criterion
+in `docs/booking/stories/booking-creation-with-inventory-hold.md` without
+change.
+
+**Decision — the mock's package selection is not persisted.** The
+story's UI scope lists a package `Select` (Standard / Private group /
+With hotel pick-up) shown on `/book/:id` when a product has more than
+one. No mock module exists for this story yet (none was built — this
+story has no UI PR per the task), but the story plan's own UI scope
+section is the only candidate source for a package concept, and
+BOOKING-001's "Data touched" table in `docs/booking/SRS.md` §4.1 lists
 only `status`, `date`/`travellers`/`total`, `departures.seats` and
-`heldUntil` — it names no package column, and no requirement or
-acceptance criterion in that SRS exercises a stored package choice.
-`products` (`erd.md` §3.5) has one `price`, not a set of package rows, so
-there is nothing a `package_id` could reference yet. **Chosen:** `POST
-/v1/bookings` (§3.5.1) keeps no package field; `total` is `departure
-price × party size` exactly as already specified, with no package
-upcharge. **Frontend impact when this story's backend lands:** the
-package `Select` on `/book/:id` is cosmetic only — Dev drops the extra
-from the real total shown at checkout (`sums.extra` in `Book.tsx`/
-`Checkout.tsx`) or the stakeholder decides packages are a real priced
-product variant, which is a `products`-table change, not this story's.
-Recorded below as an open question rather than silently shipping a
-checkout total that disagrees with what the booking form showed.
+`heldUntil` — it names no package column, and no acceptance criterion in
+that SRS exercises a stored package choice. `products` (`erd.md` §3.5)
+carries one `price`, not a set of package rows, so there is nothing a
+`package_id` could reference yet. **Chosen:** `POST /v1/bookings`
+(§3.5.1) keeps no package field; `total` is `departure price × party
+size` exactly as already specified, with no package upcharge. **Frontend
+impact when the UI for this story is built:** a package `Select` shown
+per the story's UI scope is cosmetic only unless and until a later
+decision makes it a priced `products`-table variant — recorded below as
+an open question rather than silently shipping a checkout total that
+disagrees with what the booking form showed.
+
+**Forward:** none to run. **Backward:** none to run. **Safety on a
+populated table:** not applicable — no DDL in this story.
 
 ## 9. Open questions
 
@@ -1402,7 +1493,7 @@ checkout total that disagrees with what the booking form showed.
 | Exact sign-in rate-limit figures (§6) — no SRS states a number for `/v1/auth/login` | Stakeholder | No — a conservative default (10/10min) ships; tightening later is additive per api-conventions |
 | Should `/v1/admin/users` support a `users-only` permission distinct from the three the SRS text names outright (moderation/finance/content)? | Stakeholder | No — added here as the fourth value so ADMIN-003's delegation story has an endpoint to delegate; confirm the label before Dev builds the sub-admin creation form |
 | MoMo/ZaloPay/bank-transfer: disabled-with-note vs clickable-fallback (payments/SRS.md §7) | Stakeholder | No — disabled-with-note implemented (3.6.4's `enabled:false`) |
-| Is the `/book/:id` package choice (Standard / Private group / With hotel pick-up) a real priced product variant, or cosmetic only? (§8.2) | Stakeholder | No — `POST /v1/bookings` ships with no package field/upcharge; the mock's `pack`-driven extra is dropped from the real checkout total when this story's backend lands, pending this answer |
+| Is the `/book/:id` package choice (Standard / Private group / With hotel pick-up) named in BOOKING-001's story a real priced product variant, or cosmetic only? (§8.4) | Stakeholder | No — `POST /v1/bookings` ships with no package field/upcharge; any package `Select` the UI step builds is cosmetic, pending this answer |
 
 ## 10. Requirement ↔ endpoint traceability
 
