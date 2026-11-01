@@ -1,19 +1,27 @@
 import { Link } from "react-router-dom";
 import { T } from "../editable";
-import { useCollection } from "../data";
 import { Picture } from "../picture";
 import Icon from "../components/Icon";
+import { Badge } from "../components/TableFilters";
 import { usePageMeta } from "../seo";
 import { formatPrice, formatDate } from "../lib/format";
 import { useSession, signOut } from "../lib/session";
 import { useDemo } from "../lib/demo";
-import type { Booking } from "../lib/trips";
+import { MY_BOOKINGS } from "../lib/mock/buyer-booking-history-and-status";
+
+const TONE: Record<string, "neutral" | "good" | "warn" | "bad"> = {
+  Paid: "good", Confirmed: "good", Completed: "neutral",
+  "Awaiting Payment": "warn", Cancelled: "bad", Refunded: "bad",
+};
 
 export default function Account() {
   usePageMeta("pages.account.title", "pages.account.description");
   const session = useSession();
   const demo = useDemo();
-  const { items, total } = useCollection<Booking>("bookings", { sort: "-created", pageSize: 6 });
+  // Stands in for GET /v1/account/bookings — already scoped server-side to
+  // the signed-in Buyer; see docs/account/test-cases/buyer-booking-history-and-status.md.
+  const items = MY_BOOKINGS;
+  const total = items.length;
   if (!session && !demo) {
     return (
       <section className="mx-auto max-w-page px-[var(--gutter)] py-20">
@@ -46,7 +54,7 @@ export default function Account() {
               <p className="fig mt-1 text-sm text-ink-soft">{formatDate(b.date)} · {b.travellers} <T k="pages.checkout.people" /></p>
             </div>
             <div className="flex shrink-0 flex-col items-start gap-2 sm:items-end">
-              <span className="flex items-center gap-1 text-sm text-ink"><Icon name="info" size={14} />{b.status}</span>
+              <Badge tone={TONE[b.status] ?? "neutral"}>{b.status}</Badge>
               <span className="fig text-base">{formatPrice(b.total)}</span>
               <div className="flex gap-2">
                 <Link to={`/booking/${b.code}`} className="text-xs text-ink underline hover:text-accent"><T k="pages.account.view" /></Link>
