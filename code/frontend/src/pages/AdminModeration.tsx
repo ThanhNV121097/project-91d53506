@@ -4,11 +4,19 @@ import DataTable from "../components/DataTable";
 import TableFilters, { SearchBox, FilterSelect, Badge } from "../components/TableFilters";
 import Rating from "../components/Rating";
 import Stat from "../components/Stat";
-import { useCollection, type Row } from "../data";
+import { collections, setCollection, useCollection, type Row } from "../data";
 import { useTableQuery } from "../lib/table";
 import { usePageMeta } from "../seo";
 import { formatDate } from "../lib/format";
 import { ADMIN_NAV } from "../lib/nav";
+
+/** A review's storefront visibility, flipped — published or reported goes
+ * to hidden, hidden goes back to published. `/tours/:id` reads the same
+ * store, so the trip page's review list updates with it. */
+function toggleReview(row: Row) {
+  const next = row.status === "hidden" ? "published" : "hidden";
+  setCollection("reviews", (collections().reviews ?? []).map((r) => (r.id === row.id ? { ...r, status: next } : r)));
+}
 
 export default function AdminModeration() {
   usePageMeta("pages.adminModeration.title");
