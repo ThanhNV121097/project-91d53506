@@ -1,25 +1,36 @@
 import { useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { T, useContent } from "../editable";
 import { useRecord } from "../data";
 import { Picture } from "../picture";
 import Icon from "../components/Icon";
 import { usePageMeta } from "../seo";
 import { formatPrice, formatDate } from "../lib/format";
-import { readDraft, writeDraft, emptyDraft, total, newCode, PAYMENTS } from "../lib/mock/booking";
+import { readDraft, writeDraft, emptyDraft, total } from "../lib/mock/booking";
+import { PAYMENT_METHODS, payWithVnpay } from "../lib/mock/checkout-payment-via-vnpay-momo-zalopay";
 import type { Trip } from "../lib/trips";
 
 export default function Checkout() {
   usePageMeta("pages.checkout.title", "pages.checkout.description");
   const { id } = useParams();
+  const [params] = useSearchParams();
   const { item } = useRecord<Trip>("products", id);
   const navigate = useNavigate();
   const [draft, setDraft] = useState(() => readDraft() ?? emptyDraft(id ?? ""));
   const [paying, setPaying] = useState(false);
+  const failed = params.get("payment") === "failed";
   const voucherNote = useContent("pages.checkout.voucherNote");
   if (!item) return <p className="mx-auto max-w-page px-[var(--gutter)] py-20 text-ink-soft"><T k="pages.trip.missing" /></p>;
   const sums = total(item.price, draft);
   const date = draft.date || item.next_date;
+
+  async function payNow() {
+    setPaying(true);
+    const { code } = await payWithVnpay(`NA-${Math.random().toString(36).slice(2, 8).toUpperCase()}`);
+    writeDraft({ ...draft, date, code });
+    navigate(`/booking/${code}`);
+  }
+
   return (
     <section className="mx-auto grid max-w-page gap-10 px-[var(--gutter)] py-10 lg:grid-cols-[1.4fr_1fr]">
       <div>
