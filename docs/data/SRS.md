@@ -161,7 +161,10 @@ Behaviour:
 | Case | Condition | Expected behaviour |
 |---|---|---|
 | Not found | Id does not exist in the collection | 404, matching DATA-003 AC-2 |
-| No permission case | Every record endpoint is a public read | Not applicable |
+| Unauthenticated request to a private collection | Collection is one of `bookings`, `payouts`, `users`, `complaints`, `vouchers`, `notifications`, `settings`, `campaigns`, `audit`, and the caller has no session | 401 response |
+| Authenticated non-admin request to a record they don't own | Caller is signed in but not an admin, and the record is not their own | 403 or 404 response |
+| Authenticated admin request | Caller is signed in as admin | Any record in the collection is returned |
+| Public collection request | Collection is one of `categories`, `departures`, `destinations`, `guides`, `products`, `reviews`, `suppliers` | Public read, no authentication required, matching DATA-003's existing behaviour |
 
 **Data touched** — one record's worth of whatever fields that collection's
 schema defines.
