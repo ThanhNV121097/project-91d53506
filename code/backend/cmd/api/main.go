@@ -13,6 +13,8 @@ import (
 
 	_ "github.com/jackc/pgx/v5/stdlib"
 
+	"github.com/ThanhNV121097/project-91d53506/backend/internal/contact"
+	"github.com/ThanhNV121097/project-91d53506/backend/internal/httpx"
 	"github.com/ThanhNV121097/project-91d53506/backend/internal/migrate"
 	"github.com/ThanhNV121097/project-91d53506/backend/migrations"
 )
@@ -36,6 +38,12 @@ func main() {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/healthz", healthz(db))
 
+	// Agent Team inbox the contact form forwards to (CONTACT-001). The
+	// backend's own copy of the same platform-level key site.json already
+	// carries client-side; no new secret (contact/SRS.md §7).
+	httpClient := &http.Client{Timeout: 10 * time.Second}
+	mux.HandleFunc("/v1/contact", contact.Handler(os.Getenv("AGENT_TEAM_API_URL"), os.Getenv("AGENT_TEAM_KEY"), httpClient))
+
 	port := os.Getenv("PORT")
 	if port == "" {
 		port = os.Getenv("APP_PORT")
@@ -45,7 +53,7 @@ func main() {
 	}
 
 	log.Printf("listening on :%s", port)
-	if err := http.ListenAndServe(":"+port, mux); err != nil {
+	if err := http.ListenAndServe(":"+port, httpx.RequestID(mux)); err != nil {
 		log.Fatal(err)
 	}
 }
