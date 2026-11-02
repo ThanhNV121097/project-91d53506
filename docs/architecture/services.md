@@ -188,3 +188,389 @@ No new table, column, index or constraint. Two endpoints added: §3.8.8
 
 **Forward:** none to run. **Backward:** none to run. **Safety on a
 populated table:** not applicable — no DDL in this story.
+
+## 3.8.10 `GET /v1/supplier/revenue` — Revenue, commission and expected
+payout (SUPPLIERS-007)
+
+**Auth** — `supplier`. Figures are always the caller's own — resolved via
+`suppliers.user_id = caller.id` — never another supplier's (SRS §6 "never
+exposed to another supplier's session"). A `buyer` or `admin` session is
+`403`: an admin's own view of supplier finances is a separate `admin`
+module endpoint, not this one (test cases, "admin session cannot read
+through the supplier-scoped endpoint").
+
+**Request**
+
+```
+GET /v1/supplier/revenue
+```
+
+No query parameters — any present is rejected (test cases, `?foo=bar` →
+`400`).
+
+**Behaviour**
+
+1. `revenue` = `SUM(bookings.total)`, joined `bookings → departures →
+   products` where `products.supplier_id` is the caller's own supplier
+   row, filtered to `bookings.status IN ('Paid','Confirmed','Completed')`
+   (SUPPLIERS-007 behaviour 1) — `0` if none.
+2. The applicable rate is the caller's own `suppliers.commission`
+   override when non-null, else the `settings` row named `"Global
+   commission percent"`'s `value`, else `0` (SUPPLIERS-007 behaviour 2,
+   `decision.commission_rate`). That stored value is a percentage
+   (`numeric(5,2)`, e.g. `10.0`); the response's `commission_rate` divides
+   it by `100` (a `0`–`1` fraction — matches the merged test suite's
+   `commission_rate: 0.10` for a stored `10.0`).
+3. `commission` = `round(revenue * commission_rate)`.
+4. `expected_payout` = `max(0, revenue - commission - settled)`, where
+   `settled` is `SUM(payouts.net)` over the caller's own `payouts` rows —
+   whatever a closed period already paid out is never counted again as
+   still owed (SUPPLIERS-007 behaviour 3, and the merged test case
+   "Expected payout excludes revenue already settled in a closed payout
+   period"). This is the exact arithmetic the UI's own mock
+   (`useSupplierRevenue`, PR #98) already computes against the `revenue`/
+   `commission` values it derives the same way — carried forward
+   unchanged, not redesigned, because both the shipped UI and the merged
+   test cases already agree on it.
+
+**Response** — `200`
+
+```json
+{
+  "revenue": 10000000,
+  "commission_rate": 0.10,
+  "commission": 1000000,
+  "expected_payout": 9000000
+}
+```
+
+**Errors**
+
+| Status | `error.code` | When |
+|---|---|---|
+| 400 | `MALFORMED_REQUEST` | Any query parameter is present (this endpoint takes none) |
+| 401 | `UNAUTHENTICATED` | No valid session token |
+| 403 | `PERMISSION_DENIED` | Signed in, but not role `supplier` |
+| 500 | `INTERNAL` | The query fails for a reason other than a refused connection |
+| 503 | `UNAVAILABLE` | The database refuses the connection |
+
+**Notes — why no new index**
+
+The revenue sum walks `products` (`idx_products_supplier_id`) →
+`departures` (`idx_departures_product_id_date`, `product_id` prefix) →
+`bookings` (`idx_bookings_departure_id`); the settled sum uses
+`idx_payouts_supplier_id`. All four already exist (erd.md §3.5, §3.6,
+§3.11, §3.14) and erd.md §5 row 15 already names `idx_payouts_supplier_id`
+as serving "a supplier's payout history" — this endpoint and §3.8.11
+below are that access pattern.
+
+**Conflict with the mock, stated and resolved:** the UI's mock
+(`lib/mock/supplier-revenue-and-payout-reporting.ts`, PR #98) returns
+`rate` on a `0`–`100` scale and a field named `expectedPayout`
+(camelCase). This contract returns `commission_rate` on a `0`–`1`
+fraction and `expected_payout` (snake_case), matching this project's
+other finance-reading endpoints (no endpoint elsewhere in this file
+returns a raw percentage) and the already-merged test suite's own
+assertions (`commission_rate: 0.10`, not `rate: 10`). The mock's
+shape does not win here — nobody reviewed it (per this skill's own
+rule) and the test cases, written after it, already chose the fraction.
+
+**Frontend change required** when this backend lands: `SupplierHome.tsx`
+and `SupplierAccount.tsx` stop importing `useSupplierRevenue` from the
+mock module and instead call this story's own
+`lib/supplier-revenue-and-payout-reporting.ts` against this endpoint and
+§3.8.11. That client multiplies `commission_rate` by `100` before handing
+it to the two pages' existing `rev.rate === 0` / `rev.rate > 0` checks (so
+neither page's JSX needs to change), and renames `expected_payout` to the
+`expectedPayout` key both pages already read. `revenue` and `commission`
+need no rename.
+
+---
+
+## 3.8.11 `GET /v1/supplier/payouts` — Payout history (SUPPLIERS-007)
+
+**Auth** — `supplier`, scoped to the caller's own `payouts` rows
+(`payouts.supplier_id` = the caller's own `suppliers.id`) — never another
+supplier's (SUPPLIERS-007 "Not permitted" row; test cases, "A supplier's
+figures never include another supplier's bookings or payouts").
+
+**Request**
+
+```
+GET /v1/supplier/payouts?limit=&cursor=
+```
+
+| Param | Type | Notes |
+|---|---|---|
+| `limit` | integer, 1–100 | Default 20; over the max is rejected, never clamped (test cases, `?limit=101` → `422`) |
+| `cursor` | string | Opaque, from a previous response's `next_cursor` — same scheme as §3.8.8/§3.9.22 |
+
+No `period` filter on this endpoint — `/supplier/account`'s table reads
+the caller's own full history and sorts/paginates it through the shared
+`DataTable` component; a per-period filter is `admin`'s own
+`GET /v1/admin/payouts?period=` (§3.9.16), a different, admin-scoped
+endpoint over every supplier's rows, not this one.
+
+**Behaviour**
+
+```sql
+SELECT id, period, gross, commission, net, status, paid_on
+FROM payouts
+WHERE supplier_id = $caller_supplier_id
+ORDER BY period DESC, created_at DESC
+```
+
+cursor-paginated, using the existing `idx_payouts_supplier_id` — a
+supplier's own payout history is at most a few dozen rows (one per closed
+period, erd.md §3.14's `uq_payouts_supplier_period`), so no composite
+index is added for the `ORDER BY`.
+
+**Response** — `200`
+
+```json
+{
+  "data": [
+    { "id": "...", "period": "2026-10-01", "gross": 9515000, "commission": 0, "net": 9515000, "status": "Pending", "paid_on": null }
+  ],
+  "has_more": false,
+  "next_cursor": null
+}
+```
+
+No `404` for an empty history — `200` with `data: []`, `has_more: false`
+(matches `/supplier/account`'s own empty state, SRS §5, "No payout period
+has closed yet.").
+
+**Errors**
+
+| Status | `error.code` | When |
+|---|---|---|
+| 400 | `MALFORMED_REQUEST` | A query parameter outside `limit`/`cursor` is present |
+| 401 | `UNAUTHENTICATED` | No valid session token |
+| 403 | `PERMISSION_DENIED` | Signed in, but not role `supplier` |
+| 422 | `VALIDATION_FAILED` | `limit` is present and >100 (never clamped) or ≤0 |
+| 500 | `INTERNAL` | The query fails for a reason other than a refused connection |
+| 503 | `UNAVAILABLE` | The database refuses the connection |
+
+**Conflict with the mock, stated and resolved:** the seed mock data
+(`code/frontend/src/data/payouts.json`, PR #98) carries
+`"status": "Awaiting commission rate"` on every row — a display string
+the mock author invented for "this period's `commission` happens to read
+`0`". `payouts.status` is a `CHECK`-constrained closed set,
+`'Pending' | 'Paid'` (erd.md §3.14, written ahead of this story by
+`0007_finance_admin`), and this endpoint is read-only — it has no reason
+and no mechanism to write a third value into that column. A row with
+commission `0` still reads `status: "Pending"` under this contract;
+`SupplierAccount.tsx`'s `{r.status}` already
+renders whatever string the field holds with no special-casing, so
+nothing in that component needs to change for this — only the mock's
+invented seed value goes away with the mock file itself.
+
+**Frontend change required** when this backend lands:
+`SupplierAccount.tsx`'s payout-history table stops calling
+`useCollection("payouts", ...)` (the generic `data`-module reader, which
+has no ownership scoping) and instead reads this endpoint through
+`lib/supplier-revenue-and-payout-reporting.ts` (the same client file as
+§3.8.10 above) via cursor pagination in place of the generic reader's
+page/sort params; the column render functions themselves are unchanged.
+
+---
+
+## 8.9 Migration plan — Supplier revenue and payout reporting
+(SUPPLIERS-007)
+
+No table, column, index or constraint change. Every value the two
+endpoints above read already exists from earlier migrations, ahead of
+this story:
+
+- `suppliers.commission` and its `ck_suppliers_commission_range` check —
+  `0003_suppliers`.
+- `products.supplier_id`, `idx_products_supplier_id`; `departures.
+  product_id`, `idx_departures_product_id_date` — `0004_catalogue`.
+- `bookings.total`, `bookings.status`, `departures.id` via
+  `bookings.departure_id`, `idx_bookings_departure_id` —
+  `0006_booking_flow`.
+- `payouts.supplier_id`, `.period`, `.gross`, `.commission`, `.net`,
+  `.status`, `.paid_on`, `idx_payouts_supplier_id`,
+  `uq_payouts_supplier_period`, `ck_payouts_status` — `0007_finance_admin`.
+- `settings` table and the `"Global commission percent"` seed row —
+  `0007_finance_admin` / `0008_seed_settings`.
+
+Two endpoints added: §3.8.10 (`GET /v1/supplier/revenue`), §3.8.11
+(`GET /v1/supplier/payouts`) above.
+
+**Forward:** none to run — no DDL. **Backward:** none to run. **Safety on
+a populated table:** not applicable, no DDL in this story.
+
+
+---
+
+## 3.7 Internal fan-out contract — `notify.Raise(event, payload)` (NOTIF-001)
+
+**Not an HTTP endpoint.** This is the internal Go function other modules'
+handlers call, in-process, right after the state change they are
+reporting commits — never before, so a notification is never raised for
+a transition that then rolls back. Callers today:
+
+- `POST /v1/payments/vnpay/ipn` (§3.6.3), on a booking reaching `Confirmed`
+- the hold-expiry sweep, on a booking reaching `Cancelled`
+- `POST /v1/admin/suppliers/{id}/approve` / `POST
+  /v1/admin/suppliers/{id}/reject` (§3.9.2/§3.9.3)
+- `POST /v1/admin/products/{id}/approve` / `POST
+  /v1/admin/products/{id}/reject` (§3.9.4/§3.9.5)
+
+**Signature** — `notify.Raise(ctx, event string, template string)`, where
+`event` already encodes the specific instance of the transition (e.g.
+`"booking.confirmed:NA-5QJ81M"`, `"product.rejected:<product-id>"`) —
+the same string every caller above builds from its own row's `code`/`id`,
+so two different transitions on the same booking/product never collide
+on the uniqueness guard below, and two deliveries of the *same*
+transition always do.
+
+**Behaviour** — for each of the three channels `Email`, `Zalo`,
+`Dashboard`, in any order, independently:
+
+1. Attempt the insert:
+   ```sql
+   INSERT INTO notifications (event, channel, template, status)
+   VALUES ($event, $channel, $template, 'pending')
+   ON CONFLICT ON CONSTRAINT uq_notifications_event_channel DO NOTHING
+   RETURNING id
+   ```
+   A conflict (no row returned) means this exact event/channel pair was
+   already notified by an earlier call — `Raise` returns for that channel
+   without sending anything a second time (NOTIF-001 AC-3). This is the
+   row-level de-dup; no application-side "have I seen this event" cache
+   is needed or added.
+2. If a row was inserted, attempt the channel's own delivery
+   (`EMAIL_SMTP_*` for `Email`, `ZALO_OA_API_KEY` for `Zalo`; `Dashboard`
+   always succeeds — it *is* the row just inserted, read back by
+   `/admin/system`) and `UPDATE notifications SET status = $result WHERE
+   id = $id`, `$result` being `'sent'` or `'failed'`.
+3. One channel's provider call failing (step 2) is caught and recorded as
+   that channel's own `'failed'` status; it neither raises an error to
+   the caller nor skips or retries the other two channels (NOTIF-001
+   AC-2, reliability row). `Raise` itself never returns an error for a
+   delivery failure — only for a database failure on the insert/update
+   above, which the caller (already inside its own request handler)
+   surfaces as that endpoint's own `500`/`503`, not a separate one here.
+
+**Why `ON CONFLICT ... DO NOTHING` and not a `SELECT` then `INSERT`** — a
+read-then-write has a race between two near-simultaneous calls for the
+same event (e.g. a genuinely retried webhook arriving while the first
+delivery is still in flight); the constraint is the single source of
+truth for "already notified", enforced by Postgres itself rather than by
+a lock this code would otherwise have to take.
+
+---
+
+## 3.7.1 `GET /v1/admin/notifications` — Read the notification log (NOTIF-001)
+
+**Auth** — `admin` with `full` or `content-only` permissions (the
+`/admin/system` screen this list backs is reachable by any sub-admin
+permission per ADMIN-007's own "read-only" rule for that screen's other
+tables — but this file's test cases scope this specific endpoint to
+`full`/`content-only` only, so a `moderation-only` or `finance-only`
+sub-admin reading `/admin/system` sees every other panel on that page
+load except this one's rows, same partial-visibility pattern the page
+already uses per-section).
+
+**Request**
+
+```
+GET /v1/admin/notifications?limit=&cursor=
+```
+
+| Param | Type | Notes |
+|---|---|---|
+| `limit` | integer, 1–100 | Default 20; over the max is rejected, never clamped |
+| `cursor` | string | Opaque, from a previous response's `next_cursor` |
+
+No other query parameter, and no request body — either is `400
+MALFORMED_REQUEST`.
+
+**Behaviour**
+
+```sql
+SELECT id, event, channel, template, status, created_at
+FROM notifications
+ORDER BY created_at DESC, id DESC
+```
+
+cursor-paginated using `idx_notifications_created_at` (erd.md §3.18) —
+the same cursor scheme as §3.8.8/§3.8.11/§3.9.22.
+
+**Response** — `200`
+
+```json
+{
+  "data": [
+    {
+      "id": "...",
+      "event": "booking.confirmed:NA-5QJ81M",
+      "channel": "Email",
+      "template": "booking-confirmed",
+      "status": "sent",
+      "created_at": "..."
+    }
+  ],
+  "has_more": false,
+  "next_cursor": null
+}
+```
+
+No `404` for an empty log — `200` with `data: []`, `has_more: false`.
+
+**Errors**
+
+| Status | `error.code` | When |
+|---|---|---|
+| 400 | `MALFORMED_REQUEST` | A query parameter outside `limit`/`cursor` is present, or a request body is sent |
+| 401 | `UNAUTHENTICATED` | No valid session token |
+| 403 | `PERMISSION_DENIED` | Signed in, but not role `admin`, or an `admin` whose `permissions` is set to something other than `content-only` (e.g. `finance-only`, `moderation-only`) |
+| 422 | `VALIDATION_FAILED` | `limit` is present and >100 (never clamped) or ≤0 |
+| 500 | `INTERNAL` | The query fails for a reason other than a refused connection |
+| 503 | `UNAVAILABLE` | The database refuses the connection |
+
+**Conflict with the mock, stated and resolved:** none. The mock
+(`lib/mock/booking-and-approval-notifications.ts`, PR #94) already uses
+`id`, `event`, `channel` (`"Email" | "Zalo" | "Dashboard"`), `template`,
+`status` (`"pending" | "sent" | "failed"`) — the exact column set and
+value vocabulary of `notifications` (erd.md §3.18), because it was
+written straight from that table. This contract's response adds only
+`created_at` (needed for the sort/pagination the mock's static array
+never had to do) and the list envelope (`data`/`has_more`/`next_cursor`)
+every other list endpoint in this file already uses. No frontend field
+is renamed or dropped.
+
+**Frontend change required** when this backend lands: `AdminSystem.tsx`
+stops reading the generic `data`-module `notifications` collection
+(`useCollection("notifications", ...)`) for its notifications table and
+instead reads this endpoint through a new
+`lib/booking-and-approval-notifications.ts` client, cursor-paginated in
+place of the generic reader's page params. The existing nit from PR #94's
+review — the table's `Badge tone={r.status === "On" ? "good" : "neutral"}`
+— is fixed in the same change to map `status`: `sent` → `good`, `failed`
+→ `bad`, `pending` → `neutral`, since the real data now actually carries
+those three values instead of the unrelated `"On"` the generic collection
+happened to hold.
+
+---
+
+## 8.10 Migration plan — Booking and approval notifications (NOTIF-001)
+
+No schema change. `notifications.event`, `.channel`, `.template`,
+`.status`, `.created_at`, `ck_notifications_channel`,
+`ck_notifications_status`, `uq_notifications_event_channel` (the de-dup
+guard §3.7 relies on) and `idx_notifications_created_at` (serves this
+story's own `ORDER BY created_at DESC` read) all already exist from the
+base ERD, erd.md §3.18, written ahead of this story in the same
+migration that created every other `admin`-module table
+(`0007_finance_admin`).
+
+One internal contract (§3.7, `notify.Raise`) and one endpoint (§3.7.1,
+`GET /v1/admin/notifications`) added above. Neither needs a migration of
+its own.
+
+**Forward:** none to run — no DDL. **Backward:** none to run. **Safety on
+a populated table:** not applicable, no DDL in this story.
